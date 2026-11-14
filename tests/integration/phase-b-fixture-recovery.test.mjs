@@ -48,7 +48,7 @@ test('recovery inspects all four IDs independently and reports ambiguous outcome
   }, journal);
   assert.deepEqual(seen, [uid, buyer, actor, product]);
   assert.deepEqual(result.observations.map(({observation}) => observation), [
-    'PRESENT_MATCHES_JOURNAL_REQUIRES_OWNER_REVIEW', 'LOOKUP_UNVERIFIED',
+    'PRESENT_MATCHES_JOURNAL_AFTER_UNCERTAIN_DELETE', 'LOOKUP_UNVERIFIED',
     'PRESENT_WITHOUT_VERIFIED_CREATION', 'ABSENT_AT_CHECK_TIME',
   ]);
   assert.equal(result.allAbsent, false);

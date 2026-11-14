@@ -402,7 +402,9 @@ export async function inspectRecovery(send, journal) {
           const matches = isAuth
             ? userEvidence(remote, resource, evidence.email) === evidence.createdAt
             : isDeepStrictEqual(documentEvidence(remote, resource, journal.sessionId, journal.updated?.has(resource)), evidence);
-          if (matches) observation = 'PRESENT_MATCHES_JOURNAL_REQUIRES_OWNER_REVIEW';
+          if (matches) observation = local === 'DELETE_UNKNOWN'
+            ? 'PRESENT_MATCHES_JOURNAL_AFTER_UNCERTAIN_DELETE'
+            : 'PRESENT_MATCHES_JOURNAL_REQUIRES_OWNER_REVIEW';
         } catch {
           // Keep the mismatch label and suppress all remote data.
         }

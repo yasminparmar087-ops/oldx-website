@@ -371,3 +371,37 @@ test('session deadline shares the cleanup time between credentials and HTTP and 
   assert.throws(() => budget.timeout(20_000), /SESSION_DEADLINE_EXCEEDED/);
   assert.throws(() => budget.beginCleanup(), /SESSION_DEADLINE_EXCEEDED/);
 });
+
+test('combined hosted failure preserves separation and completes guarded cleanup without PATCH', async () => {
+  const session = fake();
+  let attempts = 0;
+  await assert.rejects(simulateRuntimeFixtureSession({
+    projectId: 'oldx-staging', databaseId: '(default)', journal: session.openJournal,
+    credential: {token: 'fake-runtime', expiry: Date.now() + 300_000},
+    operatorSend: session.send,
+    runtimeRequest(url, opts) {
+      assert.equal(opts.headers.Authorization, 'Bearer fake-runtime');
+      assert.notEqual(opts.method, 'PATCH');
+      return session.send({url, method: opts.method, body: opts.body && JSON.parse(opts.body)});
+    },
+    hosted: {
+      enabledTag: 'step3', enabledOrigin: 'https://step3---oldx-owner-read-lqpaz3pd5a-el.a.run.app',
+      disabledOrigin: 'https://healthcheck---oldx-owner-read-lqpaz3pd5a-el.a.run.app',
+      getOperatorAccessToken: () => 'fake-operator',
+      request(url, opts) {
+        attempts++;
+        if (attempts === 1) {
+          assert.match(url, /oldx-phase-b-invoker.*:generateIdToken$/);
+          assert.equal(opts.headers.Authorization, 'Bearer fake-operator');
+          return Response.json({token: googleToken});
+        }
+        assert.equal(opts.headers['X-Serverless-Authorization'], 'Bearer ' + googleToken);
+        assert.equal(opts.headers.Authorization, undefined);
+        return Response.json({unexpected: true}, {status: 500});
+      },
+    },
+  }), /SIMULATION_STOPPED/);
+  assert.equal(attempts, 2);
+  assert.equal(session.complete, true);
+  assert.equal(session.closed, true);
+});

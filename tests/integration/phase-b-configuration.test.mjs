@@ -558,3 +558,24 @@ test('direct Firestore IAM separates metadata and transaction permissions and pr
     assert.doesNotMatch(JSON.stringify(report), /secret|private detail|dHJhbn/);
   }
 });
+
+test('hosted target requires exact zero-traffic tag, ready revision and image digest', () => {
+  const hostedTarget = {tag: 'step3', revision: 'oldx-owner-read-step3', digest: 'sha256:' + 'a'.repeat(64),
+    origin: 'https://step3---oldx-owner-read-lqpaz3pd5a-el.a.run.app'};
+  for (const drift of ['none', 'traffic', 'digest']) {
+    const baseline = preflightRead((command, data) => {
+      if (command === 'run services describe oldx-owner-read') {
+        data.status.latestReadyRevisionName = hostedTarget.revision;
+        data.status.traffic.push({revisionName: hostedTarget.revision, tag: hostedTarget.tag,
+          url: hostedTarget.origin, percent: drift === 'traffic' ? 1 : 0});
+      }
+    });
+    const report = inspectPhaseBConfiguration((...args) => args[3] === hostedTarget.revision
+      ? JSON.stringify({
+        metadata: {name: hostedTarget.revision, labels: {'serving.knative.dev/service': service}},
+        spec: {serviceAccountName: runtime},
+        status: {imageDigest: 'registry.invalid/image@' + (drift === 'digest' ? 'sha256:' + 'b'.repeat(64) : hostedTarget.digest)},
+      }) : baseline(...args), {preflight: true, hostedTarget});
+    assert.equal(report.configuration, drift === 'none' ? 'MATCH' : 'FAIL');
+  }
+});

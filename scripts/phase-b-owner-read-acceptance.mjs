@@ -8,6 +8,9 @@ export const ownerReadAudience = 'https://oldx-owner-read-lqpaz3pd5a-el.a.run.ap
 const audience = ownerReadAudience;
 const invoker = 'oldx-phase-b-invoker@oldx-staging.iam.gserviceaccount.com';
 const LIVE_HOSTED_ACCEPTANCE_ENABLED = false;
+export function requireHostedAcceptanceEnabled() {
+  if (!LIVE_HOSTED_ACCEPTANCE_ENABLED) throw new Error('HOSTED_ACCEPTANCE_DISABLED');
+}
 const jwt = /^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/;
 const fixtureRequest = JSON.stringify({kind: 'product', id: privateProduct.id, requestId: null});
 const ownerResponse = {
@@ -74,7 +77,7 @@ export function inspectAnonymousDenial(response, body) {
 
 async function runKeylessAcceptance({
   projectId, getOperatorAccessToken, ownerToken, buyerToken,
-  disabledOrigin, enabledOrigin, enabledTag,
+  disabledOrigin, enabledOrigin, enabledTag, timeout = (limit) => limit,
 }, fetchRequest) {
   if (projectId !== project || typeof getOperatorAccessToken !== 'function' ||
       ![ownerToken, buyerToken].every((token) => typeof token === 'string' && jwt.test(token)) ||
@@ -86,7 +89,7 @@ async function runKeylessAcceptance({
 
   let googleToken;
   try {
-    const signal = AbortSignal.timeout(15_000);
+    const signal = AbortSignal.timeout(timeout(15_000));
     const accessToken = await getOperatorAccessToken({signal});
     if (signal.aborted || typeof accessToken !== 'string' ||
         !/^[A-Za-z0-9._~+/-]{1,8192}={0,2}$/.test(accessToken)) throw new Error();
@@ -107,8 +110,10 @@ async function runKeylessAcceptance({
   return runOwnerReadAcceptance({
     disabledOrigin, enabledOrigin, enabledTag, googleToken, ownerToken, buyerToken,
     async send({caseId, url, method, headers, body, signal}) {
+      signal = AbortSignal.any([signal, AbortSignal.timeout(timeout(15_000))]);
       const response = await fetchRequest(url, {method, headers, body, signal, redirect: 'error'});
       const raw = await readBounded(response);
+      if (signal.aborted) throw new Error('HOSTED_PROBE_TIMEOUT');
       if (caseId === 'invoker-denied') {
         // Only the status is consumed by the harness. Never discard unexpected
         // application data and count it as an invocation denial.
@@ -121,7 +126,7 @@ async function runKeylessAcceptance({
 }
 
 export async function runHostedOwnerReadAcceptance(options) {
-  if (!LIVE_HOSTED_ACCEPTANCE_ENABLED) throw new Error('HOSTED_ACCEPTANCE_DISABLED');
+  requireHostedAcceptanceEnabled();
   return runKeylessAcceptance(options, fetch);
 }
 

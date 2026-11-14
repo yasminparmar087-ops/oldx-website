@@ -9,7 +9,8 @@ import {pathToFileURL} from 'node:url';
 import {authUids, database, firestoreDocs, project} from './phase-b-http-contract-review.mjs';
 import {conditionalFixtureDelete, validFirestoreReceipt} from './phase-b-offline-cleanup-guard.mjs';
 import {offlinePayloads} from './phase-b-firestore-typed-fixture-preview.mjs';
-import {runOwnerReadAcceptance, ownerReadAudience, readBounded, inspectAnonymousDenial} from './phase-b-owner-read-acceptance.mjs';
+import {runOwnerReadAcceptance, runHostedOwnerReadAcceptance, requireHostedAcceptanceEnabled,
+  simulateKeylessOwnerReadAcceptance, ownerReadAudience, readBounded, inspectAnonymousDenial} from './phase-b-owner-read-acceptance.mjs';
 
 const markerField = 'phaseBFixtureSessionId';
 const LIVE_EXECUTION_ENABLED = false;
@@ -186,9 +187,17 @@ async function runSession(api, openJournal, afterSignIn, runtime = null, budget 
       tokens.push(await api.signIn(uid, emails[i], passwords[i]));
       passwords[i] = null;
     }
-    if (afterSignIn) await afterSignIn(tokens[0], tokens[1]);
+    let probeFailed = false;
+    if (afterSignIn) {
+      try {
+        await afterSignIn(tokens[0], tokens[1]);
+      } catch {
+        if (!runtime) throw new Error('HOSTED_ACCEPTANCE_FAILED');
+        probeFailed = true;
+      }
+    }
     tokens.length = 0;
-    if (runtime) {
+    if (runtime && !probeFailed) {
       const path = firestoreDocs[1];
       const original = created.get(path);
       conditionalFixtureDelete(original, documentEvidence(await runtime.getDoc(path), path, sessionId));
@@ -205,7 +214,7 @@ async function runSession(api, openJournal, afterSignIn, runtime = null, budget 
     for (const path of [...firestoreDocs].reverse()) {
       const receipt = created.get(path);
       const {currentDocument} = conditionalFixtureDelete(receipt,
-        documentEvidence(await api.getDoc(path), path, sessionId, Boolean(runtime && path === firestoreDocs[1])));
+        documentEvidence(await api.getDoc(path), path, sessionId, Boolean(runtime && !probeFailed && path === firestoreDocs[1])));
       journal.record(path, 'DELETE_UNKNOWN', receipt);
       await api.deleteDoc(path, currentDocument.updateTime);
       journal.record(path, 'DELETE_ACKNOWLEDGED');
@@ -220,6 +229,7 @@ async function runSession(api, openJournal, afterSignIn, runtime = null, budget 
     requireSafe((await inventory(api)).every((present) => !present), 'RESIDUAL_FIXTURES');
     budget?.timeout(1);
     journal.complete();
+    if (probeFailed) throw new Error('HOSTED_ACCEPTANCE_FAILED_FIXTURES_ABSENT');
   } finally {
     passwords.length = 0;
     tokens.length = 0;
@@ -427,7 +437,7 @@ function guardOperator(read = gcloud) {
 
 // Fixed read-only command list. Return labels and counts, never raw policy,
 // principal lists or revision environment values.
-export function inspectPhaseBConfiguration(read = gcloud, {preflight = false} = {}) {
+export function inspectPhaseBConfiguration(read = gcloud, {preflight = false, hostedTarget} = {}) {
   const runtime = 'oldx-product-read-staging@oldx-staging.iam.gserviceaccount.com';
   const invoker = 'oldx-phase-b-invoker@oldx-staging.iam.gserviceaccount.com';
   const projectNumber = '38472235077';
@@ -547,11 +557,12 @@ export function inspectPhaseBConfiguration(read = gcloud, {preflight = false} = 
       const tag = traffic?.find?.((row) => row.tag === 'healthcheck');
       const taggedOrigin = ownerReadAudience.replace('https://', 'https://healthcheck---');
       result.checks.serviceAudience = value.status?.url === ownerReadAudience ? 'MATCH' : 'MISMATCH';
-      result.checks.latestReadyRevision = value.status?.latestReadyRevisionName === healthRevision ? 'MATCH' : 'MISMATCH';
+      const expectedReady = hostedTarget?.revision ?? healthRevision;
+      result.checks.latestReadyRevision = value.status?.latestReadyRevisionName === expectedReady ? 'MATCH' : 'MISMATCH';
       result.checks.taggedUrl = tag?.url === taggedOrigin ? 'MATCH' : 'MISMATCH';
       result.serviceBaseline = {
         audience: result.checks.serviceAudience === 'MATCH' ? ownerReadAudience : 'UNVERIFIED',
-        latestReadyRevision: result.checks.latestReadyRevision === 'MATCH' ? healthRevision : 'UNVERIFIED',
+        latestReadyRevision: result.checks.latestReadyRevision === 'MATCH' ? expectedReady : 'UNVERIFIED',
       };
     }
     return value.metadata?.name === service && String(value.metadata?.namespace) === projectNumber &&
@@ -559,7 +570,9 @@ export function inspectPhaseBConfiguration(read = gcloud, {preflight = false} = 
       (annotations['run.googleapis.com/invoker-iam-disabled'] === undefined ||
         annotations['run.googleapis.com/invoker-iam-disabled'] === 'false') &&
       value.spec?.template?.spec?.serviceAccountName === runtime &&
-      Array.isArray(traffic) && traffic.length === 2 &&
+      Array.isArray(traffic) && traffic.length === (hostedTarget ? 3 : 2) &&
+      (!hostedTarget || traffic.some((row) => row.revisionName === hostedTarget.revision &&
+        (row.percent ?? 0) === 0 && row.tag === hostedTarget.tag && row.url === hostedTarget.origin)) &&
       traffic.some((row) => row.revisionName === mainRevision && row.percent === 100 && !row.tag) &&
       traffic.some((row) => row.revisionName === healthRevision && (row.percent ?? 0) === 0 && row.tag === 'healthcheck');
   });
@@ -572,6 +585,13 @@ export function inspectPhaseBConfiguration(read = gcloud, {preflight = false} = 
         Array.isArray(env) && env.every((entry) => entry && typeof entry.name === 'string' &&
           !['OLDX_PRODUCT_READ_ACTIVATE_STAGING', 'OLDX_PRODUCT_READ_EMULATOR'].includes(entry.name));
     });
+  }
+  if (hostedTarget) {
+    check('hostedRevision', () => json('run', 'revisions', 'describe', hostedTarget.revision, ...regional), (value) =>
+      value.metadata?.name === hostedTarget.revision &&
+      value.metadata?.labels?.['serving.knative.dev/service'] === service &&
+      value.spec?.serviceAccountName === runtime &&
+      value.status?.imageDigest?.endsWith('@' + hostedTarget.digest) === true);
   }
   if (Object.values(result.checks).every((status) => status === 'MATCH')) result.configuration = 'MATCH';
   else if (Object.values(result.checks).includes('MISMATCH')) result.configuration = 'FAIL';
@@ -819,10 +839,18 @@ function runtimeFixtureTransport(request, {token, expiry}, budget = null) {
   });
 }
 
-export function simulateRuntimeFixtureSession({projectId, databaseId, operatorSend, runtimeRequest, credential, journal}) {
+function hostedFixtureCallback(acceptance, budget, runHosted) {
+  return (ownerToken, buyerToken) => runHosted({
+    ...acceptance, projectId: project, ownerToken, buyerToken, timeout: budget.timeout,
+  });
+}
+
+export function simulateRuntimeFixtureSession({projectId, databaseId, operatorSend, runtimeRequest, credential, journal, hosted}) {
   requireSafe(projectId === project && databaseId === database, 'RUNTIME_FIXTURE_SCOPE_DENIED');
   const budget = runtimeSessionBudget(credential.expiry);
-  return runSession(transport(operatorSend, 'offline-test-key'), journal, undefined,
+  const afterSignIn = hosted && hostedFixtureCallback(hosted, budget,
+    (options) => simulateKeylessOwnerReadAcceptance(options, hosted.request));
+  return runSession(transport(operatorSend, 'offline-test-key'), journal, afterSignIn,
     runtimeFixtureTransport(runtimeRequest, credential, budget), budget)
     .catch(() => { throw new Error('SIMULATION_STOPPED'); });
 }
@@ -990,21 +1018,45 @@ async function main(args) {
     console.log(JSON.stringify(report, null, 2));
     return report.configuration === 'MATCH' && report.anonymousDenial.result === 'MATCH' ? 0 : 3;
   }
-  requireSafe(args.length === 1 && args[0] === '--execute' && LIVE_EXECUTION_ENABLED, 'LIVE_EXECUTION_DISABLED');
+  const hosted = args.length === 4 && args[0] === '--execute' && args[1].startsWith('--hosted-tag=') &&
+    args[2].startsWith('--hosted-revision=') && args[3].startsWith('--hosted-digest=');
+  requireSafe(args[0] === '--execute' && (args.length === 1 || hosted) && LIVE_EXECUTION_ENABLED, 'LIVE_EXECUTION_DISABLED');
+  if (hosted) requireHostedAcceptanceEnabled();
+  let hostedTarget;
+  if (hosted) {
+    const tag = args[1].slice('--hosted-tag='.length);
+    const revision = args[2].slice('--hosted-revision='.length);
+    const digest = args[3].slice('--hosted-digest='.length);
+    requireSafe(/^[a-z][a-z0-9-]{0,30}$/.test(tag) && tag !== 'healthcheck' &&
+      /^oldx-owner-read-[a-z0-9-]{1,47}$/.test(revision) &&
+      !['oldx-owner-read-00001-8kr', healthRevision].includes(revision) &&
+      /^sha256:[a-f0-9]{64}$/.test(digest), 'INVALID_HOSTED_TARGET');
+    hostedTarget = {tag, revision, digest, origin: ownerReadAudience.replace('https://', 'https://' + tag + '---')};
+  }
   requireSafe(process.platform === 'linux', 'CLOUD_SHELL_REQUIRED');
   guardOperator();
   // Future approved operator supplies the staging web key over a private inherited
   // descriptor, never argv, environment, a checked-in file or a terminal transcript.
   const key = readFileSync(3, 'utf8').trim();
   requireSafe(/^[A-Za-z0-9_-]{20,128}$/.test(key), 'INVALID_STAGING_WEB_KEY');
-  requireSafe(inspectPhaseBConfiguration(gcloud, {preflight: true}).configuration === 'MATCH',
+  requireSafe(inspectPhaseBConfiguration(gcloud, {preflight: true, hostedTarget}).configuration === 'MATCH',
     'RUNTIME_FIXTURE_CONFIGURATION_UNVERIFIED');
   const credential = await mintRuntimeCredential(gcloud, (url, method, token, body) =>
     boundedPhaseBRequest(url, {method, redirect: 'error', signal: AbortSignal.timeout(5000),
       headers: {Authorization: 'Bearer ' + token, 'Content-Type': 'application/json', 'X-Goog-User-Project': project},
       body: JSON.stringify(body)}));
   const budget = runtimeSessionBudget(credential.expiry);
-  await runSession(transport((req) => liveSend(req, budget), key), openJournal, undefined,
+  const afterSignIn = hosted && hostedFixtureCallback({
+    enabledTag: hostedTarget.tag,
+    disabledOrigin: ownerReadAudience.replace('https://', 'https://healthcheck---'),
+    enabledOrigin: hostedTarget.origin,
+    getOperatorAccessToken() {
+      const read = (...params) => boundedGcloud(budget.timeout(15_000), params);
+      guardOperator(read);
+      return read('auth', 'print-access-token', '--account=' + operator, '--quiet');
+    },
+  }, budget, runHostedOwnerReadAcceptance);
+  await runSession(transport((req) => liveSend(req, budget), key), openJournal, afterSignIn,
     runtimeFixtureTransport(boundedPhaseBRequest, credential, budget), budget);
   console.log('All four exact resources absent at final check.');
   return 0;

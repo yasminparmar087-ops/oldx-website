@@ -559,34 +559,84 @@ test('direct Firestore IAM separates metadata and transaction permissions and pr
   }
 });
 
-test('hosted target pins registry OCI index and verified linux/amd64 runtime manifest', () => {
+test('hosted candidate requires preserved four-row traffic, reviewed OCI image and enabled private runtime', () => {
   const index = 'sha256:c5fc856b45b19ec995167753d0ab7449fea9550f7e06b1b75da025fe179928dc';
   const amd64 = 'sha256:eabe4207e307d1e487a30e4afd3abe8cda3792883a752864a5d6f80c45cd082c';
   const repo = 'asia-south1-docker.pkg.dev/oldx-staging/oldx-staging-images/oldx-owner-read-step3-rc';
-  const hostedTarget = {tag: 'step3', revision: 'oldx-owner-read-step3', digest: index,
-    origin: 'https://step3---oldx-owner-read-lqpaz3pd5a-el.a.run.app'};
-
-  for (const drift of ['none', 'traffic', 'platform-manifest', 'deployment-input', 'unverified-repository']) {
+  const target = {tag: 'hostedtrial', revision: 'oldx-owner-read-00004-abc', digest: index,
+    origin: 'https://hostedtrial---oldx-owner-read-lqpaz3pd5a-el.a.run.app'};
+  const required = {
+    OLDX_PRODUCT_READ_ACTIVATE_STAGING: 'true',
+    OLDX_PRODUCT_READ_STAGING_ADC: 'true',
+    OLDX_FIREBASE_ENV: 'staging',
+    OLDX_FIREBASE_PROJECT_ID: 'oldx-staging',
+    OLDX_PRODUCT_READ_DATABASE_ID: '(default)',
+    OLDX_PRODUCT_READ_SERVICE_ACCOUNT: runtime,
+    OLDX_RATE_WINDOW_MS: '60000',
+    OLDX_RATE_ACTOR_LIMIT: '10',
+    OLDX_RATE_GLOBAL_LIMIT: '50',
+  };
+  const cases = [
+    'none', 'canonical-child', 'traffic', 'missing-original-tag', 'wrong-latest',
+    'wrong-tag', 'platform-manifest', 'unverified-repository', 'unreviewed-index',
+    'activation-disabled', 'adc-disabled', 'emulator-present', 'duplicate-activation',
+    'secret-ref', 'too-small-window', 'rate-limits-reversed', 'wrong-project',
+  ];
+  for (const drift of cases) {
     const baseline = preflightRead((command, data) => {
       if (command === 'run services describe oldx-owner-read') {
-        data.status.latestReadyRevisionName = hostedTarget.revision;
-        data.status.traffic.push({revisionName: hostedTarget.revision, tag: hostedTarget.tag,
-          url: hostedTarget.origin, percent: drift === 'traffic' ? 1 : 0});
+        data.status.latestReadyRevisionName = drift === 'wrong-latest' ? 'oldx-owner-read-00003-nus' : target.revision;
+        if (drift !== 'missing-original-tag') {
+          data.status.traffic.push({
+            revisionName: 'oldx-owner-read-00003-nus',
+            tag: 'step3rc14', url: 'https://step3rc14---oldx-owner-read-lqpaz3pd5a-el.a.run.app', percent: 0,
+          });
+        }
+        data.status.traffic.push({revisionName: target.revision,
+          tag: drift === 'wrong-tag' ? 'someoneelse' : target.tag,
+          url: target.origin, percent: drift === 'traffic' ? 1 : 0});
       }
     });
+    const env = Object.entries(required).map(([name, value]) => ({name, value}));
+    const change = (name, value) => { env.find((item) => item.name === name).value = value; };
+    if (drift === 'activation-disabled') change('OLDX_PRODUCT_READ_ACTIVATE_STAGING', 'false');
+    if (drift === 'adc-disabled') change('OLDX_PRODUCT_READ_STAGING_ADC', 'false');
+    if (drift === 'wrong-project') change('OLDX_FIREBASE_PROJECT_ID', 'oldx-1c983');
+    if (drift === 'too-small-window') change('OLDX_RATE_WINDOW_MS', '100');
+    if (drift === 'rate-limits-reversed') change('OLDX_RATE_ACTOR_LIMIT', '99');
+    if (drift === 'emulator-present') env.push({name: 'OLDX_PRODUCT_READ_EMULATOR', value: 'false'});
+    if (drift === 'duplicate-activation') env.push({name: 'OLDX_PRODUCT_READ_ACTIVATE_STAGING', value: 'true'});
+    if (drift === 'secret-ref') env[0].valueFrom = {secretKeyRef: {name: 'not-read'}};
     const actualRepo = drift === 'unverified-repository' ? 'registry.invalid/other' : repo;
-    const report = inspectPhaseBConfiguration((...args) => args[3] === hostedTarget.revision
+    const actualDigest = drift === 'unreviewed-index' ? 'sha256:' + 'b'.repeat(64) :
+      drift === 'canonical-child' ? amd64 : index;
+    const observedTarget = drift === 'unreviewed-index'
+      ? {...target, digest: actualDigest} : target;
+    const report = inspectPhaseBConfiguration((...args) => args[3] === target.revision
       ? JSON.stringify({
-        metadata: {name: hostedTarget.revision, labels: {'serving.knative.dev/service': service}},
+        metadata: {name: target.revision, labels: {'serving.knative.dev/service': service}},
         spec: {serviceAccountName: runtime,
-          containers: [{image: actualRepo + '@' + (drift === 'deployment-input' ? amd64 : index)}]},
-        status: {imageDigest: repo + '@' + (drift === 'platform-manifest' ? 'sha256:' + 'b'.repeat(64) : amd64)},
-      }) : baseline(...args), {preflight: true, hostedTarget});
-    assert.equal(report.configuration, drift === 'none' ? 'MATCH' : 'FAIL');
-    assert.equal(report.checks.hostedRevision, drift === 'none' || drift === 'traffic' ? 'MATCH' : 'MISMATCH');
+          containers: [{image: actualRepo + '@' + actualDigest, env}]},
+        status: {imageDigest: repo + '@' +
+          (drift === 'platform-manifest' ? 'sha256:' + 'c'.repeat(64) : amd64)},
+      }) : baseline(...args), {preflight: true, hostedTarget: observedTarget});
+    const expectedSuccess = ['none', 'canonical-child'].includes(drift);
+    assert.equal(report.configuration, expectedSuccess ? 'MATCH' : 'FAIL', drift);
+    assert.equal(report.stagingExecution, 'NO_GO', drift);
+    assert.equal(report.production, 'HOLD_NO_GO', drift);
+    if (['activation-disabled', 'adc-disabled', 'emulator-present', 'duplicate-activation',
+      'secret-ref', 'too-small-window', 'rate-limits-reversed', 'wrong-project'].includes(drift)) {
+      assert.equal(report.checks.hostedActivation, 'MISMATCH', drift);
+    } else {
+      assert.equal(report.checks.hostedActivation, 'MATCH', drift);
+    }
+    if (['platform-manifest', 'unverified-repository', 'unreviewed-index'].includes(drift)) {
+      assert.equal(report.checks.hostedRevision, 'MISMATCH', drift);
+    } else {
+      assert.equal(report.checks.hostedRevision, 'MATCH', drift);
+    }
   }
 });
-
 
 
 test('fixture-only accepts only observed canonical amd64 image and exact 0%-tagged Step 3 baseline', () => {

@@ -480,11 +480,16 @@ export function hostedRevisionActivationVerified(revision) {
   const forbidden = [
     'OLDX_PRODUCT_READ_EMULATOR', 'GOOGLE_APPLICATION_CREDENTIALS',
     'CLOUDSDK_AUTH_CREDENTIAL_FILE_OVERRIDE', 'CLOUDSDK_CONFIG',
-    'FIREBASE_AUTH_EMULATOR_HOST', 'FIRESTORE_EMULATOR_HOST',
+    'GCE_METADATA_HOST', 'GCE_METADATA_IP', 'METADATA_SERVER_DETECTION',
+    'GOOGLE_CLOUD_QUOTA_PROJECT', 'FIRESTORE_HOST', 'GOOGLE_CLOUD_UNIVERSE_DOMAIN',
+    'FIREBASE_CONFIG', 'FIREBASE_AUTH_EMULATOR_HOST', 'FIRESTORE_EMULATOR_HOST',
     'FIREBASE_DATABASE_EMULATOR_HOST', 'FIREBASE_STORAGE_EMULATOR_HOST',
+    'STORAGE_EMULATOR_HOST', 'PUBSUB_EMULATOR_HOST',
     'HTTP_PROXY', 'HTTPS_PROXY', 'ALL_PROXY', 'http_proxy', 'https_proxy', 'all_proxy',
   ];
-  if (forbidden.some((key) => env.has(key))) return false;
+  if (forbidden.some((key) => env.has(key)) ||
+      ['GCLOUD_PROJECT', 'GOOGLE_CLOUD_PROJECT', 'gcloud_project', 'google_cloud_project']
+        .some((key) => env.has(key) && env.get(key) !== 'oldx-staging')) return false;
   const values = ['OLDX_RATE_WINDOW_MS', 'OLDX_RATE_ACTOR_LIMIT', 'OLDX_RATE_GLOBAL_LIMIT']
     .map((key) => env.get(key));
   if (values.some((v) => typeof v !== 'string' || !/^\d{1,7}$/.test(v) || Number(v) < 1)) return false;

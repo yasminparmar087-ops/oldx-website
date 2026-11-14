@@ -248,13 +248,19 @@ async function runSession(api, openJournal, afterSignIn, runtime = null, budget 
   }
 }
 
-const journalRoot = () => join(homedir(), '.oldx-phase-b-fixtures-v1');
+// Distinct, private, create-once journals. Completed fixture evidence is immutable
+// and never reused for a future separately approved hosted session.
+const journalRoot = (scope = 'fixture') => {
+  requireSafe(scope === 'fixture' || scope === 'hosted', 'INVALID_JOURNAL_SCOPE');
+  return join(homedir(), scope === 'fixture'
+    ? '.oldx-phase-b-fixtures-v1' : '.oldx-phase-b-hosted-v1');
+};
 function privatePath(info) {
   return info.uid === process.getuid() && (info.mode & 0o077) === 0;
 }
 
-export function openJournal(sessionId) {
-  const root = journalRoot();
+export function openJournal(sessionId, scope = 'fixture') {
+  const root = journalRoot(scope);
   mkdirSync(root, {mode: 0o700}); // Existing session, symlink or crash residue blocks a new run.
   const directory = openSync(root, 'r');
   let file;
@@ -282,10 +288,10 @@ export function openJournal(sessionId) {
   }
 }
 
-export function journalStatus() {
+export function journalStatus(scope = 'fixture') {
   // Offline journal parser: validates local provenance and state transitions.
   // Journal entries are NOT remote Firebase ownership proof or deletion authority.
-  const root = journalRoot();
+  const root = journalRoot(scope);
   const rootInfo = lstatSync(root);
   requireSafe(rootInfo.isDirectory() && !rootInfo.isSymbolicLink() &&
     privatePath(rootInfo), 'UNSAFE_JOURNAL_DIRECTORY');
@@ -1020,12 +1026,12 @@ async function main(args) {
     console.log('Live execution disabled. Status performs read-only exact lookups.');
     return 0;
   }
-  if (args.length === 1 && args[0] === '--status') {
+  if (args.length === 1 && ['--status', '--status-hosted'].includes(args[0])) {
     requireSafe(process.platform === 'linux', 'CLOUD_SHELL_REQUIRED');
     guardOperator();
     let journal;
     try {
-      journal = journalStatus();
+      journal = journalStatus(args[0] === '--status-hosted' ? 'hosted' : 'fixture');
     } catch {
       console.log('JOURNAL_UNAVAILABLE_OR_INVALID_NO_PROVENANCE');
     }
@@ -1134,7 +1140,8 @@ async function main(args) {
       return read('auth', 'print-access-token', '--account=' + operator, '--quiet');
     },
   }, budget, runHostedOwnerReadAcceptance);
-  await runSession(transport((req) => liveSend(req, budget), key), openJournal, afterSignIn,
+  await runSession(transport((req) => liveSend(req, budget), key),
+    hosted ? (id) => openJournal(id, 'hosted') : openJournal, afterSignIn,
     hosted ? runtimeFixtureTransport(boundedPhaseBRequest, credential, budget) : null, budget);
   console.log('All four exact resources absent at final check.');
   return 0;

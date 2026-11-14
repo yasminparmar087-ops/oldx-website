@@ -1127,3 +1127,26 @@ This closes **only** the new source-mode separation regression, not the remainin
 **Timing/cleanup:** fixture-only source uses `runtimeSessionBudget(Date.now()+240000)` with roughly 120-second creation phase plus 90-second cleanup reservation, conditional Firestore `documents:commit` delete with exact recorded `currentDocument.updateTime`, followed by Auth UID/email/creation-time reread and individual delete, then four exact absent checks. This is a *local deadline*, **not a guarantee of automatic cleanup**, a 24-hour retention enforcement mechanism, or bounded cloud spend. Early exceptions, HTTP timeouts, unknown commit outcomes, quota counters, or insufficient operator effective DELETE may leave residual synthetic resources. Firestore operator DELETE effective capability remains **UNVERIFIED** (prior Policy Troubleshooter HTTP 400), while Auth UID deletion cannot atomically prevent UID reuse. No blind retries. On failure retain journal, cease writes, use exact-ID read-only `--status` only if separately authorized, and require Yasmin's **new per-ID** review/approval for cleanup; delete Firestore with original update-time precondition before Auth; unresolved evidence stays NO-GO. Previously proved disabled Cloud Run and 0%-traffic revisions are unchanged.
 
 **Next decision / STOP:** Before asking to approve an actual run, owner must be shown and explicitly accept residual incomplete-cleanup risk, the named supervised rollback operator and a definite retention/deletion cutoff, and must separately approve the precisely enumerated four creates, two transient sign-ins and four matching conditional/exact deletes. The unverified effective Firestore DELETE permission also requires a credible authorized recovery route; **approval alone does not prove permissions or guarantee cleanup**. If that route cannot be supported, do not start writes. Run at most the minimal source review/focused test needed for a **new** code revision; do not repeatedly probe IAM, invoke hosted acceptance or change any live gate. **STAGING NO-GO / PRODUCTION HOLD / NO-GO**.
+
+
+## 2026-11-15 — Yasmin's scoped Phase B fixture execution approval; safety gate pending
+
+Yasmin explicitly consented in chat to **one supervised staging-only** create → verify → two sign-ins → guarded cleanup of exactly Auth UIDs `synthetic-seller-a`, `synthetic-buyer-b` and Firestore `marketplaceActors_v1/synthetic-seller-a`, `marketplacePrivate_v1/product_synthetic-phase-b-read-01`, while acknowledging residual cleanup risk, and explicitly instructed **safety prerequisites before execution**. This grants no permission for IAM, Firestore Rules, Billing, Cloud Run activation/traffic, production, additional synthetic records or independent optional probes. Do not conflate owner consent with technical readiness.
+
+**Pre-execution review outcome: BLOCKED/NO-GO pending cleanup capability and runnable review.** The existing runner `scripts/phase-b-fixture-session-v1.mjs` blob `4000483bf17d7f8f72349a3e3aadc02eeef62047` remains `LIVE_EXECUTION_ENABLED=false` and cannot execute fixtures; hosted gate also OFF. The runner's fixture-only `--execute-fixtures` is distinct from hosted runtime. A private inherited FD 3 is required for the staging web key; no safe operator launch recipe has been verified. `runSession` has no automatic cleanup after failure before its normal cleanup loop, and a failure can leave manually recoverable, provenance-dependent residue. Effective operator Firestore conditional DELETE remains unproven; Auth delete lacks atomic generation precondition. Do not flip hard-off code or attempt live writes merely because approval exists.
+
+**Next strictly necessary operator preflight** (no cloud tokens, reads or writes) should verify only local repo cleanliness/immutable branch HEAD and that there is **no existing private Phase B fixture journal directory**, which otherwise indicates a possible interrupted session. Use existing Cloud Shell checkout; print only PASS/STOP labels, not journal data. Example read-only shell:
+
+```bash
+cd ~/oldx-staging-build || exit 1
+git pull --ff-only origin security-hardening-review || exit 1
+git status --porcelain
+git rev-parse HEAD
+if [ -e "$HOME/.oldx-phase-b-fixtures-v1" ] || [ -L "$HOME/.oldx-phase-b-fixtures-v1" ]; then
+  echo 'STOP: EXISTING_FIXTURE_JOURNAL_REQUIRES_REVIEW'
+else
+  echo 'PASS: NO_EXISTING_FIXTURE_JOURNAL_DIRECTORY'
+fi
+```
+
+This is NOT the immediate-before-write four-ID cloud lookup, does not prove Firestore DELETE, and is NOT permission to execute `--status` or `--execute-fixtures`. If working tree is nonempty or journal is present, stop and review without removing/overwriting anything. Next: obtain this preflight result; finish the explicitly reviewed secure private-FD invocation/conditional-delete recovery authority checks and only then make a final execution GO/NO-GO determination. Avoid repeated previous PASS tests, OCI/health/IAM probes, or extra Cloud Shell calls. **STAGING NO-GO / PRODUCTION HOLD/NO-GO.**

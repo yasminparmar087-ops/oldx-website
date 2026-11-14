@@ -1094,3 +1094,14 @@ node --test tests/integration/phase-b-fixture-mode-safety.test.mjs
 ```
 
 Do not run `--execute-fixtures`, `--execute` or `--status` during this check. Record exact pass/fail and remote HEAD before changing readiness; no broad test suite, cloud API calls, token mint, IAM/Rules/Billing, Cloud Run or production operations. Source-level gate remains **STAGING NO-GO / PRODUCTION HOLD/NO-GO** until targeted test and subsequent independently approved cleanup/fixture acceptance.
+
+
+## 2026-11-15 01:15 IST — fixture/runtime mode focused tests PASS (operator Cloud Shell)
+
+Owner screenshot of the existing `~/oldx-staging-build` checkout, after `git pull --ff-only origin security-hardening-review`, confirms fast-forward from `ffc2d8b` to `9f77a20` and the exact **focused** command `node --test tests/integration/phase-b-fixture-mode-safety.test.mjs`. Output:
+
+- `fixture-only and hosted modes remain independently hard-off with no credential access`: PASS.
+- `source binds runtime mint and runtime transport only to hosted mode`: PASS.
+- Summary: **tests 2, pass 2, fail 0, cancelled 0, skipped 0**. Evidence is operator-supplied terminal screenshot at approximately 01:15 IST; no broad suite or live cloud probe. 
+
+This closes **only** the new source-mode separation regression, not the remaining Phase B execution, operator effective Firestore DELETE, on-failure automatic rollback, Auth UID race, runtime IAM isolation, or enabled owner/buyer acceptance. Do not repeat these two tests without a relevant code change. No further Cloud Shell command needed now. **Both execution gates remain OFF; STAGING NO-GO / PRODUCTION HOLD/NO-GO.**

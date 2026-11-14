@@ -83,3 +83,46 @@ This is a **source-only release decision**, no live action authorized by generic
 **One consolidated proposed decision AFTER source bug fix + focused offline tests:** owner separately reviews immutable runner SHA and enabled-revision image digest, explicit new unique 0%-main-traffic tag and nonsecret env, fixed two Auth UIDs `synthetic-seller-a`/`synthetic-buyer-b`, exactly two fixed Firestore documents `marketplaceActors_v1/synthetic-seller-a`/`marketplacePrivate_v1/product_synthetic-phase-b-read-01`, two transient sign-ins, fixed private owner read and buyer denial probes, and same-session operator conditional cleanup of precisely these four fixtures. Exact limits and abort/recovery ownership must be frozen. Require four-ID preflight **only immediately before approved create**, no repeated earlier checks; explicitly separate consent to staging revision deployment/activation from Firebase creates/updates/deletes and final tag removal/rollback. If cleanup is not safely recoverable, do not proceed even if generic approval was given.
 
 **Currently permitted next work:** repository-only narrow verifier bug fix and minimal focused tests on `security-hardening-review`; record outcomes and ask for exact live-scoped approval later. No cloud request or mutation was performed by this document update. **STAGING NO-GO / PRODUCTION HOLD / NO-GO**.
+
+
+## 2026-11-15 — Hosted Owner/Buyer 0%-traffic rollout and complete rollback packet (REVIEW ONLY)
+
+**Status: SOURCE REVIEW ONLY; no live deployment, configuration change, or cloud-write approval.** Existing 04:03 IST focused hosted four-row/fixture canonical image test PASS 2/2. This supplement supersedes any older suggestion that the already disabled Step 3 tag can be enabled or used for actual Owner/Buyer acceptance.
+
+### Verified historical baseline, not a fresh before-snapshot
+
+- Project oldx-staging, region asia-south1, service oldx-owner-read. Yasmin operator yasminparmar087@gmail.com. Runtime service identity oldx-product-read-staging@oldx-staging.iam.gserviceaccount.com. Named private invoker oldx-phase-b-invoker@oldx-staging.iam.gserviceaccount.com; do not grant public invoker access.
+- Main oldx-owner-read-00001-8kr untagged at 100% and disabled; oldx-owner-read-00002-tid tag healthcheck at 0%; oldx-owner-read-00003-nus tag step3rc14 at 0% and disabled. All three entries are protected.
+- Pinned published immutable image index: asia-south1-docker.pkg.dev/oldx-staging/oldx-staging-images/oldx-owner-read-step3-rc@sha256:c5fc856b45b19ec995167753d0ab7449fea9550f7e06b1b75da025fe179928dc. Independently verified linux/amd64 child: sha256:eabe4207e307d1e487a30e4afd3abe8cda3792883a752864a5d6f80c45cd082c.
+- All three source execution gates remain FALSE (fixture-only, hosted runner, hosted acceptance). Previously completed fixture journal at $HOME/.oldx-phase-b-fixtures-v1 must not be reused or removed. Separate future hosted journal at $HOME/.oldx-phase-b-hosted-v1 has passed two offline isolation/recovery tests; no hosted session occurred.
+
+### Proposed new revision: exact scope to review later, NOT yet authorized
+
+- Create ONE additional 0%-general-traffic tagged **enabled staging revision**, never reuse or mutate old step3rc14, never shift general traffic, never rebuild or replace the immutable image. Proposed unique tag ownerbuyertrial is merely a candidate: read-only verify it is unused before approving. Cloud Run assigns the new immutable revision ID; it must be captured after creation and separately pinned before any hosted data-plane acceptance. With the candidate created, require precisely four service traffic rows: old disabled main 100%, healthcheck 0%, step3rc14 0%, new tag 0%.
+- Only the new revision would use these exact non-secret env settings: OLDX_PRODUCT_READ_ACTIVATE_STAGING=true; OLDX_PRODUCT_READ_STAGING_ADC=true; OLDX_FIREBASE_ENV=staging; OLDX_FIREBASE_PROJECT_ID=oldx-staging; OLDX_PRODUCT_READ_DATABASE_ID=(default); OLDX_PRODUCT_READ_SERVICE_ACCOUNT=oldx-product-read-staging@oldx-staging.iam.gserviceaccount.com; OLDX_RATE_WINDOW_MS=60000; OLDX_RATE_ACTOR_LIMIT=10; OLDX_RATE_GLOBAL_LIMIT=50. Rate numbers are proposed, not deployed facts. Keep publication disabled and emulator off. No file-backed ADC, key JSON, unexpected env variable, secret ref, metadata override or proxy override. K_SERVICE is injected by Cloud Run; DO NOT manually set it.
+- Proposed bounded resources (pending exact provider-flag and inherited-template check): minimum instances 0 at both applicable scopes, maximum instances 1, concurrency 1, CPU 1, 512MiB memory and bounded timeout. Verify billing status/budget and request caps before any deployment; these settings do not enforce a hard cost ceiling.
+- Preserve existing service IAM, fixed runtime SA and tag mappings. A 0% tagged revision CAN STILL RECEIVE requests at its tagged URL; don't mislabel it as inaccessible.
+
+### Before deployment: freeze a private evidence snapshot
+
+Before any separately approved mutation, Yasmin must review a fresh READ-ONLY snapshot of the current service spec.template (including disabled flags), image digest, identity, ingress, min/max instances, traffic tags and exact percentages, latest ready revision, policy invoker binding and requested cost/risk envelope. Stop on drift or ambiguity. Preserve a private copy of the original disabled service template needed to restore it, without printing env secrets. Confirm exact code/image SHA and unmodified review branch. No need to repeat historical emulator, Docker, identity or fixture PASS tests without change.
+
+Only after separately approved deployment: verify Ready, exact pinned runtime digest, both enabling settings in the NEW revision, named invoker restrictions, 100/0/0/0 traffic and no public IAM. Any mismatch means STOP and rollback; it does not authorize a hosted fixture session or production traffic.
+
+### Rollback must restore BOTH access and the disabled service template
+
+IMPORTANT: Removing a tag or leaving 100% on old main DOES NOT restore the previous desired service template. The newly enabled template may otherwise be inherited by a future deployment.
+
+Required separately authorized rollback envelope:
+1. Stop invocations; preserve redacted logs and any existing hosted journal, without blind mutation retry.
+2. Remove ONLY the new trial tag; verify its tagged URL no longer routes, old disabled main remains 100% and the old healthcheck and step3rc14 tags stay 0%. Don't promote the newly enabled revision.
+3. Restore the snapshot of the ORIGINAL disabled service template, including activation flags false, prior runtime settings, identity and resource constraints. Restoring a template can create ANOTHER immutable disabled revision and change latestReadyRevisionName; this possibility must be included explicitly in the approval and checked afterward. Never assume removing a tag restores that template.
+4. Re-verify IAM enforced, permitted disabled-route 503 and health 200, traffic percent and tags, latest ready revision, no unintended min-instances or recurring cost. Only remove a new revision if separately approved and safe. If any state/receipt is unknown, STOP and request owner-guided recovery rather than delete or repeat.
+
+Official Cloud Run docs for the 0%-tag deployment and rollback behavior: https://docs.cloud.google.com/run/docs/rollouts-rollbacks-traffic-migration and https://docs.cloud.google.com/run/docs/managing/revisions. The docs explain that revision tags are directly invocable at 0% traffic and that revision-level minimum instances can incur cost.
+
+### Separate data-plane permission gate AFTER rollout
+
+Any later Owner/Buyer acceptance requires NEW specific consent, separately from revision deployment and its rollback. Only fixed Auth UIDs synthetic-seller-a and synthetic-buyer-b and fixed Firestore paths marketplaceActors_v1/synthetic-seller-a and marketplacePrivate_v1/product_synthetic-phase-b-read-01; fresh four-ID absence immediately before writes, private short-lived Firebase tokens, named keyless invoker, allowed owner response and buyer denial probes, completed separate hosted journal and original-updateTime guarded cleanup. The old accepted fixture journal is immutable evidence. Auth deletion still lacks atomic generation CAS. Effective runtime CREATE/UPDATE, DELETE denial and other-database isolation/PAB remain UNVERIFIED without supported separate proof. No IAM/Rules/Billing change follows from this packet.
+
+**Decision today:** Hosted candidate deployment NOT AUTHORIZED, no new revision created, no future data-plane execution permitted, no production changes. Next owner decision should be ONE compact specific Cloud Run deployment + full rollback approval packet after confirming the precise snapshot and executable flags. Existing source-only work may continue; HOSTED STAGING NO-GO / PRODUCTION HOLD-NO-GO.

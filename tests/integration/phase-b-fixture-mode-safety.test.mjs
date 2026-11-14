@@ -134,10 +134,10 @@ test('hosted journal is isolated from accepted fixture journal in private tempor
 test('hosted journal recovery status remains read-only and all live modes hard-off', () => {
   assert.match(source, /const LIVE_FIXTURE_ONLY_ENABLED = false;/);
   assert.match(source, /const LIVE_EXECUTION_ENABLED = false;/);
-  assert.match(source, /const journalRoot = \(scope = 'fixture'\)/);
-  assert.match(source, /\\.oldx-phase-b-hosted-v1/);
-  assert.match(source, /\\['--status', '--status-hosted'\\]\\.includes\\(args\\[0\\]\\)/);
-  assert.match(source, /journalStatus\\(args\\[0\\] === '--status-hosted' \\? 'hosted' : 'fixture'\\)/);
-  assert.match(source, /hosted \\? \\(id\\) => openJournal\\(id, 'hosted'\\) : openJournal/);
-  assert.match(source, /return allAbsent && journal\\?\\.completed && !journal\\.stale \\? 0 : 3/);
+  assert.ok(source.includes("const journalRoot = (scope = 'fixture')"));
+  assert.ok(source.includes("'.oldx-phase-b-hosted-v1'"));
+  assert.ok(source.includes("['--status', '--status-hosted'].includes(args[0])"));
+  assert.ok(source.includes("journalStatus(args[0] === '--status-hosted' ? 'hosted' : 'fixture')"));
+  assert.ok(source.includes("hosted ? (id) => openJournal(id, 'hosted') : openJournal"));
+  assert.ok(source.includes("return allAbsent && journal?.completed && !journal.stale ? 0 : 3"));
 });

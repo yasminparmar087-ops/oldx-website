@@ -456,6 +456,42 @@ function guardOperator(read = gcloud) {
 
 // Fixed read-only command list. Return labels and counts, never raw policy,
 // principal lists or revision environment values.
+// Pure metadata guard for any future *separately approved* enabled Cloud Run
+// revision. Never print environment values; reject duplicates and secret refs.
+export function hostedRevisionActivationVerified(revision) {
+  const containers = revision?.spec?.containers;
+  if (!Array.isArray(containers) || containers.length !== 1 ||
+      !Array.isArray(containers[0]?.env)) return false;
+  const env = new Map();
+  for (const item of containers[0].env) {
+    if (typeof item?.name !== 'string' || typeof item?.value !== 'string' ||
+        Object.hasOwn(item, 'valueFrom') || env.has(item.name)) return false;
+    env.set(item.name, item.value);
+  }
+  const required = {
+    OLDX_PRODUCT_READ_ACTIVATE_STAGING: 'true',
+    OLDX_PRODUCT_READ_STAGING_ADC: 'true',
+    OLDX_FIREBASE_ENV: 'staging',
+    OLDX_FIREBASE_PROJECT_ID: 'oldx-staging',
+    OLDX_PRODUCT_READ_DATABASE_ID: '(default)',
+    OLDX_PRODUCT_READ_SERVICE_ACCOUNT: 'oldx-product-read-staging@oldx-staging.iam.gserviceaccount.com',
+  };
+  if (!Object.entries(required).every(([key, value]) => env.get(key) === value)) return false;
+  const forbidden = [
+    'OLDX_PRODUCT_READ_EMULATOR', 'GOOGLE_APPLICATION_CREDENTIALS',
+    'CLOUDSDK_AUTH_CREDENTIAL_FILE_OVERRIDE', 'CLOUDSDK_CONFIG',
+    'FIREBASE_AUTH_EMULATOR_HOST', 'FIRESTORE_EMULATOR_HOST',
+    'FIREBASE_DATABASE_EMULATOR_HOST', 'FIREBASE_STORAGE_EMULATOR_HOST',
+    'HTTP_PROXY', 'HTTPS_PROXY', 'ALL_PROXY', 'http_proxy', 'https_proxy', 'all_proxy',
+  ];
+  if (forbidden.some((key) => env.has(key))) return false;
+  const values = ['OLDX_RATE_WINDOW_MS', 'OLDX_RATE_ACTOR_LIMIT', 'OLDX_RATE_GLOBAL_LIMIT']
+    .map((key) => env.get(key));
+  if (values.some((v) => typeof v !== 'string' || !/^\\d{1,7}$/.test(v) || Number(v) < 1)) return false;
+  const [windowMs, actorLimit, globalLimit] = values.map(Number);
+  return windowMs >= 1000 && windowMs <= 600000 && actorLimit <= globalLimit;
+}
+
 export function inspectPhaseBConfiguration(read = gcloud, {preflight = false, hostedTarget, fixtureOnlyCanonicalImage = false} = {}) {
   const runtime = 'oldx-product-read-staging@oldx-staging.iam.gserviceaccount.com';
   const invoker = 'oldx-phase-b-invoker@oldx-staging.iam.gserviceaccount.com';
@@ -589,7 +625,14 @@ export function inspectPhaseBConfiguration(read = gcloud, {preflight = false, ho
       (annotations['run.googleapis.com/invoker-iam-disabled'] === undefined ||
         annotations['run.googleapis.com/invoker-iam-disabled'] === 'false') &&
       value.spec?.template?.spec?.serviceAccountName === runtime &&
-      Array.isArray(traffic) && traffic.length === (hostedTarget ? 3 : 2) &&
+      Array.isArray(traffic) &&
+      traffic.length === (hostedTarget ? (fixtureOnlyCanonicalImage ? 3 : 4) : 2) &&
+      (!hostedTarget || fixtureOnlyCanonicalImage ||
+        (hostedTarget.tag !== fixtureOnlyReviewedCloudBaseline.tag &&
+         hostedTarget.revision !== fixtureOnlyReviewedCloudBaseline.revision &&
+         traffic.some((row) => row.revisionName === fixtureOnlyReviewedCloudBaseline.revision &&
+           (row.percent ?? 0) === 0 && row.tag === fixtureOnlyReviewedCloudBaseline.tag &&
+           row.url === fixtureOnlyReviewedCloudBaseline.origin))) &&
       (!hostedTarget || traffic.some((row) => row.revisionName === hostedTarget.revision &&
         (row.percent ?? 0) === 0 && row.tag === hostedTarget.tag && row.url === hostedTarget.origin)) &&
       traffic.some((row) => row.revisionName === mainRevision && row.percent === 100 && !row.tag) &&
@@ -606,7 +649,8 @@ export function inspectPhaseBConfiguration(read = gcloud, {preflight = false, ho
     });
   }
   if (hostedTarget) {
-    check('hostedRevision', () => json('run', 'revisions', 'describe', hostedTarget.revision, ...regional), (value) => {
+    const hostedRevision = check('hostedRevision', () =>
+      json('run', 'revisions', 'describe', hostedTarget.revision, ...regional), (value) => {
       const registryImage = 'asia-south1-docker.pkg.dev/oldx-staging/oldx-staging-images/oldx-owner-read-step3-rc';
       const reviewedIndex = 'sha256:c5fc856b45b19ec995167753d0ab7449fea9550f7e06b1b75da025fe179928dc';
       const reviewedAmd64 = 'sha256:eabe4207e307d1e487a30e4afd3abe8cda3792883a752864a5d6f80c45cd082c';
@@ -618,17 +662,23 @@ export function inspectPhaseBConfiguration(read = gcloud, {preflight = false, ho
         hostedTarget.tag === fixtureOnlyReviewedCloudBaseline.tag &&
         hostedTarget.revision === fixtureOnlyReviewedCloudBaseline.revision &&
         hostedTarget.digest === reviewedIndex;
-      const expectedImage = registryImage + '@' +
-        (exactFixtureBaseline ? reviewedAmd64 : hostedTarget.digest);
-      const expectedRuntimeDigest = hostedTarget.digest === reviewedIndex ? reviewedAmd64 : hostedTarget.digest;
+      // Only the separately verified OCI index and its exact linux/amd64 child
+      // are allowed. Cloud Run may canonicalize spec.image to that child.
+      const pinnedImage = hostedTarget.digest === reviewedIndex &&
+        [registryImage + '@' + reviewedIndex, registryImage + '@' + reviewedAmd64]
+          .includes(value.spec?.containers?.[0]?.image);
       return (!fixtureOnlyCanonicalImage || exactFixtureBaseline) &&
         value.metadata?.name === hostedTarget.revision &&
         value.metadata?.labels?.['serving.knative.dev/service'] === service &&
         value.spec?.serviceAccountName === runtime &&
         value.spec?.containers?.length === 1 &&
-        value.spec.containers[0].image === expectedImage &&
-        value.status?.imageDigest === registryImage + '@' + expectedRuntimeDigest;
+        pinnedImage &&
+        value.status?.imageDigest === registryImage + '@' + reviewedAmd64;
     });
+    if (!fixtureOnlyCanonicalImage) {
+      result.checks.hostedActivation = hostedRevision === undefined ? 'UNAVAILABLE' :
+        hostedRevisionActivationVerified(hostedRevision) ? 'MATCH' : 'MISMATCH';
+    }
   }
   if (Object.values(result.checks).every((status) => status === 'MATCH')) result.configuration = 'MATCH';
   else if (Object.values(result.checks).includes('MISMATCH')) result.configuration = 'FAIL';
@@ -1109,7 +1159,8 @@ async function main(args) {
     const digest = args[3].slice('--hosted-digest='.length);
     requireSafe(/^[a-z][a-z0-9-]{0,30}$/.test(tag) && tag !== 'healthcheck' &&
       /^oldx-owner-read-[a-z0-9-]{1,47}$/.test(revision) &&
-      !['oldx-owner-read-00001-8kr', healthRevision].includes(revision) &&
+      !['oldx-owner-read-00001-8kr', healthRevision, fixtureOnlyReviewedCloudBaseline.revision].includes(revision) &&
+      tag !== fixtureOnlyReviewedCloudBaseline.tag &&
       /^sha256:[a-f0-9]{64}$/.test(digest), 'INVALID_HOSTED_TARGET');
     hostedTarget = {tag, revision, digest, origin: ownerReadAudience.replace('https://', 'https://' + tag + '---')};
   }

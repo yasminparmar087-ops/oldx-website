@@ -479,6 +479,7 @@ export function hostedRevisionActivationVerified(revision) {
   if (!Object.entries(required).every(([key, value]) => env.get(key) === value)) return false;
   const forbidden = [
     'OLDX_PRODUCT_READ_EMULATOR', 'GOOGLE_APPLICATION_CREDENTIALS',
+    'google_application_credentials',
     'CLOUDSDK_AUTH_CREDENTIAL_FILE_OVERRIDE', 'CLOUDSDK_CONFIG',
     'GCE_METADATA_HOST', 'GCE_METADATA_IP', 'METADATA_SERVER_DETECTION',
     'GOOGLE_CLOUD_QUOTA_PROJECT', 'FIRESTORE_HOST', 'GOOGLE_CLOUD_UNIVERSE_DOMAIN',

@@ -4,7 +4,7 @@ import test from 'node:test';
 import {fileURLToPath} from 'node:url';
 import {authUids, firestoreDocs} from '../../scripts/phase-b-http-contract-review.mjs';
 import {offlinePayloads, privateProduct} from '../../scripts/phase-b-firestore-typed-fixture-preview.mjs';
-import {simulateFixtureSession, simulateFixtureAcceptance, simulateRuntimeFixtureSession, runtimeSessionBudget} from '../../scripts/phase-b-fixture-session-v1.mjs';
+import {simulateFixtureSession, simulateFixtureAcceptance, simulateRuntimeFixtureSession, runtimeSessionBudget, approvedHostedTrial, isApprovedHostedTrial} from '../../scripts/phase-b-fixture-session-v1.mjs';
 
 const googleToken = ('fake.' + Buffer.from(JSON.stringify({aud: 'https://oldx-owner-read-lqpaz3pd5a-el.a.run.app', iss: 'https://accounts.google.com', exp: 4102444800, email: 'oldx-phase-b-invoker@oldx-staging.iam.gserviceaccount.com', email_verified: true})).toString('base64url') + '.token');
 const prefix = 'projects/oldx-staging/databases/(default)/documents/';
@@ -118,6 +118,28 @@ test('review works offline and execution remains hard-disabled', () => {
   const execute = spawnSync(process.execPath, [script, '--execute'], {encoding: 'utf8'});
   assert.equal(execute.status, 2);
   assert.match(execute.stderr, /^STOP:/);
+});
+
+test('one-time hosted owner scope pins tag, revision and digest without enabling a live run', () => {
+  const exact = {tag: 'ownerbuyertrial', revision: 'oldx-owner-read-00004-jus',
+    digest: 'sha256:c5fc856b45b19ec995167753d0ab7449fea9550f7e06b1b75da025fe179928dc'};
+  assert.deepEqual(approvedHostedTrial, exact);
+  assert.equal(isApprovedHostedTrial(exact), true);
+  for (const [field, wrong] of [['tag', 'step3rc14'],
+    ['revision', 'oldx-owner-read-00003-nus'],
+    ['digest', 'sha256:' + '0'.repeat(64)]]) {
+    assert.equal(isApprovedHostedTrial({...exact, [field]: wrong}), false);
+  }
+  assert.equal(isApprovedHostedTrial(), false);
+  // Even fully specified target parameters cannot activate the default-off CLI
+  // without the owner's separate one-shot process scope.
+  const args = ['--execute', '--hosted-tag=' + exact.tag,
+    '--hosted-revision=' + exact.revision, '--hosted-digest=' + exact.digest];
+  const run = spawnSync(process.execPath, [script, ...args], {
+    encoding: 'utf8', env: {...process.env, OLDX_PHASE_B_HOSTED_SESSION_APPROVAL: ''},
+  });
+  assert.equal(run.status, 2);
+  assert.match(run.stderr, /^STOP: request blocked or session incomplete/);
 });
 
 test('four create-only fixtures, two isolated sign-ins, conditional cleanup and final absence', async () => {

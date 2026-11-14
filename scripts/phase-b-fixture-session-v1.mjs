@@ -26,6 +26,14 @@ const documentRoot = 'projects/' + project + '/databases/' + database + '/docume
 const firestore = 'https://firestore.googleapis.com/v1/' + documentRoot;
 const payloads = offlinePayloads();
 const resources = Object.freeze([...authUids, ...firestoreDocs]);
+// Read-only pinned configuration for the previously verified 0%-traffic Step 3 tag.
+// Fixture-only is still independent of hosted token mint and hosted HTTP acceptance.
+const fixtureOnlyReviewedCloudBaseline = Object.freeze({
+  tag: 'step3rc14',
+  revision: 'oldx-owner-read-00003-nus',
+  digest: 'sha256:c5fc856b45b19ec995167753d0ab7449fea9550f7e06b1b75da025fe179928dc',
+  origin: ownerReadAudience.replace('https://', 'https://step3rc14---'),
+});
 const states = new Set(['CREATE_UNKNOWN', 'CREATED_VERIFIED', 'UPDATE_UNKNOWN', 'UPDATED_VERIFIED', 'DELETE_UNKNOWN', 'DELETE_ACKNOWLEDGED']);
 
 // Deliberately reserves time for a separately supervised operator cleanup.
@@ -1013,6 +1021,20 @@ async function main(args) {
     if (allAbsent) console.log('ALL_FOUR_ABSENT_AT_CHECK_TIME');
     return allAbsent && journal?.completed && !journal.stale ? 0 : 3;
   }
+  if (args.length === 1 && args[0] === '--check-fixture-configuration') {
+    // Read-only diagnostic of the exact pinned three-revision staging baseline.
+    // Never asks for FD3, opens a journal, or invokes fixture mutations.
+    requireSafe(process.platform === 'linux', 'CLOUD_SHELL_REQUIRED');
+    guardOperator();
+    const report = inspectPhaseBConfiguration(gcloud,
+      {preflight: true, hostedTarget: fixtureOnlyReviewedCloudBaseline});
+    console.log(JSON.stringify({
+      configuration: report.configuration,
+      blockingChecks: Object.fromEntries(Object.entries(report.checks)
+        .filter(([, status]) => status !== 'MATCH')),
+    }, null, 2));
+    return report.configuration === 'MATCH' ? 0 : 3;
+  }
   if (args.length === 1 && args[0] === '--preflight-fixtures') {
     // Separate fresh four-ID absence from interrupted-session --status.
     // No web key, journal creation or live mutation is permitted in this path.
@@ -1076,8 +1098,10 @@ async function main(args) {
   // descriptor, never argv, environment, a checked-in file or a terminal transcript.
   const key = readFileSync(3, 'utf8').trim();
   requireSafe(/^[A-Za-z0-9_-]{20,128}$/.test(key), 'INVALID_STAGING_WEB_KEY');
-  requireSafe(inspectPhaseBConfiguration(gcloud, {preflight: true, hostedTarget}).configuration === 'MATCH',
-    'RUNTIME_FIXTURE_CONFIGURATION_UNVERIFIED');
+  requireSafe(inspectPhaseBConfiguration(gcloud, {
+    preflight: true,
+    hostedTarget: hosted ? hostedTarget : fixtureOnlyReviewedCloudBaseline,
+  }).configuration === 'MATCH', 'RUNTIME_FIXTURE_CONFIGURATION_UNVERIFIED');
   // Fixture-only mode must not mint a runtime SA token, use runtime Firestore,
   // update a product, or invoke a hosted tag. Keep its own bounded cleanup budget.
   const credential = hosted ? await mintRuntimeCredential(gcloud, (url, method, token, body) =>

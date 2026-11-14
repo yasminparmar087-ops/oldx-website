@@ -34,3 +34,19 @@ test('source binds runtime mint and runtime transport only to hosted mode', () =
   assert.match(source, /const afterSignIn = hosted && hostedFixtureCallback\(/);
   assert.match(source, /const budget = runtimeSessionBudget\(hosted \? credential\.expiry : Date\.now\(\) \+ 240_000\)/);
 });
+
+
+test('fresh four-ID preflight stays read-only, fails closed on journal or unknown lookup', () => {
+  const beginning = source.indexOf("if (args.length === 1 && args[0] === '--preflight-fixtures')");
+  const end = source.indexOf("if (args.length === 1 && args[0] === '--check-configuration')", beginning);
+  assert.ok(beginning > 0 && end > beginning, 'dedicated preflight must precede other checks');
+  const block = source.slice(beginning, end);
+  assert.match(block, /guardOperator\(\)/);
+  assert.match(block, /lstatSync\(journalRoot\(\)\)/);
+  assert.match(block, /error\?\.code !== 'ENOENT'/);
+  assert.match(block, /STOP: EXISTING_FIXTURE_JOURNAL_REQUIRES_REVIEW/);
+  assert.match(block, /inspectRecovery\(liveSend, null\)/);
+  assert.match(block, /return allAbsent \? 0 : 3/);
+  assert.doesNotMatch(block, /readFileSync\(3|openJournal|createUser|createDoc|deleteUser|deleteDoc|runtimeFixtureTransport|mintRuntimeCredential/);
+  assert.match(source, /const LIVE_EXECUTION_ENABLED = false;/);
+});

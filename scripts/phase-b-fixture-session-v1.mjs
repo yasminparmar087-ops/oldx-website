@@ -449,7 +449,7 @@ function guardOperator(read = gcloud) {
 
 // Fixed read-only command list. Return labels and counts, never raw policy,
 // principal lists or revision environment values.
-export function inspectPhaseBConfiguration(read = gcloud, {preflight = false, hostedTarget} = {}) {
+export function inspectPhaseBConfiguration(read = gcloud, {preflight = false, hostedTarget, fixtureOnlyCanonicalImage = false} = {}) {
   const runtime = 'oldx-product-read-staging@oldx-staging.iam.gserviceaccount.com';
   const invoker = 'oldx-phase-b-invoker@oldx-staging.iam.gserviceaccount.com';
   const projectNumber = '38472235077';
@@ -603,12 +603,19 @@ export function inspectPhaseBConfiguration(read = gcloud, {preflight = false, ho
       const registryImage = 'asia-south1-docker.pkg.dev/oldx-staging/oldx-staging-images/oldx-owner-read-step3-rc';
       const reviewedIndex = 'sha256:c5fc856b45b19ec995167753d0ab7449fea9550f7e06b1b75da025fe179928dc';
       const reviewedAmd64 = 'sha256:eabe4207e307d1e487a30e4afd3abe8cda3792883a752864a5d6f80c45cd082c';
-      const expectedImage = registryImage + '@' + hostedTarget.digest;
+      // Cloud Run's revision spec for the *observed* fixture-only Step 3 tag
+      // contains the resolved linux/amd64 child, not the originally reviewed OCI
+      // index. Accept that one immutable child only for the exact pinned fixture
+      // baseline; the separate hosted path still insists on the OCI index input.
+      const exactFixtureBaseline = fixtureOnlyCanonicalImage &&
+        hostedTarget.tag === fixtureOnlyReviewedCloudBaseline.tag &&
+        hostedTarget.revision === fixtureOnlyReviewedCloudBaseline.revision &&
+        hostedTarget.digest === reviewedIndex;
+      const expectedImage = registryImage + '@' +
+        (exactFixtureBaseline ? reviewedAmd64 : hostedTarget.digest);
       const expectedRuntimeDigest = hostedTarget.digest === reviewedIndex ? reviewedAmd64 : hostedTarget.digest;
-      // OCI index -> linux/amd64 manifest relation was independently verified by
-      // the owner. Both the exact deployment input and the resolved digest must
-      // match: never accept an unrelated platform manifest as a successful deploy.
-      return value.metadata?.name === hostedTarget.revision &&
+      return (!fixtureOnlyCanonicalImage || exactFixtureBaseline) &&
+        value.metadata?.name === hostedTarget.revision &&
         value.metadata?.labels?.['serving.knative.dev/service'] === service &&
         value.spec?.serviceAccountName === runtime &&
         value.spec?.containers?.length === 1 &&
@@ -625,7 +632,8 @@ export function inspectPhaseBConfiguration(read = gcloud, {preflight = false, ho
 // the historical two-row Cloud Run baseline used before Step 3 deployment.
 export function inspectFixtureOnlyStagingConfiguration(read = gcloud) {
   return inspectPhaseBConfiguration(read,
-    {preflight: true, hostedTarget: fixtureOnlyReviewedCloudBaseline});
+    {preflight: true, hostedTarget: fixtureOnlyReviewedCloudBaseline,
+      fixtureOnlyCanonicalImage: true});
 }
 
 function correlateHealthDenial(read, traceId, started, finished) {

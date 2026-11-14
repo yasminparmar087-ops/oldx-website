@@ -154,3 +154,25 @@ The previous **04:13 IST** independently observed disabled service template flag
 5. Keep current 100% on old disabled main, preexisting two 0% tags untouched. The new candidate's 0% tag can be directly invoked, so stop all trial requests and restore the **disabled service template** (not just traffic) during approved rollback. Do not roll back through unscoped revision/traffic deletion.
 
 **Decision: no Cloud Run deployment authorization granted; HOSTED STAGING NO-GO, PRODUCTION HOLD/NO-GO.** The only necessary remaining preparatory work is a reviewed executable deployment + full restore diff based on privately captured pre-image and current IAM; no further old PASSED tests or four-fixture session rerun.
+
+
+### 2026-11-15 04:21 IST — private service/IAM rollback snapshot completed; approval-stage safeguards
+
+**Owner screenshot evidence, no deployment or cloud mutation:** Yasmin executed the project/region/account-scoped read-only Cloud Run service describe and get-iam-policy calls under a private 0700 directory with umask 077 at $HOME/.oldx-hosted-rollout-before. A shell-local Python projection returned exactly:
+
+- PRIVATE_BACKUP: CREATED
+- PUBLIC_IAM: PASS
+- NAMED_INVOKER: PASS
+- INVOCATION_IAM: PASS
+- CLOUD_MUTATIONS: NONE
+
+This proves the private JSON snapshot files were created and successfully parsed at check time, that the SERVICE-level Cloud Run policy did not explicitly include allUsers or allAuthenticatedUsers, that oldx-phase-b-invoker@oldx-staging.iam.gserviceaccount.com had roles/run.invoker there, and the checked invoker-IAM-disabled annotation was not true. The screenshot **does not prove** inherited IAM grants, all token audiences, successful rollback execution, resource version concurrency safety, or any runtime Firestore permission. Do not publish, paste or commit the private service.json/iam.json contents; they may contain configuration that must remain private. Do not delete or overwrite the backup.
+
+**Required before actual deployment:**
+1. Independently verify that backup files are nonempty valid JSON and contain the same exact service/disabled desired template and protected three-row traffic snapshot. A json-format service describe response is a **forensic before-image**, not directly an executable gcloud run services replace manifest. If using YAML restoration, prepare a separate private gcloud run services describe --format=export service YAML and review exact diff/provenance; never pipe raw service.json into replace or apply unsanitized server status/output. Keep the original private JSON immutable.
+2. Preflight current cloud service generation, protected 100/0/0 traffic, disabled activation template flags, exact runtime identity, image digest, existing private IAM, budget status and proposed tag availability immediately before any approved mutation; stop on drift or collision. Preflight should print only verdict labels, not secrets.
+3. A deployment would add exactly one separately approved hosted enabled tagged **0%-main-traffic** revision, reusing the verified registry digest and runtime identity. Proposed tag ownerbuyertrial remains available **only as of the earlier 04:17 check**; it must be rechecked. Preserve ingress all ONLY with the existing required private IAM and no public invoker. Never widen service-wide max (currently 20) and enforce new REVISION max 1, min 0, concurrency 1, timeout 30, CPU 1, memory 512Mi, nonsecret env limited to the reviewed nine settings.
+4. Explicitly authorize complete rollback **as part of the deployment decision**, not after a failure: remove only new trial tag and confirm it no longer serves, protect original main revision 100% and prior healthcheck/step3rc14 0% tags, restore the pre-snapshot original DISABLED service template (may create an additional disabled revision and change latestReadyRevisionName), verify no public IAM or surprise min instances, and retain all private journals. No automatic rollback is guaranteed by the existing backup; an operator-supervised command diff is required.
+5. Never confuse source-only 2/2 PASS and the completed prior fixture-only lifecycle with approval for enabled Owner/Buyer data-plane tests. A separate owner-scoped later consent and fresh four-ID collision preflight are required before any Auth/Firestore creation/cleanup. Existing hosted/source gates remain FALSE.
+
+**Deployment approval not yet granted.** In order to respect the prior NO-GO and avoid speculative mutations, next prepare a private, exact exported YAML restoration diff and reviewed gcloud CLI steps *without executing them*. Only then request a single explicit Yasmin approval for the exact additional staging 0%-traffic enabled revision and its reversible removal/restoration. Any mismatch, inability to restore the template, cost ambiguity or unexpected IAM state means STOP. Keep Hosted staging NO-GO / Production HOLD-NO-GO.

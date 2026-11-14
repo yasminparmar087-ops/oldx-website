@@ -13,6 +13,8 @@ import {runOwnerReadAcceptance, runHostedOwnerReadAcceptance, requireHostedAccep
   simulateKeylessOwnerReadAcceptance, ownerReadAudience, readBounded, inspectAnonymousDenial} from './phase-b-owner-read-acceptance.mjs';
 
 const markerField = 'phaseBFixtureSessionId';
+// Independent hard-off gates: fixture-only approval must never enable hosted acceptance.
+const LIVE_FIXTURE_ONLY_ENABLED = false;
 const LIVE_EXECUTION_ENABLED = false;
 const operator = 'yasminparmar087@gmail.com';
 const healthRevision = 'oldx-owner-read-00002-tid';
@@ -1054,7 +1056,8 @@ async function main(args) {
   const fixtureOnly = args.length === 1 && args[0] === '--execute-fixtures';
   const hosted = args.length === 4 && args[0] === '--execute' && args[1].startsWith('--hosted-tag=') &&
     args[2].startsWith('--hosted-revision=') && args[3].startsWith('--hosted-digest=');
-  requireSafe((fixtureOnly || hosted) && LIVE_EXECUTION_ENABLED, 'LIVE_EXECUTION_DISABLED');
+  requireSafe((fixtureOnly && LIVE_FIXTURE_ONLY_ENABLED) ||
+    (hosted && LIVE_EXECUTION_ENABLED), 'LIVE_EXECUTION_DISABLED');
   if (hosted) requireHostedAcceptanceEnabled();
   let hostedTarget;
   if (hosted) {

@@ -487,7 +487,7 @@ export function hostedRevisionActivationVerified(revision) {
   if (forbidden.some((key) => env.has(key))) return false;
   const values = ['OLDX_RATE_WINDOW_MS', 'OLDX_RATE_ACTOR_LIMIT', 'OLDX_RATE_GLOBAL_LIMIT']
     .map((key) => env.get(key));
-  if (values.some((v) => typeof v !== 'string' || !/^\\d{1,7}$/.test(v) || Number(v) < 1)) return false;
+  if (values.some((v) => typeof v !== 'string' || !/^\d{1,7}$/.test(v) || Number(v) < 1)) return false;
   const [windowMs, actorLimit, globalLimit] = values.map(Number);
   return windowMs >= 1000 && windowMs <= 600000 && actorLimit <= globalLimit;
 }
@@ -654,10 +654,9 @@ export function inspectPhaseBConfiguration(read = gcloud, {preflight = false, ho
       const registryImage = 'asia-south1-docker.pkg.dev/oldx-staging/oldx-staging-images/oldx-owner-read-step3-rc';
       const reviewedIndex = 'sha256:c5fc856b45b19ec995167753d0ab7449fea9550f7e06b1b75da025fe179928dc';
       const reviewedAmd64 = 'sha256:eabe4207e307d1e487a30e4afd3abe8cda3792883a752864a5d6f80c45cd082c';
-      // Cloud Run's revision spec for the *observed* fixture-only Step 3 tag
-      // contains the resolved linux/amd64 child, not the originally reviewed OCI
-      // index. Accept that one immutable child only for the exact pinned fixture
-      // baseline; the separate hosted path still insists on the OCI index input.
+      // The reviewed OCI index resolves to the exact linux/amd64 child.
+      // Accept only those two verified immutable representations, never an
+      // arbitrary digest or different registry. Hosted activation is a separate gate.
       const exactFixtureBaseline = fixtureOnlyCanonicalImage &&
         hostedTarget.tag === fixtureOnlyReviewedCloudBaseline.tag &&
         hostedTarget.revision === fixtureOnlyReviewedCloudBaseline.revision &&

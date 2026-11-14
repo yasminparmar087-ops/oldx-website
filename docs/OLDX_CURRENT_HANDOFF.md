@@ -1056,3 +1056,26 @@ Yasmin answered **“ha manjuri chhe”** to the owner-facing question expressly
 **Existing reviewed components reused:** `scripts/phase-b-fixture-session-v1.mjs` provides hard-off `--execute`, exact UIDs and paths, fresh collision checks before a future run, private `0600` fsynced journal with per-resource mutation provenance, generated ephemeral credentials, exact conditional Firestore delete and Auth UID reread; `--status` and `inspectRecovery` are read-only forensic tools. `docs/phase-b-fixture-execution-review.md#interrupted-four-fixture-session-runbook` already covers supervised failure recovery. Source review confirmed that **exceptions before the normal cleanup block are not automatically rolled back**. No generic delete retry, safe UID-generation precondition or proof of effective operator Firestore DELETE is available. Do not label source-only safeguards as operationally verified.
 
 **Next readiness gate in the existing Task 3 sequence:** prepare the precise existing-runner invocation preview and explicit manual recovery/retention decision with an immutable source SHA; identify only a genuinely missing fail-closed safeguard and test it narrowly if edited. Separately request Yasmin's execution-specific approval only after showing irreversible/residual risks and how exact-ID cleanup would be supervised. If effective cleanup authority cannot be safely established, remain NO-GO rather than assume successful rollback. Do not substitute the previously rejected optional one-document probe. Skip completed OCI, anonymous, authenticated, runtime and operator GET probes and previously passed offline suites unless their related implementation changes. Maintain `LIVE_EXECUTION_ENABLED=false`, `LIVE_HOSTED_ACCEPTANCE_ENABLED=false`; **STAGING NO-GO / PRODUCTION HOLD / NO-GO**.
+
+
+## 2026-11-15 — Task 3 exact command review: runtime coupling found
+
+**Approved scope:** preparation ONLY from Yasmin's latest reply; no live fixture, token mint, IAM, billing, revision activation, traffic or production action. Current source snapshot for `scripts/phase-b-fixture-session-v1.mjs`: blob SHA `5a730ad1c519a6f6019cfe312452dc22db2821dd` on `security-hardening-review`. This is a pinned **file blob**, not a branch commit or an authorization to execute; verify immutable commit/review before any future session.
+
+**Exact current CLI review (do not run mutation):**
+
+```bash
+cd ~/oldx-staging-build
+# Obtain the approved branch with git pull --ff-only only when an operator review actually needs it.
+node scripts/phase-b-fixture-session-v1.mjs --review
+# DO NOT RUN on current authorization: --status performs four exact LIVE read-only lookups
+node scripts/phase-b-fixture-session-v1.mjs --status
+# DO NOT RUN: hard-disabled, live mutating command; included only for code review
+node scripts/phase-b-fixture-session-v1.mjs --execute
+```
+
+**Newly identified source-level blocker:** the current CLI path unconditionally calls `mintRuntimeCredential`, builds `runtimeSessionBudget` and passes `runtimeFixtureTransport(...)` to `runSession` even for plain `--execute` without `--hosted-*` flags. Inside `runSession`, a non-null runtime uses runtime document create, plus `runtime.getDoc` and `runtime.updateProduct` after sign-in. Thus unhosted `--execute` is **NOT** a clearly isolated operator-only four-fixture create/sign-in/cleanup session; it entails additional runtime-service-account token and Firestore data-plane actions, contrary to the narrow four-fixture-only preparation packet. Merely toggling the hard-off flag is NOT acceptable. The original source-only offline and hosted tests do not supersede this explicit review finding.
+
+**Minimal code-ready decision (not yet implemented):** separate the four-resource **operator fixture-only** path from runtime IAM/product-update and hosted acceptance paths using an explicit fail-closed mode; keep strong finite session/cleanup deadline and crash journal on both modes; never weaken `LIVE_EXECUTION_ENABLED=false` or `LIVE_HOSTED_ACCEPTANCE_ENABLED=false`. Add only narrow fake-transport assertions proving the fixture-only mode never mints runtime credential, touches runtime API, updates a document, or contacts a hosted tag. Inspect immutable diff and focused tests; avoid a broad retest or unnecessary Codex. Do not introduce optional one-document proof. If mode separation cannot be demonstrated safely, remain NO-GO.
+
+**Other outstanding gates unchanged:** effective operator Firestore DELETE not proven; mid-session failure does not trigger automatic cleanup; Auth deletion lacks atomic UID-generation precondition. Use the existing `docs/phase-b-fixture-execution-review.md#interrupted-four-fixture-session-runbook` for exact-ID manual recovery after a **separately approved** live session; do not rerun prior 403/404 or OCI proofs. Show new reviewed runner SHA, exact execution/deletion commands, operator and retention limit before asking Yasmin for explicit live session approval. **STAGING NO-GO; PRODUCTION HOLD/NO-GO.**

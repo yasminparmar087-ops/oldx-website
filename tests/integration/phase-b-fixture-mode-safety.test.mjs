@@ -28,7 +28,9 @@ test('fixture-only and hosted modes remain independently hard-off with no creden
 test('source binds runtime mint and runtime transport only to hosted mode', () => {
   assert.match(source, /const LIVE_EXECUTION_ENABLED = false;/);
   assert.match(source, /const fixtureOnly = args\.length === 1 && args\[0\] === '--execute-fixtures';/);
-  assert.match(source, /requireSafe\(\(fixtureOnly \|\| hosted\) && LIVE_EXECUTION_ENABLED, 'LIVE_EXECUTION_DISABLED'\)/);
+  assert.match(source, /const LIVE_FIXTURE_ONLY_ENABLED = false;/);
+  assert.match(source, /fixtureOnly && LIVE_FIXTURE_ONLY_ENABLED/);
+  assert.match(source, /hosted && LIVE_EXECUTION_ENABLED/);
   assert.match(source, /const credential = hosted \? await mintRuntimeCredential\(/);
   assert.match(source, /hosted \? runtimeFixtureTransport\(boundedPhaseBRequest, credential, budget\) : null/);
   assert.match(source, /const afterSignIn = hosted && hostedFixtureCallback\(/);

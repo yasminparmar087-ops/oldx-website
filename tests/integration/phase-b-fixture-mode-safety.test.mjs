@@ -7,7 +7,7 @@ import test from 'node:test';
 const script = fileURLToPath(new URL('../../scripts/phase-b-fixture-session-v1.mjs', import.meta.url));
 const source = readFileSync(script, 'utf8');
 
-test('hosted execution remains hard-off with no credential access', () => {
+test('fixture-only and hosted execution remain hard-off with no credential access', () => {
   for (const args of [
     ['--execute-fixtures'],
     ['--execute'],

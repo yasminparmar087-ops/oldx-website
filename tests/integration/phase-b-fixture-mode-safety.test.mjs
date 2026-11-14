@@ -7,9 +7,8 @@ import test from 'node:test';
 const script = fileURLToPath(new URL('../../scripts/phase-b-fixture-session-v1.mjs', import.meta.url));
 const source = readFileSync(script, 'utf8');
 
-test('fixture-only and hosted modes remain independently hard-off with no credential access', () => {
+test('hosted execution remains hard-off with no credential access', () => {
   for (const args of [
-    ['--execute-fixtures'],
     ['--execute'],
     ['--execute', '--hosted-tag=step3rc14',
       '--hosted-revision=oldx-owner-read-00003-nus',
@@ -28,7 +27,7 @@ test('fixture-only and hosted modes remain independently hard-off with no creden
 test('source binds runtime mint and runtime transport only to hosted mode', () => {
   assert.match(source, /const LIVE_EXECUTION_ENABLED = false;/);
   assert.match(source, /const fixtureOnly = args\.length === 1 && args\[0\] === '--execute-fixtures';/);
-  assert.match(source, /const LIVE_FIXTURE_ONLY_ENABLED = false;/);
+  assert.match(source, /const LIVE_FIXTURE_ONLY_ENABLED = true;/);
   assert.match(source, /fixtureOnly && LIVE_FIXTURE_ONLY_ENABLED/);
   assert.match(source, /hosted && LIVE_EXECUTION_ENABLED/);
   assert.match(source, /const credential = hosted \? await mintRuntimeCredential\(/);
@@ -50,5 +49,22 @@ test('fresh four-ID preflight stays read-only, fails closed on journal or unknow
   assert.match(block, /inspectRecovery\(liveSend, null\)/);
   assert.match(block, /return allAbsent \? 0 : 3/);
   assert.doesNotMatch(block, /readFileSync\(3|openJournal|createUser|createDoc|deleteUser|deleteDoc|runtimeFixtureTransport|mintRuntimeCredential/);
+  assert.match(source, /const LIVE_EXECUTION_ENABLED = false;/);
+});
+
+
+test('enabled fixture-only candidate still requires Linux, exact operator, and private FD3', () => {
+  const gate = source.indexOf("const fixtureOnly = args.length === 1 && args[0] === '--execute-fixtures'");
+  const keyRead = source.indexOf("const key = readFileSync(3, 'utf8').trim()", gate);
+  const run = source.indexOf("await runSession(transport(", keyRead);
+  assert.ok(gate > 0 && keyRead > gate && run > keyRead);
+  const path = source.slice(gate, run);
+  assert.match(path, /fixtureOnly && LIVE_FIXTURE_ONLY_ENABLED/);
+  assert.match(path, /hosted && LIVE_EXECUTION_ENABLED/);
+  assert.match(path, /if \(hosted\) requireHostedAcceptanceEnabled\(\)/);
+  assert.match(path, /requireSafe\(process\.platform === 'linux', 'CLOUD_SHELL_REQUIRED'\)/);
+  assert.match(path, /guardOperator\(\)/);
+  assert.match(path, /readFileSync\(3, 'utf8'\)/);
+  assert.match(path, /inspectPhaseBConfiguration\(gcloud, \{preflight: true, hostedTarget\}\)/);
   assert.match(source, /const LIVE_EXECUTION_ENABLED = false;/);
 });

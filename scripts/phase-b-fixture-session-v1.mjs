@@ -669,9 +669,11 @@ export function inspectPhaseBConfiguration(read = gcloud, {preflight = false, ho
         hostedTarget.digest === reviewedIndex;
       // Only the separately verified OCI index and its exact linux/amd64 child
       // are allowed. Cloud Run may canonicalize spec.image to that child.
+      const allowedImages = fixtureOnlyCanonicalImage
+        ? [registryImage + '@' + reviewedAmd64]
+        : [registryImage + '@' + reviewedIndex, registryImage + '@' + reviewedAmd64];
       const pinnedImage = hostedTarget.digest === reviewedIndex &&
-        [registryImage + '@' + reviewedIndex, registryImage + '@' + reviewedAmd64]
-          .includes(value.spec?.containers?.[0]?.image);
+        allowedImages.includes(value.spec?.containers?.[0]?.image);
       return (!fixtureOnlyCanonicalImage || exactFixtureBaseline) &&
         value.metadata?.name === hostedTarget.revision &&
         value.metadata?.labels?.['serving.knative.dev/service'] === service &&

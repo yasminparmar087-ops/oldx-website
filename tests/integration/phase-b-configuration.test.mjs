@@ -581,6 +581,7 @@ test('hosted candidate requires preserved four-row traffic, reviewed OCI image a
     'wrong-tag', 'platform-manifest', 'unverified-repository', 'unreviewed-index',
     'activation-disabled', 'adc-disabled', 'emulator-present', 'duplicate-activation',
     'secret-ref', 'too-small-window', 'rate-limits-reversed', 'wrong-project',
+    'metadata-override', 'wrong-gcloud-project',
   ];
   for (const drift of cases) {
     const baseline = preflightRead((command, data) => {
@@ -605,6 +606,8 @@ test('hosted candidate requires preserved four-row traffic, reviewed OCI image a
     if (drift === 'too-small-window') change('OLDX_RATE_WINDOW_MS', '100');
     if (drift === 'rate-limits-reversed') change('OLDX_RATE_ACTOR_LIMIT', '99');
     if (drift === 'emulator-present') env.push({name: 'OLDX_PRODUCT_READ_EMULATOR', value: 'false'});
+    if (drift === 'metadata-override') env.push({name: 'GCE_METADATA_HOST', value: 'unsafe.invalid'});
+    if (drift === 'wrong-gcloud-project') env.push({name: 'GCLOUD_PROJECT', value: 'oldx-1c983'});
     if (drift === 'duplicate-activation') env.push({name: 'OLDX_PRODUCT_READ_ACTIVATE_STAGING', value: 'true'});
     if (drift === 'secret-ref') env[0].valueFrom = {secretKeyRef: {name: 'not-read'}};
     const actualRepo = drift === 'unverified-repository' ? 'registry.invalid/other' : repo;
@@ -625,7 +628,8 @@ test('hosted candidate requires preserved four-row traffic, reviewed OCI image a
     assert.equal(report.stagingExecution, 'NO_GO', drift);
     assert.equal(report.production, 'HOLD_NO_GO', drift);
     if (['activation-disabled', 'adc-disabled', 'emulator-present', 'duplicate-activation',
-      'secret-ref', 'too-small-window', 'rate-limits-reversed', 'wrong-project'].includes(drift)) {
+      'secret-ref', 'too-small-window', 'rate-limits-reversed', 'wrong-project',
+      'metadata-override', 'wrong-gcloud-project'].includes(drift)) {
       assert.equal(report.checks.hostedActivation, 'MISMATCH', drift);
     } else {
       assert.equal(report.checks.hostedActivation, 'MATCH', drift);

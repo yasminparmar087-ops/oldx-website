@@ -587,11 +587,22 @@ export function inspectPhaseBConfiguration(read = gcloud, {preflight = false, ho
     });
   }
   if (hostedTarget) {
-    check('hostedRevision', () => json('run', 'revisions', 'describe', hostedTarget.revision, ...regional), (value) =>
-      value.metadata?.name === hostedTarget.revision &&
-      value.metadata?.labels?.['serving.knative.dev/service'] === service &&
-      value.spec?.serviceAccountName === runtime &&
-      value.status?.imageDigest?.endsWith('@' + hostedTarget.digest) === true);
+    check('hostedRevision', () => json('run', 'revisions', 'describe', hostedTarget.revision, ...regional), (value) => {
+      const registryImage = 'asia-south1-docker.pkg.dev/oldx-staging/oldx-staging-images/oldx-owner-read-step3-rc';
+      const reviewedIndex = 'sha256:c5fc856b45b19ec995167753d0ab7449fea9550f7e06b1b75da025fe179928dc';
+      const reviewedAmd64 = 'sha256:eabe4207e307d1e487a30e4afd3abe8cda3792883a752864a5d6f80c45cd082c';
+      const expectedImage = registryImage + '@' + hostedTarget.digest;
+      const expectedRuntimeDigest = hostedTarget.digest === reviewedIndex ? reviewedAmd64 : hostedTarget.digest;
+      // OCI index -> linux/amd64 manifest relation was independently verified by
+      // the owner. Both the exact deployment input and the resolved digest must
+      // match: never accept an unrelated platform manifest as a successful deploy.
+      return value.metadata?.name === hostedTarget.revision &&
+        value.metadata?.labels?.['serving.knative.dev/service'] === service &&
+        value.spec?.serviceAccountName === runtime &&
+        value.spec?.containers?.length === 1 &&
+        value.spec.containers[0].image === expectedImage &&
+        value.status?.imageDigest === registryImage + '@' + expectedRuntimeDigest;
+    });
   }
   if (Object.values(result.checks).every((status) => status === 'MATCH')) result.configuration = 'MATCH';
   else if (Object.values(result.checks).includes('MISMATCH')) result.configuration = 'FAIL';

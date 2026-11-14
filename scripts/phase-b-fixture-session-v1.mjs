@@ -621,6 +621,13 @@ export function inspectPhaseBConfiguration(read = gcloud, {preflight = false, ho
   return result;
 }
 
+// Read-only: bind fixture-only to the existing exact 0%-traffic revision, not
+// the historical two-row Cloud Run baseline used before Step 3 deployment.
+export function inspectFixtureOnlyStagingConfiguration(read = gcloud) {
+  return inspectPhaseBConfiguration(read,
+    {preflight: true, hostedTarget: fixtureOnlyReviewedCloudBaseline});
+}
+
 function correlateHealthDenial(read, traceId, started, finished) {
   const trace = 'projects/' + project + '/traces/' + traceId;
   const from = started - 5000;
@@ -1026,8 +1033,7 @@ async function main(args) {
     // Never asks for FD3, opens a journal, or invokes fixture mutations.
     requireSafe(process.platform === 'linux', 'CLOUD_SHELL_REQUIRED');
     guardOperator();
-    const report = inspectPhaseBConfiguration(gcloud,
-      {preflight: true, hostedTarget: fixtureOnlyReviewedCloudBaseline});
+    const report = inspectFixtureOnlyStagingConfiguration(gcloud);
     console.log(JSON.stringify({
       configuration: report.configuration,
       blockingChecks: Object.fromEntries(Object.entries(report.checks)
@@ -1098,10 +1104,10 @@ async function main(args) {
   // descriptor, never argv, environment, a checked-in file or a terminal transcript.
   const key = readFileSync(3, 'utf8').trim();
   requireSafe(/^[A-Za-z0-9_-]{20,128}$/.test(key), 'INVALID_STAGING_WEB_KEY');
-  requireSafe(inspectPhaseBConfiguration(gcloud, {
-    preflight: true,
-    hostedTarget: hosted ? hostedTarget : fixtureOnlyReviewedCloudBaseline,
-  }).configuration === 'MATCH', 'RUNTIME_FIXTURE_CONFIGURATION_UNVERIFIED');
+  const config = hosted
+    ? inspectPhaseBConfiguration(gcloud, {preflight: true, hostedTarget})
+    : inspectFixtureOnlyStagingConfiguration(gcloud);
+  requireSafe(config.configuration === 'MATCH', 'RUNTIME_FIXTURE_CONFIGURATION_UNVERIFIED');
   // Fixture-only mode must not mint a runtime SA token, use runtime Firestore,
   // update a product, or invoke a hosted tag. Keep its own bounded cleanup budget.
   const credential = hosted ? await mintRuntimeCredential(gcloud, (url, method, token, body) =>

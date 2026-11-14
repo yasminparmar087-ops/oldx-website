@@ -1029,9 +1029,12 @@ async function main(args) {
     console.log(JSON.stringify(report, null, 2));
     return report.configuration === 'MATCH' && report.anonymousDenial.result === 'MATCH' ? 0 : 3;
   }
+  // Fixture-only and hosted acceptance must never share implicit runtime side effects.
+  // Neither mode is authorized while the independent live gate remains OFF.
+  const fixtureOnly = args.length === 1 && args[0] === '--execute-fixtures';
   const hosted = args.length === 4 && args[0] === '--execute' && args[1].startsWith('--hosted-tag=') &&
     args[2].startsWith('--hosted-revision=') && args[3].startsWith('--hosted-digest=');
-  requireSafe(args[0] === '--execute' && (args.length === 1 || hosted) && LIVE_EXECUTION_ENABLED, 'LIVE_EXECUTION_DISABLED');
+  requireSafe((fixtureOnly || hosted) && LIVE_EXECUTION_ENABLED, 'LIVE_EXECUTION_DISABLED');
   if (hosted) requireHostedAcceptanceEnabled();
   let hostedTarget;
   if (hosted) {
@@ -1052,11 +1055,13 @@ async function main(args) {
   requireSafe(/^[A-Za-z0-9_-]{20,128}$/.test(key), 'INVALID_STAGING_WEB_KEY');
   requireSafe(inspectPhaseBConfiguration(gcloud, {preflight: true, hostedTarget}).configuration === 'MATCH',
     'RUNTIME_FIXTURE_CONFIGURATION_UNVERIFIED');
-  const credential = await mintRuntimeCredential(gcloud, (url, method, token, body) =>
+  // Fixture-only mode must not mint a runtime SA token, use runtime Firestore,
+  // update a product, or invoke a hosted tag. Keep its own bounded cleanup budget.
+  const credential = hosted ? await mintRuntimeCredential(gcloud, (url, method, token, body) =>
     boundedPhaseBRequest(url, {method, redirect: 'error', signal: AbortSignal.timeout(5000),
       headers: {Authorization: 'Bearer ' + token, 'Content-Type': 'application/json', 'X-Goog-User-Project': project},
-      body: JSON.stringify(body)}));
-  const budget = runtimeSessionBudget(credential.expiry);
+      body: JSON.stringify(body)})) : null;
+  const budget = runtimeSessionBudget(hosted ? credential.expiry : Date.now() + 240_000);
   const afterSignIn = hosted && hostedFixtureCallback({
     enabledTag: hostedTarget.tag,
     disabledOrigin: ownerReadAudience.replace('https://', 'https://healthcheck---'),
@@ -1068,7 +1073,7 @@ async function main(args) {
     },
   }, budget, runHostedOwnerReadAcceptance);
   await runSession(transport((req) => liveSend(req, budget), key), openJournal, afterSignIn,
-    runtimeFixtureTransport(boundedPhaseBRequest, credential, budget), budget);
+    hosted ? runtimeFixtureTransport(boundedPhaseBRequest, credential, budget) : null, budget);
   console.log('All four exact resources absent at final check.');
   return 0;
 }

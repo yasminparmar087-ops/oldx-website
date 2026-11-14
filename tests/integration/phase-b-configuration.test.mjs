@@ -559,10 +559,14 @@ test('direct Firestore IAM separates metadata and transaction permissions and pr
   }
 });
 
-test('hosted target requires exact zero-traffic tag, ready revision and image digest', () => {
-  const hostedTarget = {tag: 'step3', revision: 'oldx-owner-read-step3', digest: 'sha256:' + 'a'.repeat(64),
+test('hosted target pins registry OCI index and verified linux/amd64 runtime manifest', () => {
+  const index = 'sha256:c5fc856b45b19ec995167753d0ab7449fea9550f7e06b1b75da025fe179928dc';
+  const amd64 = 'sha256:eabe4207e307d1e487a30e4afd3abe8cda3792883a752864a5d6f80c45cd082c';
+  const repo = 'asia-south1-docker.pkg.dev/oldx-staging/oldx-staging-images/oldx-owner-read-step3-rc';
+  const hostedTarget = {tag: 'step3', revision: 'oldx-owner-read-step3', digest: index,
     origin: 'https://step3---oldx-owner-read-lqpaz3pd5a-el.a.run.app'};
-  for (const drift of ['none', 'traffic', 'digest']) {
+
+  for (const drift of ['none', 'traffic', 'platform-manifest', 'deployment-input', 'unverified-repository']) {
     const baseline = preflightRead((command, data) => {
       if (command === 'run services describe oldx-owner-read') {
         data.status.latestReadyRevisionName = hostedTarget.revision;
@@ -570,12 +574,16 @@ test('hosted target requires exact zero-traffic tag, ready revision and image di
           url: hostedTarget.origin, percent: drift === 'traffic' ? 1 : 0});
       }
     });
+    const actualRepo = drift === 'unverified-repository' ? 'registry.invalid/other' : repo;
     const report = inspectPhaseBConfiguration((...args) => args[3] === hostedTarget.revision
       ? JSON.stringify({
         metadata: {name: hostedTarget.revision, labels: {'serving.knative.dev/service': service}},
-        spec: {serviceAccountName: runtime},
-        status: {imageDigest: 'registry.invalid/image@' + (drift === 'digest' ? 'sha256:' + 'b'.repeat(64) : hostedTarget.digest)},
+        spec: {serviceAccountName: runtime,
+          containers: [{image: actualRepo + '@' + (drift === 'deployment-input' ? amd64 : index)}]},
+        status: {imageDigest: repo + '@' + (drift === 'platform-manifest' ? 'sha256:' + 'b'.repeat(64) : amd64)},
       }) : baseline(...args), {preflight: true, hostedTarget});
     assert.equal(report.configuration, drift === 'none' ? 'MATCH' : 'FAIL');
+    assert.equal(report.checks.hostedRevision, drift === 'none' || drift === 'traffic' ? 'MATCH' : 'MISMATCH');
   }
 });
+

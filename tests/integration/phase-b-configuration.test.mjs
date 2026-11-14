@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import {inspectPhaseBConfiguration, inspectPhaseBPreflight, inspectPhaseBEffectiveIam, simulateDirectFirestoreIam, runDirectFirestoreIam, isDirectFirestoreIamOneShotInvocation} from '../../scripts/phase-b-fixture-session-v1.mjs';
+import {inspectPhaseBConfiguration, inspectFixtureOnlyStagingConfiguration, inspectPhaseBPreflight, inspectPhaseBEffectiveIam, simulateDirectFirestoreIam, runDirectFirestoreIam, isDirectFirestoreIamOneShotInvocation} from '../../scripts/phase-b-fixture-session-v1.mjs';
 
 const service = 'oldx-owner-read';
 const runtime = 'oldx-product-read-staging@oldx-staging.iam.gserviceaccount.com';
@@ -587,3 +587,32 @@ test('hosted target pins registry OCI index and verified linux/amd64 runtime man
   }
 });
 
+
+
+test('fixture-only pinned Step 3 baseline accepts exactly three traffic rows at 100/0/0 and rejects drift', () => {
+  const index = 'sha256:c5fc856b45b19ec995167753d0ab7449fea9550f7e06b1b75da025fe179928dc';
+  const amd64 = 'sha256:eabe4207e307d1e487a30e4afd3abe8cda3792883a752864a5d6f80c45cd082c';
+  const repo = 'asia-south1-docker.pkg.dev/oldx-staging/oldx-staging-images/oldx-owner-read-step3-rc';
+  const revision = 'oldx-owner-read-00003-nus';
+  const origin = 'https://step3rc14---oldx-owner-read-lqpaz3pd5a-el.a.run.app';
+  for (const drift of ['none', 'traffic', 'latest', 'digest']) {
+    const baseline = preflightRead((command, data) => {
+      if (command === 'run services describe oldx-owner-read') {
+        data.status.latestReadyRevisionName = drift === 'latest' ? health : revision;
+        data.status.traffic.push({revisionName: revision, tag: 'step3rc14',
+          url: origin, percent: drift === 'traffic' ? 1 : 0});
+      }
+    });
+    const report = inspectFixtureOnlyStagingConfiguration((...args) =>
+      args[0] === 'run' && args[1] === 'revisions' && args[3] === revision
+        ? JSON.stringify({
+          metadata: {name: revision, labels: {'serving.knative.dev/service': service}},
+          spec: {serviceAccountName: runtime, containers: [{image: repo + '@' + index}]},
+          status: {imageDigest: repo + '@' + (drift === 'digest' ? index : amd64)},
+        })
+        : baseline(...args));
+    assert.equal(report.configuration, drift === 'none' ? 'MATCH' : 'FAIL');
+    assert.equal(report.checks.hostedRevision, drift === 'digest' ? 'MISMATCH' : 'MATCH');
+    assert.equal(report.stagingExecution, 'NO_GO');
+  }
+});

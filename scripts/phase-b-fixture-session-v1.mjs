@@ -14,7 +14,8 @@ import {runOwnerReadAcceptance, runHostedOwnerReadAcceptance, requireHostedAccep
 
 const markerField = 'phaseBFixtureSessionId';
 // Scoped owner approval: fixture-only candidate enabled; hosted acceptance stays disabled.
-const LIVE_FIXTURE_ONLY_ENABLED = true;
+// One-time supervised fixture-only acceptance completed; keep all live fixture paths OFF.
+const LIVE_FIXTURE_ONLY_ENABLED = false;
 const LIVE_EXECUTION_ENABLED = false;
 const operator = 'yasminparmar087@gmail.com';
 const healthRevision = 'oldx-owner-read-00002-tid';

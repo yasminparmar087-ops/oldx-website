@@ -1,4 +1,4 @@
-/** Phase B staging fixtures. Live mutation is hard-disabled on the review branch. */
+/** Phase B staging fixtures. Fixture-only candidate enabled by scoped owner approval; hosted path disabled. */
 import {execFileSync} from 'node:child_process';
 import {randomBytes, randomUUID} from 'node:crypto';
 import {closeSync, constants, fstatSync, fsyncSync, lstatSync, mkdirSync, openSync, readFileSync, readSync, writeFileSync} from 'node:fs';
@@ -13,8 +13,8 @@ import {runOwnerReadAcceptance, runHostedOwnerReadAcceptance, requireHostedAccep
   simulateKeylessOwnerReadAcceptance, ownerReadAudience, readBounded, inspectAnonymousDenial} from './phase-b-owner-read-acceptance.mjs';
 
 const markerField = 'phaseBFixtureSessionId';
-// Independent hard-off gates: fixture-only approval must never enable hosted acceptance.
-const LIVE_FIXTURE_ONLY_ENABLED = false;
+// Scoped owner approval: fixture-only candidate enabled; hosted acceptance stays disabled.
+const LIVE_FIXTURE_ONLY_ENABLED = true;
 const LIVE_EXECUTION_ENABLED = false;
 const operator = 'yasminparmar087@gmail.com';
 const healthRevision = 'oldx-owner-read-00002-tid';
@@ -1052,7 +1052,7 @@ async function main(args) {
     return report.configuration === 'MATCH' && report.anonymousDenial.result === 'MATCH' ? 0 : 3;
   }
   // Fixture-only and hosted acceptance must never share implicit runtime side effects.
-  // Neither mode is authorized while the independent live gate remains OFF.
+  // Fixture-only is separately owner-approved; hosted mode stays disabled.
   const fixtureOnly = args.length === 1 && args[0] === '--execute-fixtures';
   const hosted = args.length === 4 && args[0] === '--execute' && args[1].startsWith('--hosted-tag=') &&
     args[2].startsWith('--hosted-revision=') && args[3].startsWith('--hosted-digest=');

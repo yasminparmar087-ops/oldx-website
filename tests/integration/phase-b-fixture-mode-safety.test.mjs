@@ -1,7 +1,9 @@
 import assert from 'node:assert/strict';
-import {readFileSync} from 'node:fs';
+import {mkdtempSync, readFileSync, rmSync} from 'node:fs';
 import {spawnSync} from 'node:child_process';
 import {fileURLToPath} from 'node:url';
+import {tmpdir} from 'node:os';
+import {join} from 'node:path';
 import test from 'node:test';
 
 const script = fileURLToPath(new URL('../../scripts/phase-b-fixture-session-v1.mjs', import.meta.url));
@@ -91,4 +93,51 @@ test('fixture-only configuration diagnostic is read-only and uses the same pinne
   assert.match(source, /digest: 'sha256:c5fc856b45b19ec995167753d0ab7449fea9550f7e06b1b75da025fe179928dc'/);
   assert.match(source, /: inspectFixtureOnlyStagingConfiguration\(gcloud\)/);
   assert.match(source, /const LIVE_EXECUTION_ENABLED = false;/);
+});
+
+
+test('hosted journal is isolated from accepted fixture journal in private temporary HOME', () => {
+  // Completely offline: both journal files are created under a throwaway HOME,
+  // never the operator's existing completed fixture evidence.
+  const home = mkdtempSync(join(tmpdir(), 'oldx-journal-isolation-'));
+  const moduleUrl = new URL('../../scripts/phase-b-fixture-session-v1.mjs', import.meta.url).href;
+  const child = [
+    "import assert from 'node:assert/strict';",
+    "import {existsSync} from 'node:fs';",
+    "import {homedir} from 'node:os';",
+    "import {join} from 'node:path';",
+    'import {openJournal,journalStatus} from ' + JSON.stringify(moduleUrl) + ';',
+    "const fixtureId = '00000000-0000-4000-8000-000000000001';",
+    "const hostedId = '00000000-0000-4000-8000-000000000002';",
+    'openJournal(fixtureId).close();',
+    'const fixture = join(homedir(), ".oldx-phase-b-fixtures-v1");',
+    'const hosted = join(homedir(), ".oldx-phase-b-hosted-v1");',
+    'assert.equal(existsSync(fixture), true);',
+    'assert.equal(existsSync(hosted), false);',
+    'openJournal(hostedId, "hosted").close();',
+    'assert.equal(existsSync(hosted), true);',
+    'assert.equal(journalStatus().sessionId, fixtureId);',
+    'assert.equal(journalStatus("hosted").sessionId, hostedId);',
+    'assert.throws(() => openJournal(hostedId, "hosted"), {code:"EEXIST"});',
+    'assert.throws(() => journalStatus("unknown"), /INVALID_JOURNAL_SCOPE/);',
+  ].join('\n');
+  try {
+    const run = spawnSync(process.execPath, ['--input-type=module', '-e', child], {
+      encoding: 'utf8', timeout: 5_000, env: {...process.env, HOME: home},
+    });
+    assert.equal(run.status, 0, run.stderr);
+  } finally {
+    rmSync(home, {recursive: true, force: true});
+  }
+});
+
+test('hosted journal recovery status remains read-only and all live modes hard-off', () => {
+  assert.match(source, /const LIVE_FIXTURE_ONLY_ENABLED = false;/);
+  assert.match(source, /const LIVE_EXECUTION_ENABLED = false;/);
+  assert.match(source, /const journalRoot = \(scope = 'fixture'\)/);
+  assert.match(source, /\\.oldx-phase-b-hosted-v1/);
+  assert.match(source, /\\['--status', '--status-hosted'\\]\\.includes\\(args\\[0\\]\\)/);
+  assert.match(source, /journalStatus\\(args\\[0\\] === '--status-hosted' \\? 'hosted' : 'fixture'\\)/);
+  assert.match(source, /hosted \\? \\(id\\) => openJournal\\(id, 'hosted'\\) : openJournal/);
+  assert.match(source, /return allAbsent && journal\\?\\.completed && !journal\\.stale \\? 0 : 3/);
 });

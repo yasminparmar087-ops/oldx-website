@@ -126,3 +126,31 @@ Official Cloud Run docs for the 0%-tag deployment and rollback behavior: https:/
 Any later Owner/Buyer acceptance requires NEW specific consent, separately from revision deployment and its rollback. Only fixed Auth UIDs synthetic-seller-a and synthetic-buyer-b and fixed Firestore paths marketplaceActors_v1/synthetic-seller-a and marketplacePrivate_v1/product_synthetic-phase-b-read-01; fresh four-ID absence immediately before writes, private short-lived Firebase tokens, named keyless invoker, allowed owner response and buyer denial probes, completed separate hosted journal and original-updateTime guarded cleanup. The old accepted fixture journal is immutable evidence. Auth deletion still lacks atomic generation CAS. Effective runtime CREATE/UPDATE, DELETE denial and other-database isolation/PAB remain UNVERIFIED without supported separate proof. No IAM/Rules/Billing change follows from this packet.
 
 **Decision today:** Hosted candidate deployment NOT AUTHORIZED, no new revision created, no future data-plane execution permitted, no production changes. Next owner decision should be ONE compact specific Cloud Run deployment + full rollback approval packet after confirming the precise snapshot and executable flags. Existing source-only work may continue; HOSTED STAGING NO-GO / PRODUCTION HOLD-NO-GO.
+
+
+### 2026-11-15 04:17 IST — latest read-only scaling/ingress/tag evidence
+
+Yasmin's Cloud Shell screenshot of an operator-scoped **READ-ONLY** gcloud service describe JSON projection at 04:17 IST reported the current Cloud Run service oldx-owner-read on oldx-staging/asia-south1:
+
+| Screenshot field | Actual observed |
+|---|---|
+| SERVICE_MIN | UNSET |
+| SERVICE_MAX | 20 |
+| REVISION_MIN | UNSET |
+| REVISION_MAX | 1 |
+| TIMEOUT_SECONDS | 30 |
+| INGRESS | all |
+| MANUAL_SCALING | UNSET |
+| TRIAL_TAG_UNUSED | True (tag ownerbuyertrial absent from status.traffic at check time) |
+
+The previous **04:13 IST** independently observed disabled service template flags both false; runtime service-account exact match; one container, concurrency 1, CPU 1, memory 512Mi; three traffic entries main 100%, healthcheck 0%, step3rc14 0%, latest ready oldx-owner-read-00003-nus. These results agree and no mutation is evidenced.
+
+**Interpretation and approval-critical protections:**
+
+1. According to Google Cloud Run official minimum-instances documentation (https://docs.cloud.google.com/run/docs/configuring/min-instances), unset service/revision minimum normally uses default 0 in autoscaling. However a missing annotation is not proof that no other autoscaling/billing mode/inherited configuration applies; new trial must explicitly preserve **zero minimum instances** at all applicable scopes. Min zero is not a total spend cap. Revision-level minimum >0 on a 0%-tagged revision can result in billing.
+2. Existing **service MAX 20** and **template revision MAX 1** are different levels. The effective max for the currently reviewed revision is 1 as the lower of the two, but do NOT casually mutate service-level MAX 20 (could affect existing revisions) or assume a future revision will inherit the exact limit. The new approved candidate must independently assert revision MAX 1 and concurrency 1, without broadening all-service scaling. Provider CLI semantics and preserved settings must be checked in the exact executable command/diff before deployment.
+3. Timeout is exactly 30 seconds and should remain 30 for the new candidate unless separately approved. Ingress all means internet-reachable but is not necessarily public by itself; access must stay restricted with existing private Cloud Run Invoker IAM and no unauthenticated/public principal. IAM snapshot required directly before a mutation; this screenshot did NOT check current IAM.
+4. Proposed unique trial tag ownerbuyertrial was unused at the 04:17 IST snapshot, but MUST be checked immediately before any mutation. No new revision/traffic change is authorized. This check did not preserve the complete original service template or IAM policy for rollback; keep that distinct pre-deploy snapshot and restore requirement.
+5. Keep current 100% on old disabled main, preexisting two 0% tags untouched. The new candidate's 0% tag can be directly invoked, so stop all trial requests and restore the **disabled service template** (not just traffic) during approved rollback. Do not roll back through unscoped revision/traffic deletion.
+
+**Decision: no Cloud Run deployment authorization granted; HOSTED STAGING NO-GO, PRODUCTION HOLD/NO-GO.** The only necessary remaining preparatory work is a reviewed executable deployment + full restore diff based on privately captured pre-image and current IAM; no further old PASSED tests or four-fixture session rerun.

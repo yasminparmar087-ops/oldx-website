@@ -58,3 +58,46 @@ If any above cannot be proven safely, leave **STAGING ACCEPTANCE = NO** and reco
 ## 5. Immediate next no-change task
 
 Do **not** rerun Docker or preflight. Review the existing **actual hosted tagged-revision command contract** plus the current gated runner to establish a concise immutable proposed command sequence for the owner, including bounded costs/rollback and which parts cannot be completed without code gate revision. Report any missing prerequisites in a **single owner decision**, not one-by-one cloud trial-and-error. Cloud Shell remains preferred for routine read-only commands; Codex only if a real multi-file bug demands it. No operation in this document was executed against cloud.
+
+## 6. Hosted revision and rollback command contract — source review (2026-11-14)
+
+**Review result:** The reviewed Cloud Run entrypoint `functions/staging-marketplace/product-read-server.mjs` runs disabled by default, with `GET /health` returning HTTP 200 and `POST /api/staging/marketplace/owner` returning HTTP 503 unless explicit staging activation gates, ADC identity, target project/database and rate policy all match. `Dockerfile.product-read` uses `node:24-bookworm-slim`, installs production dependencies from the lockfile, runs as `node`, exposes 8080 and handles SIGTERM. These are source facts, not a hosted-readiness assertion. The network-none local container smoke already passed. Source's startup guard also rejects various credential/environment overrides and requires platform-supplied `K_SERVICE` when activating.
+
+**REVIEW-ONLY placeholders; NEVER paste this section as a runnable deployment script.** Current local image `oldx-product-read-step3:local` is **not** an Artifact Registry image and no immutable registry digest was captured, so it cannot be used as `--image` for a Cloud Run deploy. No existing approved registry image digest matching the current review HEAD has been established. The exact release source SHA should be frozen separately at session approval; document HEAD at review was `abdbaa5ec274e223e2f7fb118a70a3648d9a03b7` *before* this documentation change. Do not equate a moving branch HEAD or local image tag with a pinned artifact.
+
+### A. First freeze candidate and safe baseline (not executed here)
+
+- Confirm signed-in active operator `yasminparmar087@gmail.com`, project `oldx-staging`, Cloud Run region `asia-south1`, service `oldx-owner-read`, approved runtime service account `oldx-product-read-staging@oldx-staging.iam.gserviceaccount.com`, approved tester invoker `oldx-phase-b-invoker@oldx-staging.iam.gserviceaccount.com`, and database `(default)`. Match the existing repository/image input to its **immutable SHA**.
+- Capture `gcloud run services describe oldx-owner-read --project=oldx-staging --region=asia-south1 --format=json` in a **private local** report and inspect only approved nonsecret fields; never publish raw revision env/secret references to GitHub/chat. Freeze the existing disabled revision `oldx-owner-read-00001-8kr` at 100% main traffic and the disabled `healthcheck` revision `oldx-owner-read-00002-tid` at 0% in the permissioned operator's plan. If drift occurs, stop.
+- Obtain separately authorized immutable Artifact Registry image digest and scan/sign-off that image's Docker contents and no embedded credentials; the local smoke build's success cannot substitute for a registry digest or provenance.
+
+### B. Planned *new* tagged 0%-main-traffic revision — requires a **specific new approval**, **NOT EXECUTABLE YET**
+
+Cloud Run docs confirm that the form `gcloud run deploy SERVICE --image IMAGE_URL --no-traffic --tag TAG` creates a testable tagged revision without shifting main traffic, and that `--service-account` and `--set-env-vars` set the runtime identity and environment. Official docs: https://docs.cloud.google.com/run/docs/rollouts-rollbacks-traffic-migration and https://docs.cloud.google.com/sdk/gcloud/reference/run/deploy . Exact proposed arguments, subject to separately approved identity/cost/rollback and complete resource configuration:
+
+| Parameter | Proposed value or release gate |
+|---|---|
+| `--project`, `--region`, service | `oldx-staging`, `asia-south1`, `oldx-owner-read` |
+| `--image` | **BLOCKED** until independently verified repository URI + immutable `@sha256:...` digest, permission to push or reuse image and cost approval |
+| `--no-traffic --tag` | `--no-traffic` and separately approved unique disposable tag, **never** move the 100% main disabled baseline |
+| `--service-account` | `oldx-product-read-staging@oldx-staging.iam.gserviceaccount.com` (confirm effective permission and `actAs` under the reviewed deployer) |
+| `--cpu --memory --min-instances --max-instances --concurrency` | Proposed `1`, `512Mi`, `0`, `1`, `1`; final bounds/pricing to approve |
+| Activation env | **ONLY** separately approved tagged revision: `OLDX_PRODUCT_READ_ACTIVATE_STAGING=true`, `OLDX_PRODUCT_READ_STAGING_ADC=true`, `OLDX_FIREBASE_ENV=staging`, `OLDX_FIREBASE_PROJECT_ID=oldx-staging`, `OLDX_PRODUCT_READ_DATABASE_ID=(default)`, `OLDX_PRODUCT_READ_SERVICE_ACCOUNT=oldx-product-read-staging@oldx-staging.iam.gserviceaccount.com`, `OLDX_RATE_WINDOW_MS=60000`, `OLDX_RATE_ACTOR_LIMIT=10`, `OLDX_RATE_GLOBAL_LIMIT=100`. No key files, emulator vars, proxy overrides or app secrets. |
+| Ingress | Keep current IAM enforcement and recorded ingress; no policy relaxation or public invoker |
+| Limits | Existing owner proposal: **at most 200 attempted requests / 60 minutes / 1,000 billed instance-seconds**; count retries; monitor actual billable usage, Firestore and log volume, stop on unknown billing. Budget email alerts are **not a spending cap**. |
+
+**Do not execute the tagged revision merely on the basis of this table.** Deployment can incur spending and alter service revision configuration even at 0% traffic. Exact flags/settings, initial baseline snapshot, deployer roles and fees must be approved, and a controlled runner release must first address the hard-off `LIVE_EXECUTION_ENABLED=false` gate without weakening the default safety model. No blanket activation permission is implied by source-only continuation.
+
+### C. Read/execute/rollback sequencing — approval required for each affected category
+
+1. **Read-only preflight** (new scoped approval if touching live Auth/Firestore): exact four-resource absence, approved policy/identity visibility, rollback owner, successful cleanup capability; no speculative retries if evidence is missing.
+2. **Keyless credential/invoker** (separately approved): issue tokens only for the intended service and principal, never print or save, then verify authenticated/anonymous/foreign invoker handling. A PAB/Policy Troubleshooter UNKNOWN or missing log correlation is **NOT PASS**. No repeat IAM listing just to reconfirm prior static grants.
+3. **Synthetic data** (separately approved): exactly two Auth accounts and two specified Firestore documents. Runner remains hard-off, so this **cannot be run yet**. Each create/mutation must have a reviewed immutable candidate, private journal and verified same-session operator cleanup. Negative deletion probe on an exact synthetic document has destructive side effect risk and needs explicit scope. No data-wide operations.
+4. **Hosted owner-read acceptance** (separately approved zero-traffic tag): app owner success and buyer/foreign-project/invalid-token denials, no private DTO leak, no-store, bounded quota-counter writes/retries and observable records. A Cloud Run 403 from Google frontend alone cannot prove backend security acceptance.
+5. **Rollback/closeout** (separately approved): stop probes; individually clean approved four synthetic resources; verify four ABSENT; restore/confirm disabled baseline and `0%` trial traffic before removing the **specific approved test tag**. Cloud Run docs support `gcloud run services update-traffic oldx-owner-read --remove-tags TAG --project=oldx-staging --region=asia-south1`. Never `--clear-tags` indiscriminately; preserve pre-existing `healthcheck` tag. Confirm exact original traffic mapping and disabled owner 503 (or independently verified deny), while retaining reviewed logs and release audit. Official docs: https://docs.cloud.google.com/run/docs/rollouts-rollbacks-traffic-migration .
+
+### D. The **one owner decision** still required
+
+Obtain explicit separate authorization for (i) live read-only identity/target preflight, (ii) token mint / named hosted invocation, (iii) immutable image publication plus zero-main-traffic tagged deployment with actual spend envelope and rollback, (iv) precise fixture create/update/delete, Auth sign-in, quota writes and supervised cleanup, and (v) an independently code-reviewed narrowly enabled runner revision. Present the exact image digest and runner SHA **before** deployment or writes; no valid placeholder can satisfy those fields. If any category is not approved or technically ready, keep Step 3 **SOURCE-PROGRESS / STAGING NO-GO** and work on later independent repo-only tasks without bypass.
+
+**Audit:** This is documentation/source review only. No images pushed, no live API called, no tokens minted, no runner activated, no IAM/Rules/Billing/traffic modified, and no Docker or old tests rerun.

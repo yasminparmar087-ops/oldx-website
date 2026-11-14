@@ -27,13 +27,13 @@
 | Runtime service account | `datastore.entities.create` | Create-only exact fixture documents | Effective grant UNVERIFIED |
 | Runtime service account | `datastore.entities.update` | One revision-only PATCH on the fixed private product, guarded by original `updateTime` | Effective grant UNVERIFIED |
 | Runtime service account | `datastore.entities.delete` | **Not required; must remain denied** | Runner has no DELETE transport route; effective IAM denial UNVERIFIED |
-| Operator | `iam.serviceAccounts.getAccessToken` on the exact runtime service account | Mint the short-lived datastore-scoped runtime OAuth access token | Current evidence identifies a mismatch: `roles/iam.serviceAccountOpenIdTokenCreator` supplies `getOpenIdToken`, not `getAccessToken`. Do not assume it can mint the OAuth access token. |
+| Operator | `iam.serviceAccounts.getAccessToken` on the exact runtime service account | Mint the short-lived datastore-scoped runtime OAuth access token | **Configured narrow custom grant confirmed on the exact service account** by owner; Policy Troubleshooter Allow GRANTED but overall Outcome UNKNOWN because PAB policy visibility was insufficient. Actual token mint/Firestore authorization UNVERIFIED; no duplicate grant needed. |
 
 The role `oldxProductReadFirestore` was previously observed with `datastore.databases.get`, `datastore.entities.get`, `datastore.entities.create`, and `datastore.entities.update`. It does not include entity DELETE. A role listing or IAM condition string is not proof of effective enforcement. The previously observed condition expression was `resource.name == "projects/oldx-staging/databases/(default)"`; inherited/group grants and actual condition enforcement remain unverified.
 
-### Critical credential blocker
+### OAuth token permission — configured grant found, runtime still unverified
 
-The fixture runner's direct runtime probe uses IAM Credentials `generateAccessToken`, which requires `iam.serviceAccounts.getAccessToken`. The recorded `roles/iam.serviceAccountOpenIdTokenCreator` grant is for OIDC ID-token minting and is not interchangeable. Do not substitute `generateIdToken` for a Firestore REST OAuth access token. Do not grant broad `roles/iam.serviceAccountTokenCreator`. If direct runtime proof remains necessary, prepare a separate approval request for a custom role containing only `iam.serviceAccounts.getAccessToken`, bound on the exact runtime service account to the named operator for the shortest supervised window. This is a proposed permission change, **not approved or applied**. Alternatively leave direct runtime proof UNVERIFIED.
+The fixture runner's direct runtime probe requires IAM Credentials `generateAccessToken` and the exact `iam.serviceAccounts.getAccessToken` permission; the OIDC-only built-in role cannot substitute. **Later 2026-11-14 owner evidence resolves the earlier *missing-configured-grant* hypothesis:** custom project role `oldxServiceAccountAccessTokenCreator` contains only `iam.serviceAccounts.getAccessToken` and is directly attached on `oldx-product-read-staging@oldx-staging.iam.gserviceaccount.com` for `yasminparmar087@gmail.com`. Google Policy Troubleshooter specifically found the binding **GRANTED** within Allow, but the overall result was **UNKNOWN** due to Principal Access Boundary visibility. This is not an approved or successful token exchange; effective data permissions, cross-database isolation, and runtime behavior remain **UNVERIFIED**. **Do not grant another custom role or broad `roles/iam.serviceAccountTokenCreator`, repeat the same role listings, or substitute an ID token.** Any actual mint/runtime probe requires separate consent.
 
 ## 3. Separate Owner Read / Cloud Run permissions
 
@@ -69,7 +69,7 @@ Separate identities are required for provisioning operator, image publisher, rev
 3. Fresh exact-ID read-only preflight of both Auth UIDs and both Firestore paths; any EXISTS/BLOCKED result stops.
 4. Exclusive journal readiness, private local storage, approved same-day cleanup window and named recovery operator.
 5. Evidence that operator can perform exact-ID lookups and cleanup; a read-only permission check alone does not prove delete success.
-6. Resolution of the OAuth token permission mismatch, either through a separately approved narrow `getAccessToken` grant or by leaving runtime proof UNVERIFIED.
+6. Narrow `getAccessToken` role and exact account binding are already **configured**, but actual token issuance, effective PAB restrictions and runtime Firestore permission/database-isolation proof remain **UNVERIFIED**; do not create a duplicate role or grant.
 7. Exact owner approval of the immutable execution revision, target IDs, allowed operations, stop conditions and cleanup procedure.
 
 No single approval in this matrix authorizes the entire sequence. No credential, token, API key or private document payload may be placed in GitHub, handoff text, screenshots or chat.
@@ -85,9 +85,9 @@ No single approval in this matrix authorizes the entire sequence. No credential,
 
 **No live operations were performed while preparing this matrix. Production HOLD / NO-GO.**
 
-## 7. No-change Policy Troubleshooter path for the OAuth token blocker
+## 7. Historical no-change Policy Troubleshooter procedure (already run in Google Console)
 
-Before considering any IAM grant, the operator can separately evaluate whether `yasminparmar087@gmail.com` currently has `iam.serviceAccounts.getAccessToken` on the exact runtime service-account resource using the documented gcloud Policy Troubleshooter command. This is an IAM policy evaluation, not token minting and not a Cloud/Firebase data-plane request:
+**For reference only; do not repeat automatically.** The operator already checked this permission in the Google Cloud Policy Troubleshooter GUI: the exact service-account Allow binding was GRANTED, but overall Outcome remained UNKNOWN because principal-access-boundary policy visibility was incomplete. The older CLI command below is retained for historical documentation only, not as the next action:
 
 ```bash
 gcloud policy-troubleshoot iam //iam.googleapis.com/projects/oldx-staging/serviceAccounts/oldx-product-read-staging@oldx-staging.iam.gserviceaccount.com --principal-email=yasminparmar087@gmail.com --permission=iam.serviceAccounts.getAccessToken

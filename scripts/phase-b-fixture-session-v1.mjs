@@ -1011,6 +1011,24 @@ async function main(args) {
     if (allAbsent) console.log('ALL_FOUR_ABSENT_AT_CHECK_TIME');
     return allAbsent && journal?.completed && !journal.stale ? 0 : 3;
   }
+  if (args.length === 1 && args[0] === '--preflight-fixtures') {
+    // Separate fresh four-ID absence from interrupted-session --status.
+    // No web key, journal creation or live mutation is permitted in this path.
+    requireSafe(process.platform === 'linux', 'CLOUD_SHELL_REQUIRED');
+    guardOperator();
+    try {
+      lstatSync(journalRoot());
+      console.log('STOP: EXISTING_FIXTURE_JOURNAL_REQUIRES_REVIEW');
+      return 3;
+    } catch (error) {
+      if (error?.code !== 'ENOENT') throw error;
+    }
+    const {observations, allAbsent} = await inspectRecovery(liveSend, null);
+    for (const {resource, observation} of observations) console.log(resource, observation);
+    console.log(allAbsent ? 'PREFLIGHT_FOUR_ABSENT_AT_CHECK_TIME' : 'STOP: PREFLIGHT_NOT_ALL_ABSENT');
+    // A PASS is only a point-in-time observation, never approval to execute.
+    return allAbsent ? 0 : 3;
+  }
   if (args.length === 1 && args[0] === '--check-configuration') {
     const report = inspectPhaseBConfiguration();
     console.log(JSON.stringify(report, null, 2));

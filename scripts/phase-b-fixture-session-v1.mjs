@@ -16,7 +16,11 @@ const markerField = 'phaseBFixtureSessionId';
 // Scoped owner approval: fixture-only candidate enabled; hosted acceptance stays disabled.
 // One-time supervised fixture-only acceptance completed; keep all live fixture paths OFF.
 const LIVE_FIXTURE_ONLY_ENABLED = false;
-const LIVE_EXECUTION_ENABLED = false;
+// Default OFF. Only the explicitly approved fixed staging trial can be enabled
+// by the operator for one supervised Cloud Shell process; the private create-once
+// hosted journal prevents a second invocation after any partial attempt.
+const LIVE_EXECUTION_ENABLED = process.env.OLDX_PHASE_B_HOSTED_SESSION_APPROVAL ===
+  'YASMIN_20261115_OWNERBUYERTRIAL_ONCE';
 const operator = 'yasminparmar087@gmail.com';
 const healthRevision = 'oldx-owner-read-00002-tid';
 const healthProbeUrl = ownerReadAudience.replace('https://', 'https://healthcheck---') + '/health';
@@ -29,6 +33,17 @@ const payloads = offlinePayloads();
 const resources = Object.freeze([...authUids, ...firestoreDocs]);
 // Read-only pinned configuration for the previously verified 0%-traffic Step 3 tag.
 // Fixture-only is still independent of hosted token mint and hosted HTTP acceptance.
+// The current user's approval names one exact *already deployed* immutable trial.
+// Never infer consent for another tag, revision, project or registry image.
+export const approvedHostedTrial = Object.freeze({
+  tag: 'ownerbuyertrial',
+  revision: 'oldx-owner-read-00004-jus',
+  digest: 'sha256:c5fc856b45b19ec995167753d0ab7449fea9550f7e06b1b75da025fe179928dc',
+});
+export function isApprovedHostedTrial({tag, revision, digest} = {}) {
+  return tag === approvedHostedTrial.tag && revision === approvedHostedTrial.revision &&
+    digest === approvedHostedTrial.digest;
+}
 const fixtureOnlyReviewedCloudBaseline = Object.freeze({
   tag: 'step3rc14',
   revision: 'oldx-owner-read-00003-nus',
@@ -1164,6 +1179,7 @@ async function main(args) {
     const tag = args[1].slice('--hosted-tag='.length);
     const revision = args[2].slice('--hosted-revision='.length);
     const digest = args[3].slice('--hosted-digest='.length);
+    requireSafe(isApprovedHostedTrial({tag, revision, digest}), 'UNAPPROVED_HOSTED_TARGET');
     requireSafe(/^[a-z][a-z0-9-]{0,30}$/.test(tag) && tag !== 'healthcheck' &&
       /^oldx-owner-read-[a-z0-9-]{1,47}$/.test(revision) &&
       !['oldx-owner-read-00001-8kr', healthRevision, fixtureOnlyReviewedCloudBaseline.revision].includes(revision) &&
@@ -1173,6 +1189,17 @@ async function main(args) {
   }
   requireSafe(process.platform === 'linux', 'CLOUD_SHELL_REQUIRED');
   guardOperator();
+  // Fail before reading the key or minting any credentials if a prior hosted
+  // attempt left a journal, including a failed or incomplete run. Never delete
+  // or reset this journal to retry creation.
+  if (hosted) {
+    try {
+      lstatSync(journalRoot('hosted'));
+      throw new Error('HOSTED_JOURNAL_ALREADY_EXISTS');
+    } catch (error) {
+      requireSafe(error?.code === 'ENOENT', 'HOSTED_JOURNAL_ALREADY_EXISTS');
+    }
+  }
   // Future approved operator supplies the staging web key over a private inherited
   // descriptor, never argv, environment, a checked-in file or a terminal transcript.
   const key = readFileSync(3, 'utf8').trim();

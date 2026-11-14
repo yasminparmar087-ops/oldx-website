@@ -68,3 +68,20 @@ test('enabled fixture-only candidate still requires Linux, exact operator, and p
   assert.match(path, /inspectPhaseBConfiguration\(gcloud, \{preflight: true, hostedTarget\}\)/);
   assert.match(source, /const LIVE_EXECUTION_ENABLED = false;/);
 });
+
+
+test('fixture-only configuration diagnostic is read-only and uses the same pinned gate as execution', () => {
+  const start = source.indexOf("if (args.length === 1 && args[0] === '--check-fixture-configuration')");
+  const end = source.indexOf("if (args.length === 1 && args[0] === '--preflight-fixtures')", start);
+  assert.ok(start > 0 && end > start, 'dedicated read-only diagnostic must exist');
+  const block = source.slice(start, end);
+  assert.match(block, /guardOperator\(\)/);
+  assert.match(block, /inspectFixtureOnlyStagingConfiguration\(gcloud\)/);
+  assert.match(block, /blockingChecks/);
+  assert.doesNotMatch(block, /readFileSync\(3|openJournal|runSession|createUser|createDoc|deleteUser|deleteDoc|mintRuntimeCredential/);
+  assert.match(source, /tag: 'step3rc14'/);
+  assert.match(source, /revision: 'oldx-owner-read-00003-nus'/);
+  assert.match(source, /digest: 'sha256:c5fc856b45b19ec995167753d0ab7449fea9550f7e06b1b75da025fe179928dc'/);
+  assert.match(source, /: inspectFixtureOnlyStagingConfiguration\(gcloud\)/);
+  assert.match(source, /const LIVE_EXECUTION_ENABLED = false;/);
+});

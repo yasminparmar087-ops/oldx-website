@@ -1098,6 +1098,35 @@ async function main(args) {
     console.log('Live execution disabled. Status performs read-only exact lookups.');
     return 0;
   }
+  if (args.length === 1 && args[0] === '--preflight-hosted') {
+    // READ ONLY: no Web API key, token mint, hosted call, journal creation or
+    // Firebase mutation. Use only the one exact operator-approved tagged target.
+    requireSafe(process.platform === 'linux', 'CLOUD_SHELL_REQUIRED');
+    guardOperator();
+    for (const name of ['service.json', 'iam.json', 'service-restore.yaml']) {
+      const path = join(homedir(), '.oldx-hosted-rollout-before', name);
+      const info = lstatSync(path);
+      requireSafe(info.isFile() && privatePath(info) && info.size > 0, 'PRIVATE_ROLLBACK_PREIMAGE_UNAVAILABLE');
+    }
+    try {
+      lstatSync(journalRoot('hosted'));
+      console.log('STOP: PREVIOUS_HOSTED_JOURNAL_REQUIRES_REVIEW');
+      return 3;
+    } catch (error) {
+      if (error?.code !== 'ENOENT') throw error;
+    }
+    const hostedTarget = {...approvedHostedTrial,
+      origin: ownerReadAudience.replace('https://', 'https://' + approvedHostedTrial.tag + '---')};
+    const config = inspectPhaseBConfiguration(gcloud, {preflight: true, hostedTarget});
+    console.log('HOSTED_CONFIGURATION', config.configuration);
+    console.log('BLOCKING_CHECKS', Object.entries(config.checks)
+      .filter(([, status]) => status !== 'MATCH').map(([name]) => name).join(',') || 'NONE');
+    if (config.configuration !== 'MATCH') return 3;
+    const {observations, allAbsent} = await inspectRecovery(liveSend, null);
+    for (const {resource, observation} of observations) console.log(resource, observation);
+    console.log(allAbsent ? 'HOSTED_FOUR_ABSENT_AT_CHECK_TIME' : 'STOP: HOSTED_RESOURCE_NOT_ABSENT');
+    return allAbsent ? 0 : 3;
+  }
   if (args.length === 1 && ['--status', '--status-hosted'].includes(args[0])) {
     requireSafe(process.platform === 'linux', 'CLOUD_SHELL_REQUIRED');
     guardOperator();

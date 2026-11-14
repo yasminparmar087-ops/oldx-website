@@ -9,6 +9,7 @@ const source = readFileSync(script, 'utf8');
 
 test('hosted execution remains hard-off with no credential access', () => {
   for (const args of [
+    ['--execute-fixtures'],
     ['--execute'],
     ['--execute', '--hosted-tag=step3rc14',
       '--hosted-revision=oldx-owner-read-00003-nus',
@@ -27,7 +28,7 @@ test('hosted execution remains hard-off with no credential access', () => {
 test('source binds runtime mint and runtime transport only to hosted mode', () => {
   assert.match(source, /const LIVE_EXECUTION_ENABLED = false;/);
   assert.match(source, /const fixtureOnly = args\.length === 1 && args\[0\] === '--execute-fixtures';/);
-  assert.match(source, /const LIVE_FIXTURE_ONLY_ENABLED = true;/);
+  assert.match(source, /const LIVE_FIXTURE_ONLY_ENABLED = false;/);
   assert.match(source, /fixtureOnly && LIVE_FIXTURE_ONLY_ENABLED/);
   assert.match(source, /hosted && LIVE_EXECUTION_ENABLED/);
   assert.match(source, /const credential = hosted \? await mintRuntimeCredential\(/);
@@ -53,7 +54,7 @@ test('fresh four-ID preflight stays read-only, fails closed on journal or unknow
 });
 
 
-test('enabled fixture-only candidate still requires Linux, exact operator, and private FD3', () => {
+test('disabled fixture-only path retains Linux, operator and private FD3 safety prerequisites', () => {
   const gate = source.indexOf("const fixtureOnly = args.length === 1 && args[0] === '--execute-fixtures'");
   const keyRead = source.indexOf("const key = readFileSync(3, 'utf8').trim()", gate);
   const run = source.indexOf("await runSession(transport(", keyRead);
@@ -69,6 +70,12 @@ test('enabled fixture-only candidate still requires Linux, exact operator, and p
   assert.match(source, /const LIVE_EXECUTION_ENABLED = false;/);
 });
 
+
+test('both fixture-only and hosted execution flags stay hard-off after fixture audit', () => {
+  assert.match(source, /const LIVE_FIXTURE_ONLY_ENABLED = false;/);
+  assert.match(source, /const LIVE_EXECUTION_ENABLED = false;/);
+  assert.match(source, /const credential = hosted \? await mintRuntimeCredential\(/);
+});
 
 test('fixture-only configuration diagnostic is read-only and uses the same pinned gate as execution', () => {
   const start = source.indexOf("if (args.length === 1 && args[0] === '--check-fixture-configuration')");

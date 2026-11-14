@@ -1079,3 +1079,18 @@ node scripts/phase-b-fixture-session-v1.mjs --execute
 **Minimal code-ready decision (not yet implemented):** separate the four-resource **operator fixture-only** path from runtime IAM/product-update and hosted acceptance paths using an explicit fail-closed mode; keep strong finite session/cleanup deadline and crash journal on both modes; never weaken `LIVE_EXECUTION_ENABLED=false` or `LIVE_HOSTED_ACCEPTANCE_ENABLED=false`. Add only narrow fake-transport assertions proving the fixture-only mode never mints runtime credential, touches runtime API, updates a document, or contacts a hosted tag. Inspect immutable diff and focused tests; avoid a broad retest or unnecessary Codex. Do not introduce optional one-document proof. If mode separation cannot be demonstrated safely, remain NO-GO.
 
 **Other outstanding gates unchanged:** effective operator Firestore DELETE not proven; mid-session failure does not trigger automatic cleanup; Auth deletion lacks atomic UID-generation precondition. Use the existing `docs/phase-b-fixture-execution-review.md#interrupted-four-fixture-session-runbook` for exact-ID manual recovery after a **separately approved** live session; do not rerun prior 403/404 or OCI proofs. Show new reviewed runner SHA, exact execution/deletion commands, operator and retention limit before asking Yasmin for explicit live session approval. **STAGING NO-GO; PRODUCTION HOLD/NO-GO.**
+
+
+## 2026-11-15 — Task 3 fixture-only/runtime separation implemented, targeted test pending
+
+Owner said to proceed with **source-only** Task 3 step and ask for Cloud Shell only when actually needed; no live approval. On `security-hardening-review`, code commit `94240174f1ab17b90420762d714ccd4c4c611c15` changed only `scripts/phase-b-fixture-session-v1.mjs` (resulting blob SHA `4000483bf17d7f8f72349a3e3aadc02eeef62047`). Follow-up commit `9dce2db093d197dcb21ec56c11633fe9df8d7615` added `tests/integration/phase-b-fixture-mode-safety.test.mjs`. Existing `LIVE_EXECUTION_ENABLED=false` is unchanged and hosted acceptance gate is unchanged. Explicit future fixture-only CLI is `--execute-fixtures`; legacy plain `--execute` now fails closed. Hosted `--execute --hosted-tag=... --hosted-revision=... --hosted-digest=...` remains separate and hard-off. Fixture-only now passes no runtime transport and never invokes `mintRuntimeCredential`; uses bounded local session deadline `runtimeSessionBudget(Date.now()+240000)`, exact-identity operator transport and existing fsynced journal. It does not call an enabled hosted tag. The previously identified unhosted runtime token/product-update coupling is removed **in source**, not yet verified by executed tests. This does **not** repair missing automatic rollback after an early exception, establish operator effective Firestore DELETE, eliminate Auth UID race, or approve live execution.
+
+**Checks performed:** GitHub fetched and checked exact changed source text and preserved hard-off gate; focused test file committed, but **Node tests not yet run**. Minimum next operator action in existing Cloud Shell checkout, only once:
+
+```bash
+cd ~/oldx-staging-build
+git pull --ff-only origin security-hardening-review
+node --test tests/integration/phase-b-fixture-mode-safety.test.mjs
+```
+
+Do not run `--execute-fixtures`, `--execute` or `--status` during this check. Record exact pass/fail and remote HEAD before changing readiness; no broad test suite, cloud API calls, token mint, IAM/Rules/Billing, Cloud Run or production operations. Source-level gate remains **STAGING NO-GO / PRODUCTION HOLD/NO-GO** until targeted test and subsequent independently approved cleanup/fixture acceptance.

@@ -194,3 +194,80 @@ Yasmin's Cloud Shell screenshot shows the existing private backups service.json 
 Yasmin's ~04:29 IST Cloud Shell screenshot of local-only Python using the original private JSON (service.json) and private export YAML (service-restore.yaml) showed **SERVICE_NAME PASS, ORIGINAL_TRAFFIC PASS, ACTIVATION_DISABLED PASS, ADC_DISABLED PASS, RUNTIME_IDENTITY PASS, CONCURRENCY PASS**, with final **RESTORE_PREIMAGE PASS**, clean shell prompt. The ORIGINAL_TRAFFIC check explicitly compared both files' spec.traffic with the protected entries: original main oldx-owner-read-00001-8kr untagged 100%, healthcheck oldx-owner-read-00002-tid 0%, step3rc14 oldx-owner-read-00003-nus 0%. The original disabled service template flags were false in the YAML, serviceAccountName in JSON matched YAML, and YAML concurrency was 1. This is successful **local selective invariant comparison**, NOT an actual restore or a full-field semantic equivalence proof. The screenshot shows no gcloud write, no Cloud Run deployment, no private journal exposure.
 
 Safety next steps before separately authorizing mutation: confirm no unexpected drift of entire service template (resources CPU=1, memory 512Mi, timeout=30s, image, service-level max=20, revision-level max=1 and min=0 effective policy, ingress and IAM), verify the signed-in operator, unique proposed trial tag and billing/cost stop condition in a fresh bounded preflight; freeze the exact executable new **0%-main-traffic revision** rollout command and separately reviewed restorative template command/diff; include restoration of original activation-disabled service template as well as the old protected 100/0/0 traffic in rollback. Do not treat RESTORE_PREIMAGE PASS as permission to run gcloud deploy/replace/update-traffic or Auth/Firestore operations. All source gates remain OFF. Hosted NO-GO, production HOLD/NO-GO.
+
+
+### 2026-11-15 — exact proposed gcloud deployment plus full restore commands (DO NOT EXECUTE)
+
+**DOCUMENTED CANDIDATE — NOT EXECUTION AUTHORIZATION.** This freezes a reviewable exact command shape based on the owner's earlier 04:13/04:17/04:21/04:25/04:29 read-only evidence and official current gcloud CLI documentation. No new project, main traffic shift, IAM/public access change, Firebase Rules/Auth/Firestore access, billing change, domain change or production deployment. Owner Yasmin must separately approve the exact *creation and emergency rollback* envelope. Do not paste any command below into a live shell before that approval and a fresh operator-supervised preflight. No commands were run in this preparation.
+
+#### Immutable invariants and already evidenced limits
+
+- SERVICE=oldx-owner-read; PROJECT=oldx-staging; REGION=asia-south1; OPERATOR=yasminparmar087@gmail.com; RUNTIME_SA=oldx-product-read-staging@oldx-staging.iam.gserviceaccount.com.
+- Original protected main oldx-owner-read-00001-8kr untagged 100%. Old healthcheck tag oldx-owner-read-00002-tid 0%. Old step3rc14 tag oldx-owner-read-00003-nus 0%. New tag ownerbuyertrial was UNUSED only at 04:17 IST, must be rechecked for collision.
+- Private before-image: $HOME/.oldx-hosted-rollout-before/{service.json,iam.json,service-restore.yaml}. Backup must remain owner-private, unchanged and accessible throughout supervised rollback. Six checked YAML-vs-JSON restore invariants PASS at 04:29, but unverified additional fields (image, resources, timeout, limits, ingress, IAM) require a pre-mutation exact diff before GO.
+- Immutable original published registry OCI INDEX sha256:c5fc856b45b19ec995167753d0ab7449fea9550f7e06b1b75da025fe179928dc with verified linux/amd64 child sha256:eabe4207e307d1e487a30e4afd3abe8cda3792883a752864a5d6f80c45cd082c; do not rebuild image.
+- Proposed new revision only: min instances 0, revision max 1, concurrency 1, CPU 1, 512Mi, timeout 30s, private IAM enforced. **Preserve service-wide max 20** by not supplying the distinct --max or --min service scaling flags. Existing ingress all must remain under invoker IAM, no --allow-unauthenticated and no --no-invoker-iam-check.
+- Proposed approved experimental env ONLY: ACTIVATE_STAGING=true; STAGING_ADC=true; FIREBASE_ENV=staging; FIREBASE_PROJECT_ID=oldx-staging; DATABASE_ID=(default); PRODUCT_READ_SERVICE_ACCOUNT exact runtime SA; rate window=60000 ms; per-actor limit=10; global limit=50. These rate choices remain a **candidate**, not deployed/approved facts. --set-env-vars replaces new desired template env; this is why a separate original disabled-template restore is mandatory.
+
+#### Exact command proposal A: new 0%-general-traffic enabled revision (NOT RUN)
+
+~~~bash
+# REVIEW DOCUMENT ONLY — NO CLOUD WRITES WITHOUT SPECIFIC OWNER APPROVAL.
+gcloud run deploy oldx-owner-read \
+  --project=oldx-staging \
+  --region=asia-south1 \
+  --account=yasminparmar087@gmail.com \
+  --image='asia-south1-docker.pkg.dev/oldx-staging/oldx-staging-images/oldx-owner-read-step3-rc@sha256:c5fc856b45b19ec995167753d0ab7449fea9550f7e06b1b75da025fe179928dc' \
+  --service-account='oldx-product-read-staging@oldx-staging.iam.gserviceaccount.com' \
+  --no-traffic \
+  --tag=ownerbuyertrial \
+  --min-instances=0 \
+  --max-instances=1 \
+  --concurrency=1 \
+  --cpu=1 \
+  --memory=512Mi \
+  --timeout=30s \
+  --set-env-vars='OLDX_PRODUCT_READ_ACTIVATE_STAGING=true,OLDX_PRODUCT_READ_STAGING_ADC=true,OLDX_FIREBASE_ENV=staging,OLDX_FIREBASE_PROJECT_ID=oldx-staging,OLDX_PRODUCT_READ_DATABASE_ID=(default),OLDX_PRODUCT_READ_SERVICE_ACCOUNT=oldx-product-read-staging@oldx-staging.iam.gserviceaccount.com,OLDX_RATE_WINDOW_MS=60000,OLDX_RATE_ACTOR_LIMIT=10,OLDX_RATE_GLOBAL_LIMIT=50'
+~~~
+
+**Cloud Run docs verified 2026-11-15:** --no-traffic, --tag, --image, --min-instances/--max-instances (revision), --concurrency, --cpu, --memory, --timeout, --service-account, --set-env-vars are valid gcloud run deploy flags. Crucial: --max is the *SERVICE-wide* cap and is **intentionally absent**; --set-env-vars clears/replaces the desired template's env values while preserving immutable existing revisions. A new tagged revision is reachable at its tag URL despite zero default traffic. This command is NOT a guarantee of desired state: Cloud Run may inherit other template metadata, set defaults or be concurrently changed. **Capture the new assigned revision ID and URL, compare full sanitized desired-template diff and actual status** before any hosted API request. Do not infer a revision name or claim that 0% means no cost.
+
+#### Explicit pre-deploy STOP checks (no historical PASS re-run)
+
+Before Yasmin approves/reveals A for execution, the supervising operator must: validate correct account/project/region and unchanged review branch + image digest; check tag ownerbuyertrial is still unique; perform fresh service/template/IAM snapshot of protected 100/0/0 main and old tags, disabled template flags, no public invoker, same runtime SA and concurrency/resources, max/min, health/Ready; compare *all relevant* original YAML-vs-JSON fields with the protected restoration pre-image; confirm backup file is valid/private; confirm active budget alerts, expected maximum session exposure, manual rollback control and no background/in-flight requests. STOP on any unknown/mismatch. Use only redacted PASS/STOP reports (no tokens, raw env, IAM member lists, secrets or journal contents). The prior snapshots are historical, not authority to skip this freshness check.
+
+#### Post-A verification: MUST all be true, else STOP and roll back
+
+- Exactly four traffic entries: original disabled main 100% untagged, healthcheck 0%, step3rc14 0%, new ownerbuyertrial 0%; no LATEST=100. New assigned revision must be Ready and non-public; no changed IAM/ingress/old tags.
+- New revision must carry approved tag/url, runtime SA, one container, image index **or only** its verified canonical linux/amd64 child, resolved status digest exact child, enabled staging+ADC env, only approved project/default-db/rate config, no emulator/secret override. Check value existence/booleans without printing full env. The existing runner's hosted configuration verifier requires precisely these constraints and will fail closed on drift, even though its execution gates remain off.
+- Service-level max 20, min defaults and original main routing must be preserved; revision max 1, min 0, concurrency 1, CPU 1, 512Mi, 30 seconds. Cost not strictly capped by max instances or budget emails.
+- No public test requests. A successful deployment/Ready state does NOT authorize Owner/Buyer signed requests, Firebase creation/deletion or enabled hosted session. Stop unless a **new, distinct exact owner consent** is obtained for that separate data-plane action.
+
+#### Exact emergency rollback proposal B: remove only new trial tag, then restore disabled template (NOT RUN)
+
+~~~bash
+# REVIEW DOCUMENT ONLY — destructive/staging mutation, needs owner's
+# separately scoped deployment-plus-rollback authorization.
+gcloud run services update-traffic oldx-owner-read \
+  --project=oldx-staging \
+  --region=asia-south1 \
+  --account=yasminparmar087@gmail.com \
+  --remove-tags=ownerbuyertrial
+
+# After confirming trial tag no longer serves and original 100/0/0
+# traffic is untouched, restore the previously saved *disabled* template.
+gcloud run services replace "$HOME/.oldx-hosted-rollout-before/service-restore.yaml" \
+  --project=oldx-staging \
+  --region=asia-south1 \
+  --account=yasminparmar087@gmail.com
+~~~
+
+Safety: **these are two distinct cloud mutations**, not an atomic rollback. Stop all tagged requests first; no blind retry if either returns unknown outcome. The first command is targeted tag removal (not --clear-tags); second is a full service replacement using the pre-reviewed private exported Knative Service manifest. The second may create another **disabled** immutable revision and change latestReadyRevisionName, even while original old main remains 100%. It can overwrite concurrent service changes: require fresh generation/traffic drift check before replace and STOP if current state differs from the intended post-deployment state. Never use --to-latest, --to-revisions=LATEST=100, --clear-tags, or broad revision deletion. Use read-only gcloud service status/iam checks to confirm new tagged URL absent, old main exactly 100%, both old 0% tags preserved, template flags both FALSE, private IAM/ingress still enforced and no unexpected min instances. If any part of rollback fails, preserve logs and private journal, immediately escalate for owner-guided manual recovery rather than guessing or retrying. A frozen private pre-image does not itself guarantee rollback success.
+
+Optional local/API dry-run of the export manifest may be considered **after** checking exact CLI version: gcloud run services replace PATH --dry-run validates without applying, but passing dry-run does not prove that later live restore will succeed. **Do not invoke replace even with --dry-run** as a prerequisite now unless its read-only effects and operator consent are separately confirmed.
+
+#### What remains UNVERIFIED / explicit consent wording
+
+The exact rollout and restore diff is prepared **for approval**, not granted: owner must explicitly authorize (a) a single new staging enabled 0%-tagged revision with these exact settings, (b) **both** the new-tag removal and exact private disabled-template restoration if needed, including the possibility of an extra disabled revision and associated bounded cost; and (c) supervised monitoring/stop actions. This does NOT authorize a hosted data-plane session, IAM/Rules/Billing changes, main/production traffic migration, revision deletion, or repeated failed mutation. Runtime database-isolation and DELETE-denial are independent unverified gates. The completed fixture-only journal remains immutable. **STAGING HOSTED NO-GO / PRODUCTION HOLD-NO-GO until separate owner authorization and verified rollout.**
+
+Official reference URLs: https://docs.cloud.google.com/sdk/gcloud/reference/run/deploy ; https://docs.cloud.google.com/sdk/gcloud/reference/run/services/update-traffic ; https://docs.cloud.google.com/sdk/gcloud/reference/run/services/replace ; https://docs.cloud.google.com/run/docs/rollouts-rollbacks-traffic-migration .

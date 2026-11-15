@@ -7,10 +7,10 @@ const route = '/api/staging/marketplace/owner';
 export const ownerReadAudience = 'https://oldx-owner-read-lqpaz3pd5a-el.a.run.app';
 const audience = ownerReadAudience;
 const invoker = 'oldx-phase-b-invoker@oldx-staging.iam.gserviceaccount.com';
-// Default OFF: same one-supervised-session approval as the exact pinned fixture runner.
-// This is not a standing permission to invoke other revisions.
-const LIVE_HOSTED_ACCEPTANCE_ENABLED = process.env.OLDX_PHASE_B_HOSTED_SESSION_APPROVAL ===
-  'YASMIN_20261115_OWNERBUYERTRIAL_ONCE';
+// The uniquely approved 2026-11-15 hosted session is complete/STOP and
+// its tagged Cloud Run revision was rolled back. Retire the spent authorization.
+// No future hosted request may reuse the historical process environment flag.
+const LIVE_HOSTED_ACCEPTANCE_ENABLED = false;
 export function requireHostedAcceptanceEnabled() {
   if (!LIVE_HOSTED_ACCEPTANCE_ENABLED) throw new Error('HOSTED_ACCEPTANCE_DISABLED');
 }

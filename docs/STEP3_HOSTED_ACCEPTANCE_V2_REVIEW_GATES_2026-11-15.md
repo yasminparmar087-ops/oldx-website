@@ -106,6 +106,16 @@ The following is one **conservative planning scenario** for G8 of the EXISTING V
 
 When ready, ask Yasmin for **separate, concise approvals** covering (a) read-only config/log/identity inspection, (b) new container publish and 0%-traffic tagged deployment plus both rollback mutations, (c) named invocation/token mint and (d) exact synthetic create/update/delete/quota tests with supervised cleanup. A generic “continue” or yesterday's spent approval authorizes none of these.
 
+### 4B. Owner-observed billing/Cloud Run read-only snapshot (15 Nov ~20:24 IST)
+
+**G8 PARTIALLY EVIDENCED — NOT READY OR AUTHORIZED.** The owner supplied actual Google Cloud Shell/Console screenshots showing staging project billing linked and enabled, linked account open, and account Overview trial status. The billing account lists **two linked projects**, so its **Cost ₹0.04 / Savings ₹0.04 / Total ₹0.00** and displayed **No-cost Free Trial credit ₹28,569 / 87 days remaining** are ACCOUNT-level observations, **not oldx-staging-only totals**, nor confirmed current service/SKU costs or a spending cap. Do not copy the visible billing account ID. A separate "Active credits: 0" indicator cannot be substituted for the explicitly shown no-cost Free Trial credit. Gross project-only costs and credit application remain UNKNOWN until an OLDX-filtered Reports view.
+
+Actual Cloud Run sanitized service template for oldx-owner-read, asia-south1: 1 CPU / 512Mi, concurrency=1, timeout=30s, request-based mode **inferred from default/missing cpu-throttling annotation**, correct runtime-SA identity, latest-ready oldx-owner-read-00003-nus, and unchanged protected traffic 00001-8kr=100% / 00002-tid healthcheck=0% / 00003-nus step3rc14=0%. **Important variance against proposed max1:** current maximumInstancesService=20, maximumInstancesRevision=1; both minimum-instance annotations NOT_SET. Do not pretend max20 is max1 or assume a new revision inherits max1 automatically. Never change the existing service-wide max20 to max1 based on this packet: that would be a live infrastructure mutation needing separate impact review, rollback and explicit owner consent.
+
+**Remaining narrow informational task:** owner opens Billing > Reports, filters exact Project oldx-staging, date 1–15 Nov 2026, groups by Service, and sends a screenshot showing charges/credits if available. Check existing Budgets and caps read-only: alerts-only vs a truly enabled and applicable enforced spend cap. The proposed ₹100 STOP / monthly ₹2,000 preference remains *unapproved and not a hard limit*. If authentic project charges, ceiling, fresh disabled revision/rollback and hard run counters cannot all be reviewed, preserve G8 BLOCKED and V2 hosted NO-GO. Neither Cloud Shell tool output nor the account Overview gives real per-project SKU spend on its own.
+
+**Status:** Source-only evidence update; no IAM, Cloud Run config, billing or Firebase changes; no extra CI. Step 02/15 ACTIVE, staging hosted NO-GO, production HOLD/NO-GO.
+
 ## 5. Evidence matrix and decision
 
 | Evidence source | Allowed conclusion |

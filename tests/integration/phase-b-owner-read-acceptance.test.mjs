@@ -295,13 +295,17 @@ test('scoped Cloud Logging adapter accepts only matching mock shape, never live 
     'content-type': 'text/html', 'x-cloud-trace-context': traceId + '/1;o=0',
   }});
   const calls = [];
-  const read = async (...args) => { calls.push(args); return JSON.stringify([entry]); };
+  let processPlan;
+  const read = async (...args) => {
+    calls.push(args);
+    processPlan = planOfflineV2LoggingProcess(...args);
+    return JSON.stringify([entry]);
+  };
   const input = {read, response, body, traceId, startedAt, finishedAt, tag, revision};
   assert.equal(await reviewScopedHostedDenialLogShape(input), 'SHAPE_MATCH_ONLY');
   assert.equal(calls.length, 1);
   assert.ok(calls[0].at(-1)?.signal instanceof AbortSignal);
   assert.equal(calls[0].at(-1).signal.aborted, true);
-  const processPlan = planOfflineV2LoggingProcess(...calls[0]);
   assert.equal(processPlan.decision, 'OFFLINE_PLAN_ONLY');
   assert.equal(processPlan.executable, false);
   assert.equal(processPlan.provenance, 'UNVERIFIED');

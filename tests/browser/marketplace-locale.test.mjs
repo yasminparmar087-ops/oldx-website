@@ -396,7 +396,15 @@ test('real Product and Store layouts keep controls usable and long seller text i
  const image='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aau8AAAAASUVORK5CYII=';
  try{
   await page.goto(origin+'/homepage-fixture');
+  // Let the initial Auth/UI bootstrap settle, then fence any pending async feed
+  // read before injecting the synthetic card. Otherwise an old completion can
+  // replace #productGrid and cause a false five-second placeholder timeout.
+  await page.locator('#appLaunchBannerModal').waitFor({state:'hidden',timeout:15000});
   await page.evaluate(({authored,image})=>{
+   ++productsReadGeneration;
+   productFeedState=null;
+   hasMoreProducts=false;
+   products=[];
    currentProduct={docId:'sample',title:authored,desc:authored,location:authored,finalPriceStr:'₹12,345',images:[image]};
    renderProductDetailView(currentProduct);
    document.getElementById('productGrid').replaceChildren(createProductCard({...currentProduct,images:['data:image/png;base64,AAAA']}));

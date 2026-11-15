@@ -116,6 +116,15 @@ Actual Cloud Run sanitized service template for oldx-owner-read, asia-south1: 1 
 
 **Status:** Source-only evidence update; no IAM, Cloud Run config, billing or Firebase changes; no extra CI. Step 02/15 ACTIVE, staging hosted NO-GO, production HOLD/NO-GO.
 
+
+### 4C. Project-specific current-month cost is verified; spend-cap and V2 limits still not proven
+
+**New actual owner Billing Reports evidence, 15 Nov ~20:50 IST:** With **Group by Project**, current-month charge period and savings (All), the explicit `oldx-staging` project row shows **usage cost ₹0.04, other savings −₹0.04, subtotal ₹0.00**. Bottom total ₹0.00, Free Trial credit ₹28,569 visible. This is project-specific billing evidence at report time, NOT just the account-wide URL context or an assumed cost allocation. Earlier Service grouping showed Cloud Run ₹0.04 before savings but did not show project filtering concurrently; treat exactly which billed SKU drove staging's ₹0.04 as **NOT separately verified**. Reporting can lag actual consumption.
+
+**G8 remains BLOCKED** notwithstanding the small historical bill: current Cloud Run service maximum **20** while existing revision maximum **1**; source G8 proposed 200 attempts, 1,000 instance-seconds and ₹100 human STOP are not independently enforced; new V2 revision min/max/image provenance and complete rollback journal still unverified; exact project gross spend **so far** is not a reliable prospective cap. The user may read **Billing → Budgets and caps** to distinguish ordinary alerts from actually configured enforceable service-specific spend cap, but must not edit/create/enable one on this evidence. No assumption that Trial credit can safely cover unbounded staging tests.
+
+**Next:** owner screenshot of **Budgets and caps** (read-only, redact billing account details); then resolve real cost enforcement and test counters in existing G8 plan. No new checker, Cloud IAM/Rules/Billing/Run mutation or old probe rerun.
+
 ## 5. Evidence matrix and decision
 
 | Evidence source | Allowed conclusion |

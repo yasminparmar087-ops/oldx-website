@@ -5,6 +5,17 @@
 - **Before requesting the owner to repeat OLDX status, read [docs/OLDX_CURRENT_HANDOFF.md](docs/OLDX_CURRENT_HANDOFF.md).** It tracks the latest verified cloud revisions, tests, approvals, remaining blockers and exact next step. Historical sections below may describe older stages; reconcile with dated verification, never silently overwrite evidence.
 - After a significant verified checkpoint, update that living handoff on `security-hardening-review`, without secrets or personal user data. Record source/verification and preserve HOLD / NO-GO. This is source documentation only, not permission to deploy or change IAM/Rules/Billing.
 
+
+## Mandatory owner-locked 15-step Single Execution Plan (15 November 2026)
+
+**Every new chat, Codex task and repository worker MUST use [docs/OLDX_SINGLE_EXECUTION_PLAN_2026-11-13.md](docs/OLDX_SINGLE_EXECUTION_PLAN_2026-11-13.md) Section 0's numbered step tracker and Section 8's work/tool instructions, plus the latest dated [docs/OLDX_CURRENT_HANDOFF.md](docs/OLDX_CURRENT_HANDOFF.md) before picking tasks.** These are binding execution instructions that supplement this file's stronger security/approval boundaries. They do not authorize new cloud work.
+
+At the 2026-11-15 checkpoint: **15 total master steps, 01 DONE-evidence, 02 CURRENT/ACTIVE with owner-evidence dependencies, 13 subsequent steps open; 14 not fully complete.** The current gate reuses existing GitHub Issues #17/#21/#22, not more duplicate preflight checkers. Do not restart old source batches, re-run previously passed full CI without changed code, or invent completion percentages/dates. Update counts only when step exit criteria are actually verified. Older sections of this file and the 13-Nov master plan contain dated cloud observations; later owner-verified hosted STOP/rollback and current handoff supersede those *observations* without changing their release gates.
+
+**Efficient tool choice:** Make small read/review/doc/GitHub changes with directly available ChatGPT/GitHub tools. Use Cloud Shell only when it is useful and actually available for a **separately authorized, bounded, owner-controlled GCP operation**, never merely because the owner said "continue". Use Codex for genuinely large or complex multi-file coding/integration tasks, with one bounded P0 step and precise tests, minimizing credits. Never pretend to use tools not connected in the current chat. Codex and Cloud Shell are not prerequisites for trivial changes. No repetitive permission requests for routine source-only work; ask one exact owner approval for sensitive live access, IAM, billing, Secrets, Rules, deployment, data, tokens or release.
+
+**Direction control:** Prioritize current Step 02's single owner-decision packet / concrete unverified Rules/IAM/cost proof; while waiting, only advance an independently proven Step 06–12 real-Website P0 regression. No random security/source-only busywork, alternate roadmap, speculative additional checker or duplicate UI. Preserve original source, Android compatibility and all approved features. At each significant verified checkpoint, append evidence to the living handoff and update master tracker only when step status genuinely changes. Production remains **HOLD / NO-GO**.
+
 ## Mission
 Help complete OLDX safely and efficiently. Work autonomously on clearly scoped, reversible repository tasks, run the relevant tests, fix failures where safe, and continue to the next independent task without waiting for the user to say "continue".
 

@@ -18,12 +18,14 @@ Production (`oldx-1c983`): **HOLD / NO-GO**
 
 This packet supersedes older **unexecuted** V1 proposals where they conflict with the consumed authorization, test outcome, or verified rollback. It does **not** overwrite the V1 historical audit.
 
+**15 Nov owner decision, specific scope:** The owner explicitly approved choosing/reusing the already-published immutable image as the V2 **candidate image**. This authorizes **choice/reuse only**—not a new image build, publish, Cloud Run deploy/tag, activation, runner execution, Google/Firebase token mint, synthetic fixture write, IAM/Rules/Billing edit, live hosted request, or production. All original V1 trial approvals are consumed. The index/amd64 child are historical registry evidence, not a fresh V2 acceptance. The G2 runtime-input compare found no change to Dockerfile, package files or COPY inputs, so **do not rebuild merely due to later documentation/CLI changes**. First remaining approval scope is a separately specified private tagged revision with independently scoped two-stage rollback after fresh G1/G2 readiness; G2 **PARTIAL**, G3/G4/G5/G6/G9/G10 not closed. See Issue #17 and the master plan.
+
 ## 1. Decide readiness in this exact order, with no live operation yet
 
 | Gate | Requirement before any new V2 execution | Currently supported result |
 |---|---|---|
 | G1 — Source | New independently reviewed runner revision and exact Git SHA; its specific execution gate remains default **OFF** until a new, scoped consent, with privacy-safe stage diagnostics | **PENDING**; V1 gate permanently OFF |
-| G2 — Runtime image | New source-to-container provenance, immutable OCI index digest and verified canonical amd64 child, with reviewed Docker runtime | **PENDING**; old frozen image is V1 evidence only |
+| G2 — Runtime image | Owner-selected immutable source-matched published image, reviewed OCI index digest and canonical amd64 child, plus fresh source/registry/security suitability before future V2 execution | **PARTIAL — IMAGE REUSE OWNER-APPROVED 15 NOV; existing published index `sha256:c5fc856b45b19ec995167753d0ab7449fea9550f7e06b1b75da025fe179928dc` and linux/amd64 child `sha256:eabe4207e307d1e487a30e4afd3abe8cda3792883a752864a5d6f80c45cd082c` HISTORICALLY VERIFIED; source Docker COPY inputs unchanged in current GitHub compare; fresh G2 security/registry check and new V2 runner remain PENDING. NO deployment consent.** |
 | G3 — Target | New unique tag, new revision as assigned by Cloud Run (never invent its name), audience and tag URL independently checked; no production/main-traffic change | **PENDING** |
 | G4 — IAM | Dedicated named invoker, runtime service identity, no public principal, no broadened roles; configured conditional Firestore rights distinguished from **effective** DB isolation and DELETE denial | **PENDING EFFECTIVE PROOF** |
 | G5 — Logging | Independently authenticated, project-scoped Cloud Logging reader; exact one-trace/one-entry request evidence (revision, service, URL, method, status, time, platform denial); no proof from headers or caller-supplied JSON alone | **PENDING** |

@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import {spawnSync} from 'node:child_process';
+import {readFileSync} from 'node:fs';
 import test from 'node:test';
 import {fileURLToPath} from 'node:url';
 import {authUids, firestoreDocs} from '../../scripts/phase-b-http-contract-review.mjs';
@@ -375,6 +376,20 @@ test('shared hosted session counts all attempted HTTP requests, reserves 32 for 
   assert.throws(() => budget.beforeHttpAttempt(), /HTTP_ATTEMPT_BUDGET_EXCEEDED/);
   elapsed = 211_000;
   assert.throws(() => budget.beforeHttpAttempt(), /SESSION_DEADLINE_EXCEEDED/);
+});
+
+test('hosted runtime-token mint consumes one shared request before fixture attempts', () => {
+  // Runtime IAMCredentials mint is completed before its expiry is known, but
+  // must be charged once before any fixture write or hosted test request.
+  assert.match(readFileSync(script, 'utf8'),
+    /if \(hosted\) budget\.beforeHttpAttempt\(\);\s*const afterSignIn/);
+  const budget = runtimeSessionBudget(300_000, () => 0, () => 0);
+  budget.beforeHttpAttempt(); // the already completed runtime token-mint request
+  for (let i = 0; i < 167; i++) budget.beforeHttpAttempt();
+  assert.throws(() => budget.beforeHttpAttempt(), /HTTP_ATTEMPT_BUDGET_EXCEEDED/);
+  budget.beginCleanup();
+  for (let i = 0; i < 32; i++) budget.beforeHttpAttempt();
+  assert.throws(() => budget.beforeHttpAttempt(), /HTTP_ATTEMPT_BUDGET_EXCEEDED/);
 });
 
 test('runtime session budget reserves cleanup window and stops before runtime token expiry', () => {

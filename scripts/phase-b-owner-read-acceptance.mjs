@@ -180,10 +180,18 @@ const retiredHostedTrialRevisions = new Set([
 // obtains credentials nor performs a network request on its own. Mocked log
 // data can establish matching STRUCTURE only, never authenticate provenance.
 // Consequently no result returned here is an authorization or hosted PASS.
+const MAX_LOG_SHAPE_READ_MS = 2_000;
+
+// Decision deadline for an injected asynchronous reader, NOT a subprocess
+// kill-switch. The future authenticated reader must independently enforce an
+// OS/process deadline and honor the signal; mocked logs never prove provenance.
 export async function reviewScopedHostedDenialLogShape({
   read, response, body, traceId, startedAt, finishedAt, revision, tag,
+  readTimeoutMs = MAX_LOG_SHAPE_READ_MS,
 } = {}) {
   if (typeof read !== 'function' ||
+      !Number.isSafeInteger(readTimeoutMs) || readTimeoutMs < 1 ||
+      readTimeoutMs > MAX_LOG_SHAPE_READ_MS ||
       typeof traceId !== 'string' || !/^[a-f0-9]{32}$/.test(traceId) ||
       !Number.isSafeInteger(startedAt) || !Number.isSafeInteger(finishedAt) ||
       finishedAt < startedAt || finishedAt - startedAt > 20_000 ||
@@ -197,6 +205,9 @@ export async function reviewScopedHostedDenialLogShape({
       response.headers.get('content-type')?.split(';')[0].trim().toLowerCase() !== 'text/html') {
     return 'BLOCKED';
   }
+
+  const controller = new AbortController();
+  let timer;
   try {
     // Do not filter on revision/status/URL before fetching: conflicting
     // request records for the same trace must remain visible, fail-closed.
@@ -205,9 +216,23 @@ export async function reviewScopedHostedDenialLogShape({
       'timestamp>="' + new Date(startedAt - 5000).toISOString() + '"',
       'timestamp<="' + new Date(finishedAt + 5000).toISOString() + '"',
     ].join(' AND ');
-    const raw = await read('logging', 'read', logFilter,
+
+    // A read that never resolves MUST NOT hold the review decision open.
+    // Even a misbehaving callback that ignores abort cannot make a late
+    // result count. This does not claim the underlying subprocess was killed.
+    const deadline = new Promise(resolve => {
+      timer = setTimeout(() => {
+        controller.abort();
+        resolve({kind: 'timeout'});
+      }, readTimeoutMs);
+    });
+    const reading = Promise.resolve().then(() => read('logging', 'read', logFilter,
       '--project=oldx-staging', '--account=yasminparmar087@gmail.com',
-      '--limit=2', '--format=json', '--quiet');
+      '--limit=2', '--format=json', '--quiet', {signal: controller.signal}))
+      .then(raw => ({kind: 'result', raw}), () => ({kind: 'error'}));
+    const outcome = await Promise.race([reading, deadline]);
+    if (outcome.kind !== 'result' || controller.signal.aborted) return 'UNVERIFIED';
+    const raw = outcome.raw;
     if (typeof raw !== 'string' || Buffer.byteLength(raw, 'utf8') > 65_536) return 'UNVERIFIED';
     const entries = JSON.parse(raw);
     if (!Array.isArray(entries)) return 'UNVERIFIED';
@@ -217,6 +242,9 @@ export async function reviewScopedHostedDenialLogShape({
   } catch {
     // Never return provider messages, log payloads, traces, bodies or tokens.
     return 'UNVERIFIED';
+  } finally {
+    clearTimeout(timer);
+    controller.abort();
   }
 }
 

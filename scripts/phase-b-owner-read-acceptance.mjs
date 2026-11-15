@@ -14,6 +14,50 @@ const LIVE_HOSTED_ACCEPTANCE_ENABLED = false;
 export function requireHostedAcceptanceEnabled() {
   if (!LIVE_HOSTED_ACCEPTANCE_ENABLED) throw new Error('HOSTED_ACCEPTANCE_DISABLED');
 }
+
+// Diagnostic categories are fixed source-authored names. Never echo a caught
+// error, response body, OAuth/Firebase token, endpoint or provider message.
+// These categories describe a future failed attempt, not a successful probe.
+const hostedErrorCategories = Object.freeze({
+  INVOCATION_TOKEN_GENERATION_FAILED: 'TOKEN_MINT',
+  INVOCATION_AUDIENCE_UNVERIFIED: 'TOKEN_AUDIENCE',
+  INVOCATION_IDENTITY_UNVERIFIED: 'TOKEN_IDENTITY',
+  INVALID_HOSTED_ACCEPTANCE_INPUT: 'INPUT_GUARD',
+  INVALID_ACCEPTANCE_INPUT: 'INPUT_GUARD',
+  FIXTURE_IDENTITY_UNVERIFIED: 'FIXTURE_IDENTITY_GUARD',
+  UNAPPROVED_ACCEPTANCE_TARGET: 'TARGET_GUARD',
+});
+const hostedProbeCategories = Object.freeze({
+  'disabled-health': 'PROBE_DISABLED_HEALTH',
+  'disabled-owner': 'PROBE_DISABLED_OWNER',
+  'invoker-denied': 'PROBE_INVOKER_DENIAL',
+  owner: 'PROBE_OWNER',
+  'foreign-buyer': 'PROBE_BUYER_DENIAL',
+  'missing-firebase': 'PROBE_MISSING_FIREBASE',
+  'invalid-firebase': 'PROBE_INVALID_FIREBASE',
+  'wrong-project': 'PROBE_WRONG_PROJECT',
+  'quota-limit': 'PROBE_QUOTA_LIMIT',
+  'quota-failure': 'PROBE_QUOTA_FAILURE',
+});
+const allowedHostedCategories = new Set([
+  ...Object.values(hostedErrorCategories), ...Object.values(hostedProbeCategories), 'UNCLASSIFIED',
+]);
+export function classifyHostedAcceptanceError(error) {
+  const message = error instanceof Error ? error.message : '';
+  if (Object.hasOwn(hostedErrorCategories, message)) return hostedErrorCategories[message];
+  const prefix = 'ACCEPTANCE_STOPPED_';
+  const probe = message.startsWith(prefix) ? message.slice(prefix.length) : '';
+  return Object.hasOwn(hostedProbeCategories, probe) ? hostedProbeCategories[probe] : 'UNCLASSIFIED';
+}
+// Called only after all four remote resources are checked absent and the
+// private journal's completion marker was written. It cannot certify cleanup
+// from a naked exception or from a user-controlled string.
+export function completedHostedFailureCategory(error) {
+  return error instanceof Error &&
+    error.message === 'HOSTED_ACCEPTANCE_FAILED_FIXTURES_ABSENT' &&
+    allowedHostedCategories.has(error.hostedFailureCategory)
+    ? error.hostedFailureCategory : null;
+}
 const jwt = /^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/;
 const fixtureRequest = JSON.stringify({kind: 'product', id: privateProduct.id, requestId: null});
 const ownerResponse = {

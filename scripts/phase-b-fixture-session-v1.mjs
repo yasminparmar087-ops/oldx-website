@@ -833,7 +833,7 @@ function iamReadFailure(error) {
   return 'API_ERROR';
 }
 
-export function inspectPhaseBEffectiveIam(read = gcloud, {diagnostic = false} = {}) {
+export function inspectPhaseBEffectiveIam(read = gcloud, {diagnostic = false, postRollbackPreflight = false} = {}) {
   const expectedPermissions = {
     'datastore.databases.get': 'CAN_ACCESS',
     'datastore.entities.get': 'CAN_ACCESS',
@@ -841,7 +841,11 @@ export function inspectPhaseBEffectiveIam(read = gcloud, {diagnostic = false} = 
     'datastore.entities.update': 'CAN_ACCESS',
     'datastore.entities.delete': 'CANNOT_ACCESS',
   };
-  const report = inspectPhaseBConfiguration(read, {preflight: true});
+  // The owner-confirmed 100/0/0 rollback state is opt-in for this read-only
+  // IAM diagnostic only. Historical IAM/hosted checks retain their defaults.
+  const report = inspectPhaseBConfiguration(read, {
+    preflight: true, postRollbackOnePathProbe: postRollbackPreflight === true,
+  });
   report.loggingRead = 'UNVERIFIED';
   report.policyTroubleshooter = 'CONFIGURATION_NOT_MATCHED';
   const permissions = diagnostic ? ['datastore.databases.get'] : Object.keys(expectedPermissions);

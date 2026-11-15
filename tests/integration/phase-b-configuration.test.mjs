@@ -382,6 +382,55 @@ test('missing, duplicate, malformed and denied logging reads fail closed', async
   }
 });
 
+test('read-only effective IAM diagnostic recognizes exact owner-observed rollback only when opted in', () => {
+  const base = postRollbackOnePathPreflightRead();
+  let diagnostics = 0;
+  const read = (...args) => {
+    if (args[0] === 'services' && args.some(s => s.includes('policytroubleshooter'))) {
+      return 'policytroubleshooter.googleapis.com';
+    }
+    if (args[0] === 'policy-intelligence') {
+      diagnostics++;
+      const permission = args.find(s => s.startsWith('--permission=')).split('=')[1];
+      assert.equal(permission, 'datastore.databases.get');
+      assert.equal(args[3], '//firestore.googleapis.com/projects/oldx-staging/databases/(default)');
+      return JSON.stringify({
+        accessTuple: {fullResourceName: args[3], permission,
+          principal: 'oldx-product-read-staging@oldx-staging.iam.gserviceaccount.com'},
+        overallAccessState: 'CAN_ACCESS',
+      });
+    }
+    if (args[0] === 'logging') assert.fail('Diagnostic must never read Cloud logs');
+    return base(...args);
+  };
+
+  const historic = inspectPhaseBEffectiveIam(read, {diagnostic: true});
+  assert.equal(historic.configuration, 'FAIL');
+  assert.equal(historic.effectiveDatabaseIam, 'UNVERIFIED');
+  assert.equal(diagnostics, 0);
+
+  const newDiagnostic = inspectPhaseBEffectiveIam(read, {
+    diagnostic: true, postRollbackPreflight: true,
+  });
+  assert.equal(newDiagnostic.configuration, 'MATCH');
+  assert.equal(newDiagnostic.policyTroubleshooter, 'API_ENABLED');
+  assert.equal(newDiagnostic.databasePermissions['datastore.databases.get'].result, 'MATCH');
+  assert.equal(newDiagnostic.effectiveDatabaseIam, 'UNVERIFIED'); // one check is never enough
+  assert.equal(newDiagnostic.production, 'HOLD_NO_GO');
+  assert.equal(diagnostics, 1);
+
+  const invalid = postRollbackOnePathPreflightRead((cmd, data) => {
+    if (cmd.startsWith('run services describe')) data.status.traffic[2].percent = 1;
+  });
+  const drift = inspectPhaseBEffectiveIam((...args) => {
+    if (args[0] === 'policy-intelligence') assert.fail('Drift must block IAM troubleshooting');
+    return invalid(...args);
+  }, {diagnostic: true, postRollbackPreflight: true});
+  assert.equal(drift.configuration, 'FAIL');
+  assert.equal(drift.effectiveDatabaseIam, 'UNVERIFIED');
+  assert.equal(drift.production, 'HOLD_NO_GO');
+});
+
 test('effective IAM uses overall policy evidence and rejects excess inherited access', () => {
   for (const scenario of ['match', 'inherited-delete', 'unknown', 'missing-api', 'duplicate-log', 'duplicate-grant']) {
     const fallback = preflightRead((command, data) => {

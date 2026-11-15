@@ -1987,3 +1987,37 @@ Owner explicitly replied **"haju ek var manjuri chhe"** after the prior approved
 **One authorized owner Cloud Shell session, NOT YET RUN by this reviewer:** Account `yasminparmar087@gmail.com` and project `oldx-staging`, runtime principal `oldx-product-read-staging@oldx-staging.iam.gserviceaccount.com`, database `(default)`. After verified pinned commit and single-use local marker creation, mint at most ONE short-lived datastore-scope 300s OAuth token, require exact initial **404 NOT_FOUND** for **only** the newly named absent document, send exactly ONE real write-intent HTTP `DELETE` with server-enforced `?currentDocument.exists=false` to protect any existing document, then reconcile with one final exact GET requiring **404 NOT_FOUND**. Max 3 Firestore requests, 1 token exchange, 5 seconds/request, 60-second elapsed guard after preflight starts; no repeats, credential output, user-doc access, other databases, synthetic creates or automated cleanup. The existing ₹2,000 billing alert is NOT a true cap; costs from even these few operations and Cloud Logging are not guaranteed zero. Any drift, token error, 200, 412, ambiguous state or missing final absence = STOP; no blind retry. Only 404 / 403 PERMISSION_DENIED / 404 is a **ONE-PATH-ONLY DELETE denied** observation. No OTHER database-isolation / CREATE/UPDATE or hosted acceptance proof arises.
 
 **Execution availability:** Current chat has no authorized owner Cloud Shell command tool. Provide the owner a one-shot **pin-by-full-SHA** shell command after exact CI SUCCESS (now confirmed). Owner should send only sanitized `configuration`, `credential`, initial/final GET and DELETE statuses, `evidence`, `firestoreCalls`, and `databaseIsolation` output; no token or private payload. As of entry, **NO new live token or Firestore operations attempted**. User approval captured in Issue #17 existing comment `6895304011`. Master **01 DONE, 02 ACTIVE, 14 unfinished; staging hosted NO-GO, Production HOLD/NO-GO**.
+
+
+## 2026-11-15 ~19:26 IST — owner one-shot V2 runtime Firestore DELETE denied on exact synthetic path (OBSERVED)
+
+**VERIFIED NEW OWNER SCREENSHOT — this paragraph supersedes the preceding "not yet run" status for V2, NOT the unchanged release gates.** The owner used the already-approved one-time, exact-review-commit `9ed10e12237b6904ea87b9172135cc29e979c6f4` command in `oldx-staging` Google Cloud Shell, invoking `--probe-delete-denial-v2` under the fresh `OLDX_DELETE_DENIAL_V2_ONE_SHOT` gate. The sanitized output shows, verbatim:
+
+```json
+{
+  "configuration": "PASS",
+  "credential": "PASS",
+  "before": "ABSENT_AT_CHECK_TIME",
+  "deleteDenial": "DENIED_403",
+  "after": "ABSENT_AT_CHECK_TIME",
+  "evidence": "ONE_PATH_DELETE_DENIED_OBSERVED",
+  "firestoreCalls": 3,
+  "databaseIsolation": "UNVERIFIED",
+  "production": "HOLD_NO_GO",
+  "credentialHttpStatus": 200,
+  "beforeHttpStatus": 404,
+  "deleteHttpStatus": 403,
+  "afterHttpStatus": 404
+}
+```
+
+**Precisely what is proven:** configured preflight matched at call time; one 300-second datastore-scoped runtime-service-account OAuth credential issuance returned HTTP 200; an authenticated GET of the **new one-time synthetic path only** `projects/oldx-staging/databases/(default)/documents/marketplacePrivate_v1/product_oldx_iam_denial_probe_v2_20261115` returned 404 NOT_FOUND; a **single** HTTP DELETE request to that exact previously absent path with `currentDocument.exists=false` returned 403 PERMISSION_DENIED as classified by the reviewed code; final GET returned 404 NOT_FOUND. Three counted Firestore calls total, before and after absent at check times, no response-body/token/real user document disclosed in report. This is **actual one-path runtime DELETE denial evidence** and one positive credential mint, not just IAM role configuration. It is consistent with the intended custom role lacking `datastore.entities.delete`. It does **not** independently prove all operations or universal permissions (e.g. existing documents, inherited grants, transaction context), nor other-database isolation.
+
+**Consumed one-time scopes, DO NOT REPLAY:**
+- Original first attempt local marker `~/.oldx-step02-delete-denial-attempt-20261115` was consumed on preflight FAIL / zero Firestore calls; preserve.
+- Successful V2 local marker `~/.oldx-step02-delete-denial-v2-attempt-20261115` was reserved before the token request and is now **CONSUMED**. Preserve; do not delete/reset/rename either marker or re-run original or V2 commands. No V3 retry is needed to demonstrate this same one-path denial.
+- Historical 14-Nov read-only transaction proof also remains complete; no need to rerun. Prior Cloud Run hosted V1 trial STOPPED and rolled back, not a hosted acceptance PASS.
+
+**Open Step 02 gates and the efficient next decision:** (1) effective other-database Firestore IAM isolation **UNVERIFIED**; don't create a secondary database just to test; (2) effective entity CREATE/UPDATE and scoped real provider access **UNVERIFIED**; (3) actual published deny-all Rules release/ruleset owner observed previously, but authentic raw JSON strict offline comparison **NOT RUN**; (4) all-in account-specific V2 test budget/Cloud Logging and billing ceiling not proven; ₹2,000 budget alerts are not caps; (5) Store Product–Store trusted association remains blocked by Issue #22. Avoid speculative checker/source work or any new token/delete probes absent a distinct meaningful, approved case. Owner should next decide on the remaining *read-only* evidence paths versus explicitly mark unsupported isolation proof as UNKNOWN and leave Step 02 BLOCKED; prioritize bounded cost and genuine website security gating.
+
+**Status:** Step **01/15 DONE**, Step **02/15 ACTIVE** (one negative IAM subgate closed, not the entire preflight), **14 steps unfinished**. **Staging hosted acceptance NO-GO / Production HOLD-NO-GO**. No project IAM, Rules, billing, Cloud Run revision/traffic, Vercel, app code, main branch, production or Android deployment was changed in this evidence review. Last exact-source Safety and security CI PASS [43720782919](https://github.com/yasminparmar087-ops/oldx-website/actions/runs/43720782919) and [43720782911](https://github.com/yasminparmar087-ops/oldx-website/actions/runs/43720782911) for `9ed10e12237b6904ea87b9172135cc29e979c6f4`.

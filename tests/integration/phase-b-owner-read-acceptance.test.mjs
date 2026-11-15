@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import {runOwnerReadAcceptance, runHostedOwnerReadAcceptance, simulateKeylessOwnerReadAcceptance} from '../../scripts/phase-b-owner-read-acceptance.mjs';
+import {runOwnerReadAcceptance, runHostedOwnerReadAcceptance, simulateKeylessOwnerReadAcceptance, inspectAnonymousDenial} from '../../scripts/phase-b-owner-read-acceptance.mjs';
 import {privateProduct} from '../../scripts/phase-b-firestore-typed-fixture-preview.mjs';
 
 const googleToken = ('fake.' + Buffer.from(JSON.stringify({aud: 'https://oldx-owner-read-lqpaz3pd5a-el.a.run.app', iss: 'https://accounts.google.com', exp: 4102444800, email: 'oldx-phase-b-invoker@oldx-staging.iam.gserviceaccount.com', email_verified: true})).toString('base64url') + '.token');
@@ -157,6 +157,25 @@ test('mint denial, timeout, wrong claims and malformed responses stop without re
     }), {message});
     assert.equal(count, 1);
   }
+});
+
+test('HTML 403 cannot be called verified anonymous denial without independent edge evidence', () => {
+  const html = new Response('<html>Not authenticated</html>', {
+    status: 403, headers: {'content-type': 'text/html', server: 'Google Frontend'},
+  });
+  const observed = inspectAnonymousDenial(html, '<html>Not authenticated</html>');
+  assert.equal(observed.httpStatus, 403);
+  assert.equal(observed.mediaType, 'text/html');
+  assert.equal(observed.body, 'NONEMPTY');
+  assert.equal(observed.result, 'BLOCKED');
+  const empty = inspectAnonymousDenial(new Response(null, {status: 403}), '');
+  assert.equal(empty.result, 'MATCH');
+  const fakeApp = inspectAnonymousDenial(
+    Response.json({ok: false, error: {code: 'DENIED'}}, {status: 403}),
+    JSON.stringify({ok: false, error: {code: 'DENIED'}}));
+  assert.equal(fakeApp.result, 'BLOCKED');
+  // A status/header-shaped response is not Google Cloud Run IAM proof.
+  // The historical preflight used an independent request-log correlation.
 });
 
 test('hosted transport fails closed on oversized or unexpected denial body', async () => {

@@ -1042,6 +1042,121 @@ async function directFirestoreIam(read, request) {
   return report;
 }
 
+// Fresh Step 02 target, deliberately NOT a fixture or an actual account/document.
+// This path is NEVER created by this probe. A false-existence precondition protects
+// a document even if a concurrent writer creates it after the absence check.
+const deleteDenialProbePath = 'marketplacePrivate_v1/product_oldx_iam_denial_probe_20261115';
+
+async function directFirestoreDeleteDenial(read, request) {
+  const started = Date.now();
+  const report = {
+    configuration: 'UNVERIFIED', credential: 'UNVERIFIED',
+    before: 'UNVERIFIED', deleteDenial: 'UNVERIFIED', after: 'UNVERIFIED',
+    evidence: 'UNVERIFIED', firestoreCalls: 0, databaseIsolation: 'UNVERIFIED',
+    production: 'HOLD_NO_GO',
+  };
+  const config = inspectPhaseBConfiguration(read, {preflight: true});
+  report.configuration = config.configuration === 'MATCH' ? 'PASS' :
+    Object.values(config.checks).includes('MISMATCH') ? 'FAIL' : 'UNVERIFIED';
+  if (report.configuration !== 'PASS' || Date.now() - started >= 60_000) return report;
+
+  const call = (url, method, credential, body) => {
+    const remaining = 60_000 - (Date.now() - started);
+    requireSafe(remaining > 0, 'DELETE_DENIAL_DEADLINE');
+    return request(url, {
+      method, redirect: 'error',
+      signal: AbortSignal.timeout(Math.min(5000, remaining)),
+      headers: {Authorization: 'Bearer ' + credential, 'X-Goog-User-Project': project,
+        ...(body === undefined ? {} : {'Content-Type': 'application/json'})},
+      body: body === undefined ? undefined : JSON.stringify(body),
+    });
+  };
+
+  let runtime;
+  try {
+    runtime = await mintRuntimeCredential(read, call, status => {
+      report.credentialHttpStatus = status;
+    });
+    report.credential = 'PASS';
+  } catch {
+    return report;
+  }
+  const name = 'projects/' + project + '/databases/' + database + '/documents/' + deleteDenialProbePath;
+  const url = 'https://firestore.googleapis.com/v1/' + name;
+  const fetchAbsence = async () => {
+    requireSafe(runtime.expiry - Date.now() > 10_000, 'TOKEN_EXPIRES_TOO_SOON');
+    report.firestoreCalls++;
+    return call(url, 'GET', runtime.token);
+  };
+  try {
+    const before = await fetchAbsence();
+    report.beforeHttpStatus = Number.isInteger(before?.status) ? before.status : null;
+    if (before?.status === 200) report.before = 'STOP_DOCUMENT_EXISTS';
+    if (before?.status !== 404 || before?.data?.error?.status !== 'NOT_FOUND') return report;
+    report.before = 'ABSENT_AT_CHECK_TIME';
+  } catch {
+    return report;
+  }
+
+  // One and only one DELETE-intent operation. The server MUST reject deletion
+  // of any EXISTING document, even if permissions are unexpectedly broad.
+  // Never retry an ambiguous response or attempt a cleanup by this identity.
+  try {
+    requireSafe(runtime.expiry - Date.now() > 10_000, 'TOKEN_EXPIRES_TOO_SOON');
+    report.firestoreCalls++;
+    const result = await call(url + '?currentDocument.exists=false', 'DELETE', runtime.token);
+    report.deleteHttpStatus = Number.isInteger(result?.status) ? result.status : null;
+    if (result?.status === 403 && result?.data?.error?.status === 'PERMISSION_DENIED') {
+      report.deleteDenial = 'DENIED_403';
+    } else if (result?.status === 200) {
+      report.deleteDenial = 'UNEXPECTED_DELETE_ALLOWED';
+    }
+  } catch {
+    // Preserve uncertain status; do not repeat DELETE.
+  }
+  // This is a fresh read-only reconciliation, not an automatic retry.
+  try {
+    const after = await fetchAbsence();
+    report.afterHttpStatus = Number.isInteger(after?.status) ? after.status : null;
+    if (after?.status === 404 && after?.data?.error?.status === 'NOT_FOUND') {
+      report.after = 'ABSENT_AT_CHECK_TIME';
+    } else if (after?.status === 200) report.after = 'STOP_DOCUMENT_EXISTS';
+  } catch {
+    // Missing final absence evidence prevents an acceptance claim.
+  }
+  if (report.before === 'ABSENT_AT_CHECK_TIME' && report.deleteDenial === 'DENIED_403' &&
+      report.after === 'ABSENT_AT_CHECK_TIME') report.evidence = 'ONE_PATH_DELETE_DENIED_OBSERVED';
+  return report;
+}
+
+export function simulateDirectFirestoreDeleteDenial(read, request) {
+  return directFirestoreDeleteDenial(read, request);
+}
+
+export function isDirectFirestoreDeleteDenialOneShotInvocation(args, env = process.env) {
+  return Array.isArray(args) && args.length === 1 && args[0] === '--probe-delete-denial' &&
+    env?.OLDX_DELETE_DENIAL_ONE_SHOT === 'YASMIN_APPROVED_EXACT_ABSENT_PROBE_2026_11_15';
+}
+
+export async function runDirectFirestoreDeleteDenial({ownerApprovedOnce = false} = {}) {
+  requireSafe(ownerApprovedOnce === true, 'DELETE_DENIAL_NOT_APPROVED');
+  return directFirestoreDeleteDenial(gcloud, boundedPhaseBRequest);
+}
+
+function reserveDeleteDenialOneShot() {
+  // Local create-once attempt journal (no credentials, no cloud writes).
+  // It must NEVER be removed/reset in order to re-run a spent approval.
+  const path = join(homedir(), '.oldx-step02-delete-denial-attempt-20261115');
+  const fd = openSync(path, constants.O_WRONLY | constants.O_CREAT |
+    constants.O_EXCL | constants.O_NOFOLLOW, 0o600);
+  try {
+    writeFileSync(fd, 'Single Step 02 attempt reserved; do not replay.\n');
+    fsyncSync(fd);
+  } finally {
+    closeSync(fd);
+  }
+}
+
 export function simulateDirectFirestoreIam(read, request) {
   return directFirestoreIam(read, request);
 }
@@ -1091,6 +1206,15 @@ export async function simulateFixtureAcceptance({fixtureSend, openFakeJournal, a
 }
 
 async function main(args) {
+  if (args[0] === '--probe-delete-denial') {
+    requireSafe(isDirectFirestoreDeleteDenialOneShotInvocation(args), 'DELETE_DENIAL_NOT_APPROVED');
+    requireSafe(process.platform === 'linux', 'CLOUD_SHELL_REQUIRED');
+    guardOperator();
+    reserveDeleteDenialOneShot();
+    const report = await runDirectFirestoreDeleteDenial({ownerApprovedOnce: true});
+    console.log(JSON.stringify(report, null, 2));
+    return report.evidence === 'ONE_PATH_DELETE_DENIED_OBSERVED' ? 0 : 3;
+  }
   if (args[0] === '--direct-firestore-iam') {
     requireSafe(isDirectFirestoreIamOneShotInvocation(args), 'DIRECT_FIRESTORE_IAM_DISABLED');
     requireSafe(process.platform === 'linux', 'CLOUD_SHELL_REQUIRED');

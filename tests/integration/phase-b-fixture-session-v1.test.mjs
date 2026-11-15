@@ -142,6 +142,20 @@ test('one-time hosted owner scope pins tag, revision and digest without enabling
   assert.match(run.stderr, /^STOP: request blocked or session incomplete/);
 });
 
+test('consumed hosted session approval cannot re-enable retired CLI even with exact pinned target', () => {
+  const args = ['--execute', '--hosted-tag=' + approvedHostedTrial.tag,
+    '--hosted-revision=' + approvedHostedTrial.revision,
+    '--hosted-digest=' + approvedHostedTrial.digest];
+  const result = spawnSync(process.execPath, [script, ...args], {
+    encoding: 'utf8',
+    env: {...process.env, OLDX_PHASE_B_HOSTED_SESSION_APPROVAL: 'YASMIN_20261115_OWNERBUYERTRIAL_ONCE'},
+    timeout: 5000,
+  });
+  assert.equal(result.status, 2);
+  assert.match(result.stderr, /^STOP: request blocked or session incomplete/);
+  assert.equal(result.stdout, '');
+});
+
 test('four create-only fixtures, two isolated sign-ins, conditional cleanup and final absence', async () => {
   const session = fake();
   await session.run();

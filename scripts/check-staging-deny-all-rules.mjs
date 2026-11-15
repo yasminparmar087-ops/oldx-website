@@ -26,7 +26,7 @@ export function checkStagingDenyAllRules(release, ruleset, baseline) {
   }
   const source = files[0].content;
   if (!isDeepStrictEqual(significantTokens(source), significantTokens(baseline)))
-    throw Error('Published Rules tokens differ from the reviewed deny-all baseline.');
+    throw Error('Published source differs from the reviewed deny-all baseline (Rules tokens).');
   return { release: release.name, ruleset: ruleset.name, sha256: createHash('sha256').update(source).digest('hex') };
 }
 

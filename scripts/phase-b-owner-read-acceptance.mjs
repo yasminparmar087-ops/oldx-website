@@ -251,10 +251,12 @@ export async function reviewScopedHostedDenialLogShape({
 async function runKeylessAcceptance({
   projectId, getOperatorAccessToken, ownerToken, buyerToken,
   disabledOrigin, enabledOrigin, enabledTag, timeout = (limit) => limit,
+  beforeHttpAttempt,
 }, fetchRequest) {
   if (projectId !== project || typeof getOperatorAccessToken !== 'function' ||
       ![ownerToken, buyerToken].every((token) => typeof token === 'string' && jwt.test(token)) ||
-      checkedOrigin(disabledOrigin, 'healthcheck') === checkedOrigin(enabledOrigin, enabledTag)) {
+      checkedOrigin(disabledOrigin, 'healthcheck') === checkedOrigin(enabledOrigin, enabledTag) ||
+      (beforeHttpAttempt !== undefined && typeof beforeHttpAttempt !== 'function')) {
     throw new Error('INVALID_HOSTED_ACCEPTANCE_INPUT');
   }
   checkFirebaseIdentity(ownerToken, authUids[0]);
@@ -266,6 +268,7 @@ async function runKeylessAcceptance({
     const accessToken = await getOperatorAccessToken({signal});
     if (signal.aborted || typeof accessToken !== 'string' ||
         !/^[A-Za-z0-9._~+/-]{1,8192}={0,2}$/.test(accessToken)) throw new Error();
+    beforeHttpAttempt?.();
     const response = await fetchRequest(
       'https://iamcredentials.googleapis.com/v1/projects/-/serviceAccounts/' + invoker + ':generateIdToken',
       {method: 'POST', redirect: 'error', signal, headers: {
@@ -284,6 +287,7 @@ async function runKeylessAcceptance({
     disabledOrigin, enabledOrigin, enabledTag, googleToken, ownerToken, buyerToken,
     async send({caseId, url, method, headers, body, signal}) {
       signal = AbortSignal.any([signal, AbortSignal.timeout(timeout(15_000))]);
+      beforeHttpAttempt?.();
       const response = await fetchRequest(url, {method, headers, body, signal, redirect: 'error'});
       const raw = await readBounded(response);
       if (signal.aborted) throw new Error('HOSTED_PROBE_TIMEOUT');

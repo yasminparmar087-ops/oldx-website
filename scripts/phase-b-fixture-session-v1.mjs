@@ -62,6 +62,15 @@ export function runtimeSessionBudget(expiry, now = Date.now, monotonic = () => p
   const creationCutoff = started + Math.min(120_000, lifetime - 90_000);
   const sessionCutoff = creationCutoff + 90_000;
   let cutoff = creationCutoff;
+  // One shared attempted HTTP request counter across operator Auth/Firestore,
+  // runtime Firestore and hosted IAM-ID-token/edge requests. The one-shot
+  // journal remains authoritative on ambiguous mutations. Reserve 32
+  // attempts for supervised exact-resource cleanup; no limit can guarantee
+  // that an outage or provider charge will stay under the financial budget.
+  const MAX_HTTP_ATTEMPTS = 200;
+  const CLEANUP_HTTP_RESERVE = 32;
+  let attempts = 0;
+  let cleaningUp = false;
   function remaining() {
     const ms = Math.floor(cutoff - monotonic());
     requireSafe(ms > 0, 'SESSION_DEADLINE_EXCEEDED');
@@ -75,7 +84,14 @@ export function runtimeSessionBudget(expiry, now = Date.now, monotonic = () => p
       requireSafe(monotonic() < creationCutoff && expiry - now() > 10_000,
         'RUNTIME_TOKEN_OR_DEADLINE_TOO_CLOSE');
     },
-    beginCleanup() { cutoff = sessionCutoff; remaining(); },
+    beginCleanup() { cutoff = sessionCutoff; remaining(); cleaningUp = true; },
+    beforeHttpAttempt() {
+      remaining();
+      requireSafe(attempts < MAX_HTTP_ATTEMPTS -
+        (cleaningUp ? 0 : CLEANUP_HTTP_RESERVE), 'HTTP_ATTEMPT_BUDGET_EXCEEDED');
+      // Charge failures and ambiguous timeouts as attempted requests, too.
+      attempts++;
+    },
     timeout(limit) { return Math.min(remaining(), limit); },
   });
 }
@@ -943,6 +959,7 @@ async function liveSend({method, url, body, publicRequest}, budget) {
     headers.Authorization = 'Bearer ' + token;
     headers['X-Goog-User-Project'] = project;
   }
+  budget?.beforeHttpAttempt();
   return boundedPhaseBRequest(url, {
     method, headers, body: body === undefined ? undefined : JSON.stringify(body),
     redirect: 'error', signal: AbortSignal.timeout(budget?.timeout(20_000) ?? 20_000),
@@ -975,6 +992,7 @@ function runtimeFixtureTransport(request, {token, expiry}, budget = null) {
         (method === 'PATCH' && path === firestoreDocs[1] &&
           url.startsWith(firestore + path + '?updateMask.fieldPaths=revision&currentDocument.updateTime='));
     }), 'RUNTIME_FIXTURE_SCOPE_DENIED');
+    budget?.beforeHttpAttempt();
     return request(url, {method, redirect: 'error', signal: AbortSignal.timeout(budget?.timeout(5000) ?? 5000),
       headers: {Authorization: 'Bearer ' + token, 'Content-Type': 'application/json', 'X-Goog-User-Project': project},
       body: body === undefined ? undefined : JSON.stringify(body)});
@@ -984,6 +1002,7 @@ function runtimeFixtureTransport(request, {token, expiry}, budget = null) {
 function hostedFixtureCallback(acceptance, budget, runHosted) {
   return (ownerToken, buyerToken) => runHosted({
     ...acceptance, projectId: project, ownerToken, buyerToken, timeout: budget.timeout,
+    beforeHttpAttempt: () => budget.beforeHttpAttempt(),
   });
 }
 

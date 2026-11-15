@@ -100,7 +100,11 @@ const hosted = {...inputs, projectId: 'oldx-staging', getOperatorAccessToken: as
 test('keyless transport mints once and keeps operator OAuth separate from hosted headers', async () => {
   const cases = Object.keys(responses).slice(0, 7);
   let requests = 0;
-  const result = await simulateKeylessOwnerReadAcceptance(hosted, async (url, options) => {
+  let attempted = 0;
+  const result = await simulateKeylessOwnerReadAcceptance({
+    ...hosted,
+    beforeHttpAttempt() { attempted++; },
+  }, async (url, options) => {
     assert.equal(options.redirect, 'error');
     assert.ok(options.signal instanceof AbortSignal);
     if (requests++ === 0) {
@@ -127,7 +131,19 @@ test('keyless transport mints once and keeps operator OAuth separate from hosted
       Response.json(body, {status, headers: {'cache-control': 'private, no-store'}});
   });
   assert.equal(requests, 8);
+  assert.equal(attempted, 8); // One IAMCredentials request plus seven hosted HTTP probes
   assert.deepEqual(result.passed, cases);
+});
+
+test('new hosted request counter stops before an unauthorized call or even a token mint', async () => {
+  const noRequest = () => assert.fail('No HTTP call allowed after attempt guard rejects');
+  await assert.rejects(simulateKeylessOwnerReadAcceptance({
+    ...hosted,
+    beforeHttpAttempt() { throw new Error('HTTP_ATTEMPT_BUDGET_EXCEEDED'); },
+  }, noRequest), {message: 'INVOCATION_TOKEN_GENERATION_FAILED'});
+  await assert.rejects(simulateKeylessOwnerReadAcceptance({
+    ...hosted, beforeHttpAttempt: 'no-function',
+  }, noRequest), {message: 'INVALID_HOSTED_ACCEPTANCE_INPUT'});
 });
 
 test('hosted gate and invalid project or fixture identity stop before credentials', async () => {

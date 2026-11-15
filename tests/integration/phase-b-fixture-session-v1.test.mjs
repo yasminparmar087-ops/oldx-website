@@ -363,6 +363,20 @@ test('runtime fixture path scopes identity, update and operator cleanup', async 
 });
 
 
+
+test('shared hosted session counts all attempted HTTP requests, reserves 32 for supervised cleanup', () => {
+  let elapsed = 0;
+  const budget = runtimeSessionBudget(300_000, () => 0, () => elapsed);
+  for (let i = 0; i < 168; i++) budget.beforeHttpAttempt();
+  assert.throws(() => budget.beforeHttpAttempt(), /HTTP_ATTEMPT_BUDGET_EXCEEDED/);
+  // A blocked attempt does not consume the cleanup reserve.
+  budget.beginCleanup();
+  for (let i = 0; i < 32; i++) budget.beforeHttpAttempt();
+  assert.throws(() => budget.beforeHttpAttempt(), /HTTP_ATTEMPT_BUDGET_EXCEEDED/);
+  elapsed = 211_000;
+  assert.throws(() => budget.beforeHttpAttempt(), /SESSION_DEADLINE_EXCEEDED/);
+});
+
 test('runtime session budget reserves cleanup window and stops before runtime token expiry', () => {
   let now = 1_000_000;
   const budget = runtimeSessionBudget(now + 300_000, () => now, () => now);

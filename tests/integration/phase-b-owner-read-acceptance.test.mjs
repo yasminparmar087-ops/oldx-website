@@ -297,14 +297,17 @@ test('scoped Cloud Logging adapter accepts only matching mock shape, never live 
   const read = async (...args) => { calls.push(args); return JSON.stringify([entry]); };
   const input = {read, response, body, traceId, startedAt, finishedAt, tag, revision};
   assert.equal(await reviewScopedHostedDenialLogShape(input), 'SHAPE_MATCH_ONLY');
-  assert.deepEqual(calls, [[
+  assert.equal(calls.length, 1);
+  assert.ok(calls[0].at(-1)?.signal instanceof AbortSignal);
+  assert.equal(calls[0].at(-1).signal.aborted, true);
+  assert.deepEqual(calls[0].slice(0, -1), [
     'logging', 'read',
     'trace="projects/oldx-staging/traces/' + traceId + '" AND ' +
       'timestamp>="' + new Date(startedAt - 5000).toISOString() + '" AND ' +
       'timestamp<="' + new Date(finishedAt + 5000).toISOString() + '"',
     '--project=oldx-staging', '--account=yasminparmar087@gmail.com',
     '--limit=2', '--format=json', '--quiet',
-  ]]);
+  ]);
 
   // Invalid/mismatched requests must not make even a mocked Logging call.
   calls.length = 0;
@@ -312,6 +315,8 @@ test('scoped Cloud Logging adapter accepts only matching mock shape, never live 
     {traceId: 'injected" OR true'}, {startedAt: '2026-11-15T09:30Z'},
     {finishedAt: finishedAt + 20000}, {revision: 'production'},
     {tag: 'no/valid/tag'}, {body: ''},
+    {readTimeoutMs: 0}, {readTimeoutMs: -1}, {readTimeoutMs: 2001},
+    {readTimeoutMs: Infinity}, {readTimeoutMs: '100'},
     {tag: 'ownerbuyertrial'}, {tag: 'healthcheck'}, {tag: 'step3rc14'},
     {revision: 'oldx-owner-read-00001-8kr'},
     {revision: 'oldx-owner-read-00002-tid'},
@@ -333,6 +338,36 @@ test('scoped Cloud Logging adapter accepts only matching mock shape, never live 
     ...input, read: () => { throw new Error('sensitive provider details'); },
   }), 'UNVERIFIED');
   assert.equal(await reviewScopedHostedDenialLogShape({...input, read: undefined}), 'BLOCKED');
+
+  // The caller receives a bounded decision even if an async log reader hangs.
+  // Cancellation is advisory to the injected reader; never promise to kill
+  // a subprocess that does not cooperate.
+  let released;
+  let signal;
+  const pending = new Promise(resolve => { released = resolve; });
+  const began = Date.now();
+  const timeoutResult = await reviewScopedHostedDenialLogShape({
+    ...input, readTimeoutMs: 25,
+    read: (...args) => { signal = args.at(-1).signal; return pending; },
+  });
+  assert.equal(timeoutResult, 'UNVERIFIED');
+  assert.ok(signal instanceof AbortSignal);
+  assert.equal(signal.aborted, true);
+  assert.ok(Date.now() - began < 1000);
+  // A late forged "matching" log cannot change a completed STOP verdict.
+  released(JSON.stringify([entry]));
+  await Promise.resolve();
+  assert.equal(timeoutResult, 'UNVERIFIED');
+
+  const abortResult = await reviewScopedHostedDenialLogShape({
+    ...input, readTimeoutMs: 25,
+    read: (...args) => new Promise((_resolve, reject) => {
+      const signaled = args.at(-1).signal;
+      signaled.addEventListener('abort', () => reject(new Error('private provider error')),
+        {once: true});
+    }),
+  });
+  assert.equal(abortResult, 'UNVERIFIED');
 });
 
 test('hosted transport fails closed on oversized or unexpected denial body', async () => {

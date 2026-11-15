@@ -16,11 +16,11 @@ const markerField = 'phaseBFixtureSessionId';
 // Scoped owner approval: fixture-only candidate enabled; hosted acceptance stays disabled.
 // One-time supervised fixture-only acceptance completed; keep all live fixture paths OFF.
 const LIVE_FIXTURE_ONLY_ENABLED = false;
-// Default OFF. Only the explicitly approved fixed staging trial can be enabled
-// by the operator for one supervised Cloud Shell process; the private create-once
-// hosted journal prevents a second invocation after any partial attempt.
-const LIVE_EXECUTION_ENABLED = process.env.OLDX_PHASE_B_HOSTED_SESSION_APPROVAL ===
-  'YASMIN_20261115_OWNERBUYERTRIAL_ONCE';
+// The one approved hosted session was consumed on 2026-11-15, stopped,
+// and its Cloud Run trial was fully rolled back. Revoke its transient process
+// approval as an executable code path; a future distinct session needs a new
+// source-reviewed gate, not a journal reset or reuse of an old environment value.
+const LIVE_EXECUTION_ENABLED = false;
 const operator = 'yasminparmar087@gmail.com';
 const healthRevision = 'oldx-owner-read-00002-tid';
 const healthProbeUrl = ownerReadAudience.replace('https://', 'https://healthcheck---') + '/health';

@@ -133,10 +133,11 @@ const stopped = () => Object.freeze({
 
 // Caller-supplied receipt shapes are NOT authenticated provider evidence.
 // Never return a deletion command or claim remote cleanup from this review.
-export function reviewV2OfflineConditionalCleanup({candidate, manifest, sessionId, original, observed} = {}) {
+export function reviewV2OfflineConditionalCleanup({candidate, manifest, sessionId, resource, original, observed} = {}) {
   if (reviewV2Candidate(candidate).decision !== 'SOURCE_REVIEW_ONLY' ||
       reviewV2Manifest(manifest) !== 'SOURCE_REVIEW_ONLY' ||
-      typeof sessionId !== 'string' || !UUID.test(sessionId)) return stopped();
+      typeof sessionId !== 'string' || !UUID.test(sessionId) ||
+      typeof resource !== 'string' || !manifest.firestoreDocs.includes(resource)) return stopped();
   try {
     if (!validFirestoreReceipt(original, sessionId)) return stopped();
     conditionalFixtureDelete(original, observed);

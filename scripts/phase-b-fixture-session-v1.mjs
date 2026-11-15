@@ -10,7 +10,8 @@ import {authUids, database, firestoreDocs, project} from './phase-b-http-contrac
 import {conditionalFixtureDelete, validFirestoreReceipt} from './phase-b-offline-cleanup-guard.mjs';
 import {offlinePayloads} from './phase-b-firestore-typed-fixture-preview.mjs';
 import {runOwnerReadAcceptance, runHostedOwnerReadAcceptance, requireHostedAcceptanceEnabled,
-  simulateKeylessOwnerReadAcceptance, ownerReadAudience, readBounded, inspectAnonymousDenial} from './phase-b-owner-read-acceptance.mjs';
+  simulateKeylessOwnerReadAcceptance, ownerReadAudience, readBounded, inspectAnonymousDenial,
+  classifyHostedAcceptanceError, completedHostedFailureCategory} from './phase-b-owner-read-acceptance.mjs';
 
 const markerField = 'phaseBFixtureSessionId';
 // Scoped owner approval: fixture-only candidate enabled; hosted acceptance stays disabled.
@@ -214,12 +215,14 @@ async function runSession(api, openJournal, afterSignIn, runtime = null, budget 
       passwords[i] = null;
     }
     let probeFailed = false;
+    let probeFailureCategory = null;
     if (afterSignIn) {
       try {
         await afterSignIn(tokens[0], tokens[1]);
-      } catch {
+      } catch (error) {
         if (!runtime) throw new Error('HOSTED_ACCEPTANCE_FAILED');
         probeFailed = true;
+        probeFailureCategory = classifyHostedAcceptanceError(error);
       }
     }
     tokens.length = 0;
@@ -255,7 +258,13 @@ async function runSession(api, openJournal, afterSignIn, runtime = null, budget 
     requireSafe((await inventory(api)).every((present) => !present), 'RESIDUAL_FIXTURES');
     budget?.timeout(1);
     journal.complete();
-    if (probeFailed) throw new Error('HOSTED_ACCEPTANCE_FAILED_FIXTURES_ABSENT');
+    if (probeFailed) {
+      // The category is not printed or committed before exact remote absence
+      // and a fsynced journal completion record; no retry is authorized.
+      const failure = new Error('HOSTED_ACCEPTANCE_FAILED_FIXTURES_ABSENT');
+      Object.defineProperty(failure, 'hostedFailureCategory', {value: probeFailureCategory});
+      throw failure;
+    }
   } finally {
     passwords.length = 0;
     tokens.length = 0;
@@ -1262,7 +1271,9 @@ async function main(args) {
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
-  main(process.argv.slice(2)).then((code) => { process.exitCode = code; }).catch(() => {
+  main(process.argv.slice(2)).then((code) => { process.exitCode = code; }).catch((error) => {
+    const category = completedHostedFailureCategory(error);
+    if (category) console.error('HOSTED_FAILURE_AFTER_VERIFIED_FOUR_ABSENT ' + category);
     console.error('STOP: request blocked or session incomplete. Do not retry mutations.');
     process.exitCode = 2;
   });

@@ -149,6 +149,10 @@ export function reviewV2OfflineConditionalCleanup({candidate, manifest, sessionI
     // Like V1 document evidence, bind both receipts to the exact database and path.
     const expectedName = DOCUMENT_ROOT + resource;
     if (original?.name !== expectedName || observed?.name !== expectedName) return stopped();
+    // Existing V1 cleanup refuses an absent/changed resource. Preserve that
+    // fail-stop behavior even for caller-supplied offline receipt shapes.
+    if (original?.exists === false || observed?.exists === false ||
+        original?.hasUnexpectedChanges === true || observed?.hasUnexpectedChanges === true) return stopped();
     if (!validFirestoreReceipt(original, sessionId)) return stopped();
     conditionalFixtureDelete(original, observed);
     return Object.freeze({

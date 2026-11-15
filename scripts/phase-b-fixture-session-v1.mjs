@@ -1058,8 +1058,12 @@ async function directFirestoreIam(read, request) {
 // This path is NEVER created by this probe. A false-existence precondition protects
 // a document even if a concurrent writer creates it after the absence check.
 const deleteDenialProbePath = 'marketplacePrivate_v1/product_oldx_iam_denial_probe_20261115';
+// A genuinely distinct, second one-time synthetic target. Never rename/reuse the
+// already consumed first target, CLI switch, consent flag or attempt marker.
+const deleteDenialProbeV2Path = 'marketplacePrivate_v1/product_oldx_iam_denial_probe_v2_20261115';
 
-async function directFirestoreDeleteDenial(read, request) {
+async function directFirestoreDeleteDenial(read, request, {v2 = false} = {}) {
+  requireSafe(typeof v2 === 'boolean', 'INVALID_DELETE_DENIAL_SESSION');
   const started = Date.now();
   const report = {
     configuration: 'UNVERIFIED', credential: 'UNVERIFIED',
@@ -1099,7 +1103,8 @@ async function directFirestoreDeleteDenial(read, request) {
   } catch {
     return report;
   }
-  const name = 'projects/' + project + '/databases/' + database + '/documents/' + deleteDenialProbePath;
+  const name = 'projects/' + project + '/databases/' + database + '/documents/' +
+    (v2 ? deleteDenialProbeV2Path : deleteDenialProbePath);
   const url = 'https://firestore.googleapis.com/v1/' + name;
   const fetchAbsence = async () => {
     requireSafe(runtime.expiry - Date.now() > 10_000, 'TOKEN_EXPIRES_TOO_SOON');
@@ -1147,8 +1152,14 @@ async function directFirestoreDeleteDenial(read, request) {
   return report;
 }
 
-export function simulateDirectFirestoreDeleteDenial(read, request) {
-  return directFirestoreDeleteDenial(read, request);
+export function simulateDirectFirestoreDeleteDenial(read, request, {v2 = false} = {}) {
+  return directFirestoreDeleteDenial(read, request, {v2});
+}
+
+export function isDirectFirestoreDeleteDenialV2OneShotInvocation(args, env = process.env) {
+  return Array.isArray(args) && args.length === 1 &&
+    args[0] === '--probe-delete-denial-v2' &&
+    env?.OLDX_DELETE_DENIAL_V2_ONE_SHOT === 'YASMIN_APPROVED_EXACT_ABSENT_PROBE_V2_2026_11_15';
 }
 
 export function isDirectFirestoreDeleteDenialOneShotInvocation(args, env = process.env) {
@@ -1156,15 +1167,17 @@ export function isDirectFirestoreDeleteDenialOneShotInvocation(args, env = proce
     env?.OLDX_DELETE_DENIAL_ONE_SHOT === 'YASMIN_APPROVED_EXACT_ABSENT_PROBE_2026_11_15';
 }
 
-export async function runDirectFirestoreDeleteDenial({ownerApprovedOnce = false} = {}) {
-  requireSafe(ownerApprovedOnce === true, 'DELETE_DENIAL_NOT_APPROVED');
-  return directFirestoreDeleteDenial(gcloud, boundedPhaseBRequest);
+export async function runDirectFirestoreDeleteDenial({ownerApprovedOnce = false, v2 = false} = {}) {
+  requireSafe(ownerApprovedOnce === true && typeof v2 === 'boolean', 'DELETE_DENIAL_NOT_APPROVED');
+  return directFirestoreDeleteDenial(gcloud, boundedPhaseBRequest, {v2});
 }
 
-function reserveDeleteDenialOneShot() {
-  // Local create-once attempt journal (no credentials, no cloud writes).
-  // It must NEVER be removed/reset in order to re-run a spent approval.
-  const path = join(homedir(), '.oldx-step02-delete-denial-attempt-20261115');
+function reserveDeleteDenialOneShot({v2 = false} = {}) {
+  // Separate create-once markers: never reset the spent original stamp.
+  requireSafe(typeof v2 === 'boolean', 'INVALID_DELETE_DENIAL_SESSION');
+  const path = join(homedir(), v2
+    ? '.oldx-step02-delete-denial-v2-attempt-20261115'
+    : '.oldx-step02-delete-denial-attempt-20261115');
   const fd = openSync(path, constants.O_WRONLY | constants.O_CREAT |
     constants.O_EXCL | constants.O_NOFOLLOW, 0o600);
   try {
@@ -1224,6 +1237,15 @@ export async function simulateFixtureAcceptance({fixtureSend, openFakeJournal, a
 }
 
 async function main(args) {
+  if (args[0] === '--probe-delete-denial-v2') {
+    requireSafe(isDirectFirestoreDeleteDenialV2OneShotInvocation(args), 'DELETE_DENIAL_V2_NOT_APPROVED');
+    requireSafe(process.platform === 'linux', 'CLOUD_SHELL_REQUIRED');
+    guardOperator();
+    reserveDeleteDenialOneShot({v2: true});
+    const report = await runDirectFirestoreDeleteDenial({ownerApprovedOnce: true, v2: true});
+    console.log(JSON.stringify(report, null, 2));
+    return report.evidence === 'ONE_PATH_DELETE_DENIED_OBSERVED' ? 0 : 3;
+  }
   if (args[0] === '--probe-delete-denial') {
     requireSafe(isDirectFirestoreDeleteDenialOneShotInvocation(args), 'DELETE_DENIAL_NOT_APPROVED');
     requireSafe(process.platform === 'linux', 'CLOUD_SHELL_REQUIRED');

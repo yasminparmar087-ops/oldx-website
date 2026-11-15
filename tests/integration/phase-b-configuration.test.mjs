@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import {inspectPhaseBConfiguration, inspectFixtureOnlyStagingConfiguration, inspectPhaseBPreflight, inspectPhaseBEffectiveIam, simulateDirectFirestoreIam, runDirectFirestoreIam, isDirectFirestoreIamOneShotInvocation, simulateDirectFirestoreDeleteDenial, runDirectFirestoreDeleteDenial, isDirectFirestoreDeleteDenialOneShotInvocation} from '../../scripts/phase-b-fixture-session-v1.mjs';
+import {inspectPhaseBConfiguration, inspectFixtureOnlyStagingConfiguration, inspectPhaseBPreflight, inspectPhaseBEffectiveIam, simulateDirectFirestoreIam, runDirectFirestoreIam, isDirectFirestoreIamOneShotInvocation, simulateDirectFirestoreDeleteDenial, runDirectFirestoreDeleteDenial, isDirectFirestoreDeleteDenialOneShotInvocation, isDirectFirestoreDeleteDenialV2OneShotInvocation} from '../../scripts/phase-b-fixture-session-v1.mjs';
 
 const service = 'oldx-owner-read';
 const runtime = 'oldx-product-read-staging@oldx-staging.iam.gserviceaccount.com';
@@ -804,5 +804,79 @@ test('Step 02 DELETE denial: fresh absent-only precondition, one request, no lea
     assert.equal(response.production, 'HOLD_NO_GO');
     assert.ok(!JSON.stringify(response).includes('secret'));
     assert.ok(!JSON.stringify(response).includes('private'));
+  }
+});
+
+
+test('Step 02 new V2 one-shot cannot reuse first approval, marker or CLI and is OFF by default', async () => {
+  const firstEnv = {OLDX_DELETE_DENIAL_ONE_SHOT: 'YASMIN_APPROVED_EXACT_ABSENT_PROBE_2026_11_15'};
+  const secondEnv = {
+    OLDX_DELETE_DENIAL_V2_ONE_SHOT: 'YASMIN_APPROVED_EXACT_ABSENT_PROBE_V2_2026_11_15',
+  };
+  assert.equal(isDirectFirestoreDeleteDenialV2OneShotInvocation(['--probe-delete-denial-v2']), false);
+  assert.equal(isDirectFirestoreDeleteDenialV2OneShotInvocation(['--probe-delete-denial-v2'], firstEnv), false);
+  assert.equal(isDirectFirestoreDeleteDenialV2OneShotInvocation(['--probe-delete-denial-v2'], secondEnv), true);
+  assert.equal(isDirectFirestoreDeleteDenialV2OneShotInvocation(['--probe-delete-denial-v2', '--execute'], secondEnv), false);
+  assert.equal(isDirectFirestoreDeleteDenialV2OneShotInvocation(['--probe-delete-denial'], secondEnv), false);
+  assert.equal(isDirectFirestoreDeleteDenialOneShotInvocation(['--probe-delete-denial'], secondEnv), false);
+  assert.equal(isDirectFirestoreDeleteDenialOneShotInvocation(['--probe-delete-denial-v2'], firstEnv), false);
+  await assert.rejects(runDirectFirestoreDeleteDenial({v2: true}), /DELETE_DENIAL_NOT_APPROVED/);
+});
+
+test('Step 02 new V2 target remains a single conditional DELETE with fresh absence and no secret output', async () => {
+  const root = 'https://firestore.googleapis.com/v1/projects/oldx-staging/databases/(default)/documents/marketplacePrivate_v1/product_oldx_iam_denial_probe_v2_20261115';
+  const legacy = 'marketplacePrivate_v1/product_oldx_iam_denial_probe_20261115';
+  for (const scenario of ['denied', 'present', 'ambiguous', 'unexpected-allow', 'token-denied']) {
+    const requests = [], read = postRollbackOnePathPreflightRead();
+    const result = await simulateDirectFirestoreDeleteDenial((...args) => {
+      if (args[0] === 'auth' && args[1] === 'print-access-token') {
+        requests.push({kind: 'operator-token'});
+        assert.ok(args.includes('--account=yasminparmar087@gmail.com'));
+        return 'fake-operator-secret';
+      }
+      return read(...args);
+    }, async (url, options) => {
+      requests.push({url, method: options.method});
+      assert.equal(options.redirect, 'error');
+      assert.equal(options.headers['X-Goog-User-Project'], 'oldx-staging');
+      if (url.includes(':generateAccessToken')) {
+        assert.deepEqual(JSON.parse(options.body), {
+          scope: ['https://www.googleapis.com/auth/datastore'], lifetime: '300s',
+        });
+        return scenario === 'token-denied' ? {status: 403, data: {error: {status: 'PERMISSION_DENIED'}}} :
+          {status: 200, data: {accessToken: 'fake-runtime-secret',
+            expireTime: new Date(Date.now() + 299_000).toISOString()}};
+      }
+      assert.ok(url.startsWith(root));
+      assert.ok(!url.includes(legacy));
+      if (options.method === 'GET') return scenario === 'present' ?
+        {status: 200, data: {private: 'secret must not leak'}} :
+        {status: 404, data: {error: {status: 'NOT_FOUND'}}};
+      assert.equal(options.method, 'DELETE');
+      assert.equal(url, root + '?currentDocument.exists=false');
+      assert.equal(options.body, undefined);
+      if (scenario === 'ambiguous') throw new Error('sensitive transport error');
+      if (scenario === 'unexpected-allow') return {status: 200, data: {}};
+      return {status: 403, data: {error: {status: 'PERMISSION_DENIED', message: 'secret'}}};
+    }, {v2: true});
+
+    assert.equal(result.configuration, 'PASS');
+    assert.equal(result.databaseIsolation, 'UNVERIFIED');
+    assert.equal(result.production, 'HOLD_NO_GO');
+    assert.ok(requests.filter(x => x.method === 'DELETE').length <= 1);
+    if (scenario === 'denied') {
+      assert.equal(result.evidence, 'ONE_PATH_DELETE_DENIED_OBSERVED');
+      assert.equal(result.before, 'ABSENT_AT_CHECK_TIME');
+      assert.equal(result.after, 'ABSENT_AT_CHECK_TIME');
+      assert.equal(result.firestoreCalls, 3);
+    } else {
+      assert.equal(result.evidence, 'UNVERIFIED');
+    }
+    if (scenario === 'present' || scenario === 'token-denied') {
+      assert.equal(requests.filter(x => x.method === 'DELETE').length, 0);
+    }
+    assert.ok(!JSON.stringify(result).includes('secret'));
+    assert.ok(!JSON.stringify(result).includes('fake-runtime'));
+    assert.ok(!JSON.stringify(result).includes('sensitive'));
   }
 });

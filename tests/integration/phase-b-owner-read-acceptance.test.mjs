@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import {runOwnerReadAcceptance, runHostedOwnerReadAcceptance, simulateKeylessOwnerReadAcceptance, inspectAnonymousDenial,
   classifyHostedAcceptanceError, completedHostedFailureCategory,
-  inspectCorrelatedHostedEdgeDenial} from '../../scripts/phase-b-owner-read-acceptance.mjs';
+  inspectCorrelatedHostedEdgeDenial, reviewScopedHostedDenialLogShape} from '../../scripts/phase-b-owner-read-acceptance.mjs';
 import {privateProduct} from '../../scripts/phase-b-firestore-typed-fixture-preview.mjs';
 
 const googleToken = ('fake.' + Buffer.from(JSON.stringify({aud: 'https://oldx-owner-read-lqpaz3pd5a-el.a.run.app', iss: 'https://accounts.google.com', exp: 4102444800, email: 'oldx-phase-b-invoker@oldx-staging.iam.gserviceaccount.com', email_verified: true})).toString('base64url') + '.token');
@@ -270,6 +270,64 @@ test('independent Cloud Run trace/log evidence can qualify a hosted HTML 403 onl
   ]) fail({entries: [{...entry, ...mutate}]});
   // This pure comparison alone never attests where entries came from.
   // Only a future authenticated, scoped logging read can supply that provenance.
+});
+
+test('scoped Cloud Logging adapter accepts only matching mock shape, never live proof', async () => {
+  const traceId = '0123456789abcdef0123456789abcdef';
+  const startedAt = Date.parse('2026-11-15T09:30:00Z');
+  const finishedAt = startedAt + 1000;
+  const tag = 'futuretrial';
+  const revision = 'oldx-owner-read-00006-abc';
+  const url = 'https://' + tag + '---oldx-owner-read-lqpaz3pd5a-el.a.run.app/health';
+  const entry = {
+    logName: 'projects/oldx-staging/logs/run.googleapis.com%2Frequests',
+    trace: 'projects/oldx-staging/traces/' + traceId,
+    resource: {type: 'cloud_run_revision', labels: {
+      project_id: 'oldx-staging', service_name: 'oldx-owner-read', revision_name: revision,
+    }},
+    httpRequest: {requestMethod: 'GET', requestUrl: url, status: 403},
+    timestamp: new Date(startedAt + 500).toISOString(),
+    textPayload: 'The request was not authenticated. Request denied.',
+  };
+  const body = '<html>unauthenticated</html>';
+  const response = new Response(body, {status: 403, headers: {
+    'content-type': 'text/html', 'x-cloud-trace-context': traceId + '/1;o=0',
+  }});
+  const calls = [];
+  const read = async (...args) => { calls.push(args); return JSON.stringify([entry]); };
+  const input = {read, response, body, traceId, startedAt, finishedAt, tag, revision};
+  assert.equal(await reviewScopedHostedDenialLogShape(input), 'SHAPE_MATCH_ONLY');
+  assert.deepEqual(calls, [[
+    'logging', 'read',
+    'trace="projects/oldx-staging/traces/' + traceId + '" AND ' +
+      'timestamp>="' + new Date(startedAt - 5000).toISOString() + '" AND ' +
+      'timestamp<="' + new Date(finishedAt + 5000).toISOString() + '"',
+    '--project=oldx-staging', '--account=yasminparmar087@gmail.com',
+    '--limit=2', '--format=json', '--quiet',
+  ]]);
+
+  // Invalid/mismatched requests must not make even a mocked Logging call.
+  calls.length = 0;
+  for (const patch of [
+    {traceId: 'injected" OR true'}, {startedAt: '2026-11-15T09:30Z'},
+    {finishedAt: finishedAt + 20000}, {revision: 'production'},
+    {tag: 'no/valid/tag'}, {body: ''},
+    {response: new Response('denied', {status: 401, headers: {'content-type': 'text/html'}}},
+    {response: Response.json({error: 'denied'}, {status: 403})},
+  ]) assert.equal(await reviewScopedHostedDenialLogShape({...input, ...patch}), 'BLOCKED');
+  assert.equal(calls.length, 0);
+  for (const reply of [
+    JSON.stringify([]), JSON.stringify([entry, entry]),
+    JSON.stringify([{...entry, httpRequest: {...entry.httpRequest, status: 200}}]),
+  ]) assert.equal(await reviewScopedHostedDenialLogShape({
+    ...input, read: () => reply,
+  }), 'BLOCKED');
+  for (const result of ['{bad', '{}', 'x'.repeat(65_537)]) assert.equal(
+    await reviewScopedHostedDenialLogShape({...input, read: () => result}), 'UNVERIFIED');
+  assert.equal(await reviewScopedHostedDenialLogShape({
+    ...input, read: () => { throw new Error('sensitive provider details'); },
+  }), 'UNVERIFIED');
+  assert.equal(await reviewScopedHostedDenialLogShape({...input, read: undefined}), 'BLOCKED');
 });
 
 test('hosted transport fails closed on oversized or unexpected denial body', async () => {

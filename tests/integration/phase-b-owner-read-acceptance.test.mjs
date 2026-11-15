@@ -312,7 +312,7 @@ test('scoped Cloud Logging adapter accepts only matching mock shape, never live 
     {traceId: 'injected" OR true'}, {startedAt: '2026-11-15T09:30Z'},
     {finishedAt: finishedAt + 20000}, {revision: 'production'},
     {tag: 'no/valid/tag'}, {body: ''},
-    {response: new Response('denied', {status: 401, headers: {'content-type': 'text/html'}}},
+    {response: new Response('denied', {status: 401, headers: {'content-type': 'text/html'}})},
     {response: Response.json({error: 'denied'}, {status: 403})},
   ]) assert.equal(await reviewScopedHostedDenialLogShape({...input, ...patch}), 'BLOCKED');
   assert.equal(calls.length, 0);

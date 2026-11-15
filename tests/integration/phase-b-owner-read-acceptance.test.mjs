@@ -1,7 +1,8 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import {runOwnerReadAcceptance, runHostedOwnerReadAcceptance, simulateKeylessOwnerReadAcceptance, inspectAnonymousDenial,
-  classifyHostedAcceptanceError, completedHostedFailureCategory} from '../../scripts/phase-b-owner-read-acceptance.mjs';
+  classifyHostedAcceptanceError, completedHostedFailureCategory,
+  inspectCorrelatedHostedEdgeDenial} from '../../scripts/phase-b-owner-read-acceptance.mjs';
 import {privateProduct} from '../../scripts/phase-b-firestore-typed-fixture-preview.mjs';
 
 const googleToken = ('fake.' + Buffer.from(JSON.stringify({aud: 'https://oldx-owner-read-lqpaz3pd5a-el.a.run.app', iss: 'https://accounts.google.com', exp: 4102444800, email: 'oldx-phase-b-invoker@oldx-staging.iam.gserviceaccount.com', email_verified: true})).toString('base64url') + '.token');
@@ -212,6 +213,63 @@ test('hosted failures expose only exact allowlisted stages after verified cleanu
   assert.equal(completedHostedFailureCategory(forged), null);
   assert.equal(completedHostedFailureCategory(
     new Error('HOSTED_ACCEPTANCE_FAILED_FIXTURES_ABSENT')), null);
+});
+
+test('independent Cloud Run trace/log evidence can qualify a hosted HTML 403 only with exact matching metadata', () => {
+  const traceId = 'abcdef1234567890abcdef1234567890';
+  const at = Date.parse('2026-11-15T09:30:00.000Z');
+  const url = 'https://ownerbuyertrial---oldx-owner-read-lqpaz3pd5a-el.a.run.app/health';
+  const entry = {
+    logName: 'projects/oldx-staging/logs/run.googleapis.com%2Frequests',
+    trace: 'projects/oldx-staging/traces/' + traceId,
+    resource: {type: 'cloud_run_revision', labels: {
+      project_id: 'oldx-staging', service_name: 'oldx-owner-read',
+      revision_name: 'oldx-owner-read-00004-jus',
+    }},
+    httpRequest: {requestMethod: 'GET', requestUrl: url, status: 403},
+    timestamp: new Date(at + 500).toISOString(),
+    textPayload: 'The request was not authenticated. Request denied.',
+  };
+  const html = '<html>Not authenticated</html>';
+  const response = new Response(html, {status: 403, headers: {
+    'content-type': 'text/html; charset=utf-8',
+    'x-cloud-trace-context': traceId + '/1;o=1',
+  }});
+  const input = {
+    response, body: html, entries: [entry], traceId,
+    startedAt: at, finishedAt: at + 1000,
+    revision: 'oldx-owner-read-00004-jus', tag: 'ownerbuyertrial',
+  };
+  assert.equal(inspectCorrelatedHostedEdgeDenial(input), 'MATCH');
+  const fail = (change) => assert.equal(
+    inspectCorrelatedHostedEdgeDenial({...input, ...change}), 'BLOCKED');
+  fail({entries: []});
+  fail({entries: [entry, entry]});
+  fail({traceId: 'wrong'});
+  fail({revision: 'oldx-owner-read-00003-nus'});
+  fail({tag: 'healthcheck'});
+  fail({body: ''});
+  fail({finishedAt: at + 30000});
+  fail({response: new Response('denied', {status: 403, headers: {
+    'content-type': 'application/json',
+  }})});
+  fail({response: new Response(html, {status: 401, headers: {'content-type': 'text/html'}})});
+  fail({response: new Response(html, {status: 403, headers: {
+    'content-type': 'text/html', 'x-cloud-trace-context': '0'.repeat(32),
+  }})});
+  for (const mutate of [
+    {trace: 'projects/oldx-staging/traces/' + '0'.repeat(32)},
+    {logName: 'projects/oldx-staging/logs/run.googleapis.com%2Fstderr'},
+    {resource: {...entry.resource, labels: {...entry.resource.labels, revision_name: 'wrong'}}},
+    {resource: {...entry.resource, labels: {...entry.resource.labels, project_id: 'production'}}},
+    {httpRequest: {...entry.httpRequest, requestUrl: url + '/other'}},
+    {httpRequest: {...entry.httpRequest, status: 200}},
+    {httpRequest: {...entry.httpRequest, requestMethod: 'POST'}},
+    {timestamp: new Date(at - 6000).toISOString()},
+    {textPayload: 'Application returned forbidden'},
+  ]) fail({entries: [{...entry, ...mutate}]});
+  // This pure comparison alone never attests where entries came from.
+  // Only a future authenticated, scoped logging read can supply that provenance.
 });
 
 test('hosted transport fails closed on oversized or unexpected denial body', async () => {

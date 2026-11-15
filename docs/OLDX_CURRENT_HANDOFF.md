@@ -1746,3 +1746,19 @@ Attempted direct-tool routing before Cloud Shell:
 - GitHub Issue #17 audit comment ID `6893747552` records this owner approval, tool limitation and one-step Cloud Shell route. Issues #21/#22 remain OPEN; no repeated emulator/CI or Google Console UI checks.
 
 **Next single action:** Supply the owner a single tightly scoped **read-only Cloud Shell** command set starting with active-account guard and `gcloud alpha firebase security-rules get 'cloud.firestore/(default)' --release --project=oldx-staging`; parse and share sanitized release and role/condition/rollback/billing status only. Record real returned data and any failures once. Reuse existing checker if actual release+ruleset JSON matches its contract. Keep past V1 rollback proof and hard-OFF gates unchanged; staging acceptance NO-GO, production HOLD/NO-GO. No new resources, tokens or changes made.
+
+
+## Owner Cloud Shell partial read-only screenshot: Cloud Run traffic/IAM and billing (15 Nov 2026)
+
+**Source of evidence:** Yasmin provided a screenshot of an already-executed read-only Cloud Shell command at approximately 17:13 IST on 2026-11-15, Google Cloud project selector `oldx-staging`, terminal prompt `yasminparmar087@cloudshell:~ (oldx-staging)$`. This is **owner-supplied terminal UI evidence**, not an independent live API probe by the assistant. Only the visible bottom part of the output is currently available: previous Rules Release/Ruleset, custom role and IAM CEL results were scrolled off screen and **cannot** be evaluated yet.
+
+**Visible output:**
+- `gcloud run services describe oldx-owner-read` printout: spec/status traffic `oldx-owner-read-00001-8kr` at **100%**, and tagged revision `oldx-owner-read-00002-tid` (healthcheck), `oldx-owner-read-00003-nus` (step3rc14); no `ownerbuyertrial` traffic/tag appeared in the shown output. This is consistent with previously owner-observed rollback, but does **not** independently certify the entire template, IAM bindings or all deployment/access conditions.
+- `gcloud run services get-iam-policy` sanitized script output: `roles: ['roles/run.invoker']`, `public_access_binding: False` (no explicitly `allUsers` / `allAuthenticatedUsers` member in returned role bindings). **It does not show which principal has invoker**, ingress or effective network/private IAM behavior.
+- `gcloud billing projects describe oldx-staging` sanitized output: `billingEnabled: true`. No billing account ID, free-trial credit, prices, current spending or hard cap was surfaced.
+- `=== END READ ONLY ===` shown; no CLI output errors visible in this part. No cloud mutation was requested.
+- Project and shell prompt match staging; the guarded command should have checked active operator account, but the screenshot does not itself display the independent `gcloud auth list` output.
+
+**UNVERIFIED in this screenshot:** actual Rules Release/Ruleset name and published source, existing checker real-input match, exact IAM conditional CEL, custom role permissions and SA user-managed key count, runtime service account identity/ingress, and IAM effective DB isolation. **Do not mark Step 02 DONE** based on this partial view. Step 02/15 remains CURRENT, one fully DONE governance step, 14 unfinished. Step 03 and all new hosted execution remain blocked, staging acceptance NO-GO and production HOLD/NO-GO.
+
+**Next efficient action:** Ask the owner to scroll UP within the *same Cloud Shell output*, capture only `FIRESTORE PUBLISHED RELEASE`, `IAM CONDITION`, `CUSTOM ROLE PERMISSIONS`, and `USER-MANAGED KEY COUNT` section; do **not rerun** the command. Review sanitized values, missing or 403 statuses as UNKNOWN, never request tokens, IAM edits, extra paid automation or fresh hosted probe. If the read-only outputs are sufficient, update Issue #17/#21 with actual evidence status. Retain previous rollback proof as dated history.

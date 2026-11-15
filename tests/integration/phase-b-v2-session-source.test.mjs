@@ -106,6 +106,10 @@ test('offline reuse of V1 conditional receipt guard stops mismatched or unauthen
     {observed:{...receipt, name:receipt.name.replace('(default)', 'other')}},
     {observed:{...receipt, name:receipt.name.replace('oldx-staging', 'other-project')}},
     {observed:{...receipt, updateTime:'2026-11-15T00:00:02Z'}},
+    {original:{...receipt, exists:false}},
+    {observed:{...receipt, exists:false}},
+    {original:{...receipt, hasUnexpectedChanges:true}},
+    {observed:{...receipt, hasUnexpectedChanges:true}},
     {original:{...receipt, marker:'some-other-session'}},
     {observed:undefined}, {candidate:{...candidate, tag:'ownerbuyertrial'}},
   ]) {

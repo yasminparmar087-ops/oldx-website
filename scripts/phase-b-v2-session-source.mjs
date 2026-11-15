@@ -91,6 +91,9 @@ export function openV2LocalJournal(sessionId, manifest) {
     append({version: 3, project: PROJECT, database: '(default)', sessionId,
       authUids: [...manifest.authUids], firestoreDocs: [...manifest.firestoreDocs]});
     fsyncSync(dir);
+    // Durably record the new directory entry as V1 did, without opening V1 evidence.
+    const parent = openSync(homedir(), constants.O_RDONLY | constants.O_DIRECTORY | constants.O_NOFOLLOW);
+    try { fsyncSync(parent); } finally { closeSync(parent); }
     let closed = false;
     let count = 0;
     return Object.freeze({

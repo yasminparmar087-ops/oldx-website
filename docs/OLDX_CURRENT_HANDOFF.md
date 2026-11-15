@@ -2489,3 +2489,29 @@ Next decision: seek separate, bounded owner approval for one read-only fetch of 
 **No-repeat / STOP:** this approval's **1/1 metadata request is consumed**. Previous 6/6 metadata and separate OCI index 1/1 GET also consumed. Do not repeat these just to rewrite a report. OCI index→linux/amd64 child relation from ~02:01 is separately recorded above and remains verified at that time. Approved choice to reuse the existing immutable OCI index remains valid; do not rebuild the image just for this review. No current Cloud operations, Firebase changes, rollout or release were authorized by this read.
 
 **Narrow current next gate:** Before **any** new B1 0%-general-traffic tagged revision, independently reconcile up-to-date **service-level no-drift** (original protected 100% traffic, unchanged runtime principal, private invocation policy, inactive template, proposed tag availability), actual B1 G1 source runner/provenance, prospective new revision resource bounds and all-service budget/STOP + two independently owner-authorized emergency actions R1 (remove only the new tag), R2 (guarded V2 restore). The 02:07 revision-only flag check is not a service-level no-drift snapshot. Do not assume owner approval for B1, R1/R2, token/logging or synthetic fixtures. Master Plan count **02/15 DONE**, **Step03 ACTIVE/BLOCKED-owner**, staging hosted NO-GO, production HOLD/NO-GO. Avoid previously passed CI/V1/Rules/DELETE403/OCI checks.
+
+
+## 2026-11-16 ~02:22 IST — owner-authorized Cloud Run service metadata no-drift snapshot PASS
+
+**Approval:** The owner explicitly responded `ha manjuri chhe` to exactly ONE new, ≤5-minute, read-only Cloud Run `oldx-owner-read` service metadata snapshot in `oldx-staging` / `asia-south1`, as `yasminparmar087@gmail.com`, matched against the already-frozen private `~/.oldx-step02-v2-preimage-20261115/service.json`; [Issue #17 approval 6901148862](https://github.com/yasminparmar087-ops/oldx-website/issues/17#issuecomment-6901148862). Approval did **not** include service IAM get-policy, any write/deploy/rollback, tokens, hosted calls, new synthetic data, Firebase/Auth/Firestore, Billing/Rules or production.
+
+**Actual execution evidence (owner Cloud Shell screenshot ~02:22 IST, no secrets shown):** The approved shell guard checked the active account/project, private V2 backup directory and four expected files, ran local `sha256sum --check --status preimage.sha256` without rewriting files, then made ONE `gcloud run services describe oldx-owner-read --project=oldx-staging --region=asia-south1 --format=json` metadata read. Local in-memory Python compared the current response with frozen private `service.json`; it printed only sanitized PASS/STOP labels. The terminal finished with returned prompt and these results:
+
+```text
+PRIVATE_V2_BASELINE_INTEGRITY: PASS
+SERVICE_IDENTITY: PASS
+GENERATION_NO_DRIFT: PASS
+PROTECTED_TRAFFIC: PASS
+CANDIDATE_TAG_ABSENT: PASS
+DISABLED_TEMPLATE_UNCHANGED: PASS
+RUNTIME_IDENTITY: PASS
+SERVICE_ANNOTATIONS: PASS
+LATEST_READY_REVISION: PASS
+FINAL: SERVICE_METADATA_NO_DRIFT_PASS
+```
+
+**Scope of PASS, not overclaim:** At this single observation, frozen-baseline/current `metadata.generation` agreed; service name agreed; `status.traffic` retained original `oldx-owner-read-00001-8kr` 100%, `healthcheck`/`00002-tid` and `step3rc14`/`00003-nus` 0%; `spec.traffic` agreed with baseline; proposed `ownerreadv2` tag was absent in spec and status traffic; entire desired `spec.template` equaled saved original template, whose checked activation env names remained absent or literal false; runtime service account remained `oldx-product-read-staging@oldx-staging.iam.gserviceaccount.com`; chosen ingress/ingress-status/maxScale annotations and latestReadyRevisionName agreed with baseline. Previous separate 02:07 original-revision OFF proof and 02:01 OCI SHA/index-to-linux/amd64 descriptor PASS remain valid and need **NO** repeats. All previous V2 backup hash/parity checks and existing source CI reused unchanged. Screenshot evidence is **owner-provided terminal output**, not an independent provider read by the assistant.
+
+**Boundaries:** Metadata no-drift does **NOT** establish a fresh service IAM policy comparison or inherited permissions; no Firestore effective database IAM, CREATE/UPDATE/DELETE-denial, authenticated Cloud Logging, live image supply-chain/security provenance, new revision min0/max1/concurrency, exact all-service budget enforcement or B1/R1/R2 readiness. It is point-in-time evidence, not perpetual no-drift. **This new 1/1 Cloud read is consumed; do not repeat it for documentation or ask for another per-field snapshot.** No Cloud mutations were performed. V1 and V2 live execution remain OFF. **Step03 ACTIVE/BLOCKED-owner, master 2/15 DONE; staging hosted NO-GO, production HOLD/NO-GO.**
+
+**Fast next action:** Use existing Master Plan Section 0, G1–G10 packet and Issue #17 to decide only the **remaining material B1 owner-scope prerequisites** (effective fresh service-level IAM policy, independent source/runtime suitability, exact cost/time/STOP and both distinct rollback authorities). Do not infer deployment consent from this read or repeat previous 6/6, OCI 1/1, original-revision 1/1, this no-drift 1/1, published deny-all Rules, V1 rollback or past CI. If B1 preconditions are not yet decision-ready, remain BLOCKED and request only a single genuinely necessary separately bounded owner action; do not manufacture a test or new runner merely to claim Step03 DONE.

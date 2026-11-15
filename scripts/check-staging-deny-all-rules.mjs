@@ -1,9 +1,20 @@
 import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
+import { isDeepStrictEqual } from 'node:util';
 import { pathToFileURL } from 'node:url';
 
 const releaseName = 'projects/oldx-staging/releases/cloud.firestore';
-const normalize = source => source.replaceAll('\r\n', '\n').trim();
+
+// Compare every significant Rules token, not byte-for-byte editor formatting.
+// Only whitespace and valid comment tokens are ignored; added/changed grants,
+// paths, conditions and braces remain distinct and fail closed. Raw SHA-256
+// below always fingerprints the actual published API source, unchanged.
+function significantTokens(source) {
+  const lexemes = source.replaceAll('\r\n', '\n')
+    .match(/'(?:\\.|[^'\\])*'|"(?:\\.|[^"\\])*"|\/\/[^\n]*|\/\*[\s\S]*?\*\/|\s+|[A-Za-z_][A-Za-z_0-9]*|\*\*|./g) ?? [];
+  return lexemes.filter(part => !/^\s+$/.test(part) &&
+    !part.startsWith('//') && !part.startsWith('/*'));
+}
 
 export function checkStagingDenyAllRules(release, ruleset, baseline) {
   if (release?.name !== releaseName) throw Error('Expected the oldx-staging default Firestore release.');
@@ -14,7 +25,8 @@ export function checkStagingDenyAllRules(release, ruleset, baseline) {
     throw Error('Expected exactly one published source file.');
   }
   const source = files[0].content;
-  if (normalize(source) !== normalize(baseline)) throw Error('Published source differs from the reviewed deny-all baseline.');
+  if (!isDeepStrictEqual(significantTokens(source), significantTokens(baseline)))
+    throw Error('Published Rules tokens differ from the reviewed deny-all baseline.');
   return { release: release.name, ruleset: ruleset.name, sha256: createHash('sha256').update(source).digest('hex') };
 }
 

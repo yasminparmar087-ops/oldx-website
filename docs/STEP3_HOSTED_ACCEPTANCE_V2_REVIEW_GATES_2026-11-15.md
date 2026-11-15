@@ -186,3 +186,19 @@ The existing default-OFF session runner previously protected wall-clock creation
 **NOT A RELEASE OR GUARANTEED FINANCIAL CAP:** Cloud Run spend cap is monthly project/service **gross** estimated cost, not a total OLDX project cap, nor instantaneous; documented excess charges can occur, and Firestore/Auth/Logging/registry/build/storage/egress costs are separate. It can interrupt **all** `oldx-staging` Cloud Run workloads (including unrelated services), then reset at new month. The source-bound 200 outbound HTTP attempt limit does not prove provider billed instance-seconds, internal Firestore operations or cleanup. A *future* new 0%-main-traffic tagged V2 revision still requires independently verified revision-level **min0/max1/concurrency1/request-based**, exact immutable source-to-image digest, named invoker and service account, effective IAM or explicit isolated UNKNOWN/STOP, fresh private rollback preimage, two distinct recoverable rollback mutations, exact-ID Auth/Firestore fixture cleanup and separate owner approval per live action. These are NOT accomplished by spending budget creation. G8 as a whole remains **PARTIAL/BLOCKED**, G4/G5/G6/G7 pending, G9/G10 unexecuted; staging-hosted NO-GO and production HOLD/NO-GO.
 
 **Evidence tracker:** [Latest living handoff](https://github.com/yasminparmar087-ops/oldx-website/blob/security-hardening-review/docs/OLDX_CURRENT_HANDOFF.md); Issue #17 remains the SINGLE owner decision packet. No code, CI, IAM, Rules, service rollout, Vercel or production changes in recording the outcome.
+
+
+### 4H. V2 private backup critical YAML/JSON parity PASS (owner local proof ~22:47 IST)
+
+New owner Cloud Shell screenshot (15 Nov 2026 ~22:47 IST) of **local offline** comparison of the separate new V2 `~/.oldx-step02-v2-preimage-20261115` files (service JSON vs export YAML) reports:
+```text
+G7_RESTORE_NAME=PASS
+G7_RESTORE_TRAFFIC=PASS
+G7_RESTORE_TEMPLATE_FIELDS=PASS
+G7_RESTORE_CRITICAL_PARITY=PASS
+G7_FULL_ROLLBACK=UNVERIFIED
+CLOUD_MUTATIONS=0
+```
+The script checked original main 100% + two preexisting 0% tags, identical restorable critical template keys (runtime SA, concurrency, timeout, volumes, image, environment, resources, ports, command/args, probes, selected autoscaling annotation keys), original disabled values, basic private file safety. **Do not upgrade these PASS labels to an actual successful V2 rollback, an all-fields export equivalence, current Cloud provider IAM enforcement or permission to run `gcloud replace`**. The preimage itself was freshly created at ~22:41 IST and is different from V1 historical backup. Preserve both backups unchanged.
+
+**One next preparation action, with no Cloud API request:** Freeze exact private V2 backup bytes in a create-once local SHA-256 manifest, independently verify all three files (service JSON, exported restore YAML, IAM JSON), and keep all file contents and hashes PRIVATE. On existing manifest, unsafe permission, changed file, or mismatch: STOP without replacing anything. This only strengthens backup integrity for a **future** separately scoped owner-approved roll-forward/rollback operation. The host must still compare fresh pre-operation service generation/traffic, IAM and tags to this V2 preimage, review G1–G8, and pre-authorize two distinct rollback mutations. Any Cloud Run deploy, `replace`, `update-traffic`, Firestore/Auth write, token mint, or hosted request is OUT OF SCOPE. G7 **PARTIAL/BLOCKED**, G8 budget subgate CONFIGURED at ₹100 Cloud Run monthly only, G4 effective IAM UNKNOWN, Step02 ACTIVE, production HOLD/NO-GO. [Checkpoint](https://github.com/yasminparmar087-ops/oldx-website/commit/7784c7ec2ca7b3f9d35942e7ede46c691ea8ba3c).

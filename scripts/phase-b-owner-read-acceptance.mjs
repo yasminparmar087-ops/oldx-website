@@ -167,6 +167,49 @@ export function inspectCorrelatedHostedEdgeDenial({
   }
 }
 
+// Source-only composition for a future *separately authorized* operator.
+// The caller supplies a constrained Cloud Logging reader; this module neither
+// obtains credentials nor performs a network request on its own. Mocked log
+// data can establish matching STRUCTURE only, never authenticate provenance.
+// Consequently no result returned here is an authorization or hosted PASS.
+export async function reviewScopedHostedDenialLogShape({
+  read, response, body, traceId, startedAt, finishedAt, revision, tag,
+} = {}) {
+  if (typeof read !== 'function' ||
+      typeof traceId !== 'string' || !/^[a-f0-9]{32}$/.test(traceId) ||
+      !Number.isSafeInteger(startedAt) || !Number.isSafeInteger(finishedAt) ||
+      finishedAt < startedAt || finishedAt - startedAt > 20_000 ||
+      typeof revision !== 'string' || !/^oldx-owner-read-[a-z0-9-]{1,47}$/.test(revision) ||
+      typeof tag !== 'string' || !/^[a-z][a-z0-9-]{0,30}$/.test(tag) ||
+      typeof body !== 'string' || body.length < 1 || body.length > 32_768 ||
+      response?.status !== 403 || response?.redirected !== false ||
+      typeof response.headers?.get !== 'function' ||
+      response.headers.get('content-type')?.split(';')[0].trim().toLowerCase() !== 'text/html') {
+    return 'BLOCKED';
+  }
+  try {
+    // Do not filter on revision/status/URL before fetching: conflicting
+    // request records for the same trace must remain visible, fail-closed.
+    const logFilter = [
+      'trace="projects/oldx-staging/traces/' + traceId + '"',
+      'timestamp>="' + new Date(startedAt - 5000).toISOString() + '"',
+      'timestamp<="' + new Date(finishedAt + 5000).toISOString() + '"',
+    ].join(' AND ');
+    const raw = await read('logging', 'read', logFilter,
+      '--project=oldx-staging', '--account=yasminparmar087@gmail.com',
+      '--limit=2', '--format=json', '--quiet');
+    if (typeof raw !== 'string' || Buffer.byteLength(raw, 'utf8') > 65_536) return 'UNVERIFIED';
+    const entries = JSON.parse(raw);
+    if (!Array.isArray(entries)) return 'UNVERIFIED';
+    return inspectCorrelatedHostedEdgeDenial({
+      response, body, entries, traceId, startedAt, finishedAt, revision, tag,
+    }) === 'MATCH' ? 'SHAPE_MATCH_ONLY' : 'BLOCKED';
+  } catch {
+    // Never return provider messages, log payloads, traces, bodies or tokens.
+    return 'UNVERIFIED';
+  }
+}
+
 async function runKeylessAcceptance({
   projectId, getOperatorAccessToken, ownerToken, buyerToken,
   disabledOrigin, enabledOrigin, enabledTag, timeout = (limit) => limit,

@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import {runOwnerReadAcceptance, runHostedOwnerReadAcceptance, simulateKeylessOwnerReadAcceptance, inspectAnonymousDenial} from '../../scripts/phase-b-owner-read-acceptance.mjs';
+import {runOwnerReadAcceptance, runHostedOwnerReadAcceptance, simulateKeylessOwnerReadAcceptance, inspectAnonymousDenial,
+  classifyHostedAcceptanceError, completedHostedFailureCategory} from '../../scripts/phase-b-owner-read-acceptance.mjs';
 import {privateProduct} from '../../scripts/phase-b-firestore-typed-fixture-preview.mjs';
 
 const googleToken = ('fake.' + Buffer.from(JSON.stringify({aud: 'https://oldx-owner-read-lqpaz3pd5a-el.a.run.app', iss: 'https://accounts.google.com', exp: 4102444800, email: 'oldx-phase-b-invoker@oldx-staging.iam.gserviceaccount.com', email_verified: true})).toString('base64url') + '.token');
@@ -176,6 +177,41 @@ test('HTML 403 cannot be called verified anonymous denial without independent ed
   assert.equal(fakeApp.result, 'BLOCKED');
   // A status/header-shaped response is not Google Cloud Run IAM proof.
   // The historical preflight used an independent request-log correlation.
+});
+
+test('hosted failures expose only exact allowlisted stages after verified cleanup', () => {
+  const names = {
+    INVOCATION_TOKEN_GENERATION_FAILED: 'TOKEN_MINT',
+    INVOCATION_AUDIENCE_UNVERIFIED: 'TOKEN_AUDIENCE',
+    INVOCATION_IDENTITY_UNVERIFIED: 'TOKEN_IDENTITY',
+    INVALID_HOSTED_ACCEPTANCE_INPUT: 'INPUT_GUARD',
+    FIXTURE_IDENTITY_UNVERIFIED: 'FIXTURE_IDENTITY_GUARD',
+    ACCEPTANCE_STOPPED_invoker-denied: 'PROBE_INVOKER_DENIAL',
+    ACCEPTANCE_STOPPED_owner: 'PROBE_OWNER',
+    ACCEPTANCE_STOPPED_foreign-buyer: 'PROBE_BUYER_DENIAL',
+    ACCEPTANCE_STOPPED_quota-limit: 'PROBE_QUOTA_LIMIT',
+  };
+  for (const [message, expected] of Object.entries(names)) {
+    assert.equal(classifyHostedAcceptanceError(new Error(message)), expected);
+    const verified = new Error('HOSTED_ACCEPTANCE_FAILED_FIXTURES_ABSENT');
+    Object.defineProperty(verified, 'hostedFailureCategory', {value: expected});
+    assert.equal(completedHostedFailureCategory(verified), expected);
+    assert.equal(completedHostedFailureCategory(new Error(message)), null);
+  }
+  for (const hostile of [
+    new Error('ACCEPTANCE_STOPPED_owner private-token'), new Error('ACCEPTANCE_STOPPED_unknown'),
+    new Error('HTTP 403 username@example.com'), new Error('INVOCATION_TOKEN_GENERATION_FAILED\nsecret'),
+    new Error('HOSTED_ACCEPTANCE_FAILED_FIXTURES_ABSENT'),
+    {message: 'ACCEPTANCE_STOPPED_owner'}, null,
+  ]) {
+    assert.equal(classifyHostedAcceptanceError(hostile), 'UNCLASSIFIED');
+    assert.equal(completedHostedFailureCategory(hostile), null);
+  }
+  const forged = new Error('HOSTED_ACCEPTANCE_FAILED_FIXTURES_ABSENT');
+  forged.hostedFailureCategory = 'PROBE_OWNER private data';
+  assert.equal(completedHostedFailureCategory(forged), null);
+  assert.equal(completedHostedFailureCategory(
+    new Error('HOSTED_ACCEPTANCE_FAILED_FIXTURES_ABSENT')), null);
 });
 
 test('hosted transport fails closed on oversized or unexpected denial body', async () => {

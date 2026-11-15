@@ -63,6 +63,8 @@ test('create-once private V2 journal never touches V1; unknown mutations remain 
     'assert.equal(typeof journal.complete, "undefined");',
     'assert.equal(typeof journal.cleanup, "undefined");',
     'journal.recordUnknown(manifest.authUids[0], "CREATE_UNKNOWN");',
+    'assert.throws(() => journal.recordUnknown(manifest.authUids[0], "CREATE_UNKNOWN"), /V2_JOURNAL_STOP/);',
+    'assert.throws(() => journal.recordUnknown(manifest.firestoreDocs[1], "DELETE_UNKNOWN"), /V2_JOURNAL_STOP/);',
     'assert.throws(() => journal.recordUnknown("synthetic-seller-a", "DELETE_UNKNOWN"), /V2_JOURNAL_STOP/);',
     'journal.close();',
     'assert.throws(() => openV2LocalJournal(id, manifest), /EEXIST/);',

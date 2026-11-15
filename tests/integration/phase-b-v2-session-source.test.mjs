@@ -5,6 +5,7 @@ import {tmpdir} from 'node:os';
 import {join} from 'node:path';
 import test from 'node:test';
 import {reviewV2Candidate, reviewV2Manifest, requireV2LiveExecution,
+  reviewV2OfflineConditionalCleanup, rehearseV2AmbiguousCreateOffline,
   V2_LIVE_EXECUTION_ENABLED} from '../../scripts/phase-b-v2-session-source.mjs';
 
 const moduleUrl = new URL('../../scripts/phase-b-v2-session-source.mjs', import.meta.url);
@@ -76,6 +77,59 @@ test('create-once private V2 journal never touches V1; unknown mutations remain 
   ].join('\n');
   try {
     const run = spawnSync(process.execPath, ['--input-type=module', '-e', code],
+      {encoding:'utf8', timeout:5000, env:{...process.env, HOME:home}});
+    assert.equal(run.status, 0, run.stderr);
+  } finally {
+    rmSync(home, {recursive:true, force:true});
+  }
+});
+
+
+test('offline reuse of V1 conditional receipt guard stops mismatched or unauthenticated provenance', () => {
+  const id = '00000000-0000-4000-8000-000000000003';
+  const receipt = {marker:id,
+    createTime:'2026-11-15T00:00:00Z', updateTime:'2026-11-15T00:00:01Z'};
+  const input = {candidate, manifest, sessionId:id,
+    resource:manifest.firestoreDocs[1], original:receipt, observed:{...receipt}};
+  assert.deepEqual(reviewV2OfflineConditionalCleanup(input), {
+    decision:'SOURCE_RECEIPT_SHAPE_ONLY', provenance:'UNVERIFIED',
+    liveExecution:'DISABLED', cloudAccess:'NONE',
+  });
+  for (const change of [
+    {resource:'marketplacePrivate_v1/unapproved', original:receipt},
+    {observed:{...receipt, updateTime:'2026-11-15T00:00:02Z'}},
+    {original:{...receipt, marker:'some-other-session'}},
+    {observed:undefined}, {candidate:{...candidate, tag:'ownerbuyertrial'}},
+  ]) {
+    assert.equal(reviewV2OfflineConditionalCleanup({...input,...change}).decision,
+      'STOP_MANUAL_RECOVERY');
+  }
+});
+
+test('V2 offline adapter reuses V1 attempted-request budget, records only UNKNOWN in new journal', () => {
+  const home = mkdtempSync(join(tmpdir(), 'oldx-v2-rehearsal-'));
+  const child = [
+    "import assert from 'node:assert/strict';",
+    "import {existsSync,readFileSync} from 'node:fs';",
+    "import {homedir} from 'node:os';",
+    "import {join} from 'node:path';",
+    'import {rehearseV2AmbiguousCreateOffline} from ' + JSON.stringify(moduleUrl.href) + ';',
+    'const candidate = ' + JSON.stringify(candidate) + ';',
+    'const manifest = ' + JSON.stringify(manifest) + ';',
+    "const id = '00000000-0000-4000-8000-000000000003';",
+    'const input = {candidate,manifest,sessionId:id,resource:manifest.authUids[0]};',
+    'assert.equal(rehearseV2AmbiguousCreateOffline({...input,resource:"synthetic-seller-a"}).decision,"BLOCKED");',
+    'assert.equal(existsSync(join(homedir(), ".oldx-phase-b-hosted-v2")),false);',
+    'assert.equal(rehearseV2AmbiguousCreateOffline(input).decision,"STOP_MANUAL_RECOVERY");',
+    'const journal = readFileSync(join(homedir(), ".oldx-phase-b-hosted-v2","journal.jsonl"),"utf8");',
+    'assert.match(journal,/CREATE_UNKNOWN/);',
+    'assert.doesNotMatch(journal,/ALL_ABSENT_VERIFIED|DELETE_ACKNOWLEDGED/);',
+    'assert.equal(existsSync(join(homedir(), ".oldx-phase-b-hosted-v1")),false);',
+    'assert.equal(existsSync(join(homedir(), ".oldx-phase-b-fixtures-v1")),false);',
+    'assert.throws(() => rehearseV2AmbiguousCreateOffline(input), /EEXIST/);',
+  ].join('\n');
+  try {
+    const run = spawnSync(process.execPath, ['--input-type=module', '-e', child],
       {encoding:'utf8', timeout:5000, env:{...process.env, HOME:home}});
     assert.equal(run.status, 0, run.stderr);
   } finally {

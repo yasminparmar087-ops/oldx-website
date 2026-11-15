@@ -167,6 +167,14 @@ export function inspectCorrelatedHostedEdgeDenial({
   }
 }
 
+// Retired historical revisions/tags must never be used as a V2 logging
+// acceptance target. They remain available for OFFLINE V1 audit functions.
+const retiredHostedTrialTags = new Set(['ownerbuyertrial', 'healthcheck', 'step3rc14']);
+const retiredHostedTrialRevisions = new Set([
+  'oldx-owner-read-00001-8kr', 'oldx-owner-read-00002-tid',
+  'oldx-owner-read-00003-nus', 'oldx-owner-read-00004-jus',
+]);
+
 // Source-only composition for a future *separately authorized* operator.
 // The caller supplies a constrained Cloud Logging reader; this module neither
 // obtains credentials nor performs a network request on its own. Mocked log
@@ -180,7 +188,9 @@ export async function reviewScopedHostedDenialLogShape({
       !Number.isSafeInteger(startedAt) || !Number.isSafeInteger(finishedAt) ||
       finishedAt < startedAt || finishedAt - startedAt > 20_000 ||
       typeof revision !== 'string' || !/^oldx-owner-read-[a-z0-9-]{1,47}$/.test(revision) ||
+      retiredHostedTrialRevisions.has(revision) ||
       typeof tag !== 'string' || !/^[a-z][a-z0-9-]{0,30}$/.test(tag) ||
+      retiredHostedTrialTags.has(tag) ||
       typeof body !== 'string' || body.length < 1 || body.length > 32_768 ||
       response?.status !== 403 || response?.redirected !== false ||
       typeof response.headers?.get !== 'function' ||

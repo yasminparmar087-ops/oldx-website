@@ -47,6 +47,10 @@ for(const [width,locale] of [[320,'gu'],[375,'hi'],[375,'en']])test('shared main
  const storeId=await page.evaluate(async()=>{binding.destroy();history.replaceState(null,'','/fixture');const saved=await fixturePort('store.save',{requestId:'host-store',id:null,expectedRevision:0,publication:'publish',profile:{name:'Shared Store',description:'Public Store',category:'cars',locationLabel:'Ahmedabad',photos:['data:image/jpeg;base64,YQ==']}});return saved.id;});
  async function bootHost(){await page.evaluate(async()=>{binding.destroy();const {mountMarketplaceHost}=await import('/features/marketplace/host-integration.mjs'),{createProviderHost}=await import('/features/service-providers/host-integration.mjs');window.providerRoutes=[];window.providerSessions=[];const providers=createProviderHost({enabled:true,inbox:{changeScope(){},setSession:v=>providerSessions.push(v)},openPage:v=>providerRoutes.push(v)});window.host=mountMarketplaceHost({enabled:true,root:document,providers,product:{ports:Object.fromEntries(['save','archive','list','detail','owner','open','send','read','inbox','inboxPage','thread'].map(op=>[op,(body,ctx)=>window.publicPorts[op]?window.publicPorts[op](body,ctx):fixturePort(op,body)])),getCategory:()=> 'cars',readPhotoReferences:async()=>[]},store:{ports:{save:body=>fixturePort('store.save',body),...Object.fromEntries(['owner','detail','list'].map(op=>[op,(body,ctx)=>window.publicPorts[op]?window.publicPorts[op](body,ctx):fixturePort(op,body)]))},getCategory:()=> 'cars',readPhotoReferences:async()=>[]}});await host.setSession({uid:'seller',sessionId:'shared'});});}
  await bootHost();
+  // A normal Sell entry does not require a Store; the linked Store flow remains below.
+  await page.evaluate(async()=>host.product.navigate('sell'));
+  assert.equal(await page.evaluate(()=>location.hash),'#sell');
+  assert.equal(await page.locator('#productStoreDraftNotice').isVisible(),false);
 
  await page.evaluate(async()=>{history.pushState(null,'','#store');await host.restoreRoute();});
  const catalog=(await import('../../features/i18n/catalogs/'+locale+'.mjs')).default;

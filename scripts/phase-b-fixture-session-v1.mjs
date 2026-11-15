@@ -1440,6 +1440,10 @@ async function main(args) {
       headers: {Authorization: 'Bearer ' + token, 'Content-Type': 'application/json', 'X-Goog-User-Project': project},
       body: JSON.stringify(body)})) : null;
   const budget = runtimeSessionBudget(hosted ? credential.expiry : Date.now() + 240_000);
+  // The hosted runtime-SA IAMCredentials HTTP mint happened once before
+  // credential.expiry was known. Charge that successful attempt before any
+  // fixture call; failed mint exits before a fixture session can start.
+  if (hosted) budget.beforeHttpAttempt();
   const afterSignIn = hosted && hostedFixtureCallback({
     enabledTag: hostedTarget.tag,
     disabledOrigin: ownerReadAudience.replace('https://', 'https://healthcheck---'),

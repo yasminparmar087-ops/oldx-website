@@ -146,6 +146,59 @@ function preflightRead(mutate = () => {}) {
   };
 }
 
+
+// Mirrors the owner's 15-Nov Cloud Shell read-only observation exactly.
+// Existing two-row historical preflight fixtures are intentionally untouched.
+function postRollbackOnePathPreflightRead(mutate = () => {}) {
+  return preflightRead((command, data) => {
+    if (command.startsWith('run services describe')) {
+      data.status.latestReadyRevisionName = service + '-00003-nus';
+      data.status.traffic.push({
+        revisionName: service + '-00003-nus',
+        tag: 'step3rc14',
+        url: 'https://step3rc14---oldx-owner-read-lqpaz3pd5a-el.a.run.app',
+      });
+    }
+    mutate(command, data);
+  });
+}
+
+test('one-path post-rollback preflight accepts only observed protected 100/0/0 traffic', () => {
+  const options = {preflight: true, postRollbackOnePathProbe: true};
+  const matching = inspectPhaseBConfiguration(postRollbackOnePathPreflightRead(), options);
+  assert.equal(matching.configuration, 'MATCH');
+  assert.equal(matching.checks.serviceAndTraffic, 'MATCH');
+  assert.equal(matching.checks.latestReadyRevision, 'MATCH');
+  assert.equal(matching.production, 'HOLD_NO_GO');
+  assert.equal(matching.effectiveDatabaseIam, 'UNVERIFIED');
+
+  // Other earlier owner/hosted flows must reject the third tag by default.
+  const historical = inspectPhaseBConfiguration(postRollbackOnePathPreflightRead(), {preflight: true});
+  assert.equal(historical.configuration, 'FAIL');
+  assert.equal(historical.checks.serviceAndTraffic, 'MISMATCH');
+  assert.equal(historical.checks.latestReadyRevision, 'MISMATCH');
+
+  const drifts = [
+    data => { data.status.traffic[0].percent = 99; },
+    data => { data.status.traffic[2].percent = 1; },
+    data => { data.status.traffic[2].tag = 'unreviewed'; },
+    data => { data.status.traffic[2].revisionName = service + '-00004-jus'; },
+    data => { data.status.traffic[2].url = 'https://unexpected.example.invalid'; },
+    data => { data.status.traffic[2].percent = 100; },
+    data => { data.status.traffic.pop(); },
+    data => { data.status.traffic.push({revisionName: service + '-00004-jus', tag: 'extra'}); },
+    data => { data.status.latestReadyRevisionName = service + '-00004-jus'; },
+  ];
+  for (const mutate of drifts) {
+    const report = inspectPhaseBConfiguration(postRollbackOnePathPreflightRead(
+      (command, data) => { if (command.startsWith('run services describe')) mutate(data); }), options);
+    assert.equal(report.configuration, 'FAIL');
+    assert.equal(report.production, 'HOLD_NO_GO');
+    assert.ok(report.checks.serviceAndTraffic === 'MISMATCH' ||
+      report.checks.latestReadyRevision === 'MISMATCH');
+  }
+});
+
 test('consolidated preflight only sends one anonymous GET and leaves effective access unverified', async () => {
   let calls = 0;
   const report = await inspectPhaseBPreflight(preflightRead(), (url, options) => {
@@ -695,7 +748,7 @@ test('Step 02 DELETE probe is hard off and requires the exact one-time flag', as
 test('Step 02 DELETE denial: fresh absent-only precondition, one request, no leaked response', async () => {
   const root = 'https://firestore.googleapis.com/v1/projects/oldx-staging/databases/(default)/documents/marketplacePrivate_v1/product_oldx_iam_denial_probe_20261115';
   for (const scenario of ['denied', 'unexpected-allow', 'document-exists', 'wrong-operator', 'token-denied', 'ambiguous', 'precondition-failure']) {
-    const requests = [], fallback = preflightRead();
+    const requests = [], fallback = postRollbackOnePathPreflightRead();
     const response = await simulateDirectFirestoreDeleteDenial((...args) => {
       if (args[0] === 'auth' && args[1] === 'list' && scenario === 'wrong-operator')
         return 'other@example.invalid';

@@ -522,13 +522,18 @@ export function hostedRevisionActivationVerified(revision) {
   return windowMs >= 1000 && windowMs <= 600000 && actorLimit <= globalLimit;
 }
 
-export function inspectPhaseBConfiguration(read = gcloud, {preflight = false, hostedTarget, fixtureOnlyCanonicalImage = false} = {}) {
+export function inspectPhaseBConfiguration(read = gcloud, {preflight = false, hostedTarget, fixtureOnlyCanonicalImage = false, postRollbackOnePathProbe = false} = {}) {
   const runtime = 'oldx-product-read-staging@oldx-staging.iam.gserviceaccount.com';
   const invoker = 'oldx-phase-b-invoker@oldx-staging.iam.gserviceaccount.com';
   const projectNumber = '38472235077';
   const region = 'asia-south1';
   const service = 'oldx-owner-read';
   const mainRevision = service + '-00001-8kr';
+  // Exact owner-observed 15-Nov post-rollback Cloud Run state. Only the
+  // default-off, one-path DELETE-denial probe may select this third tag;
+  // historic preflights and hosted acceptance retain their own stricter baselines.
+  const onePathPostRollback = preflight === true && postRollbackOnePathProbe === true &&
+    hostedTarget === undefined && fixtureOnlyCanonicalImage === false;
   const scoped = ['--project=' + project, '--account=' + operator, '--quiet', '--format=json'];
   const regional = ['--region=' + region, ...scoped];
   const result = {
@@ -642,7 +647,8 @@ export function inspectPhaseBConfiguration(read = gcloud, {preflight = false, ho
       const tag = traffic?.find?.((row) => row.tag === 'healthcheck');
       const taggedOrigin = ownerReadAudience.replace('https://', 'https://healthcheck---');
       result.checks.serviceAudience = value.status?.url === ownerReadAudience ? 'MATCH' : 'MISMATCH';
-      const expectedReady = hostedTarget?.revision ?? healthRevision;
+      const expectedReady = hostedTarget?.revision ??
+        (onePathPostRollback ? fixtureOnlyReviewedCloudBaseline.revision : healthRevision);
       result.checks.latestReadyRevision = value.status?.latestReadyRevisionName === expectedReady ? 'MATCH' : 'MISMATCH';
       result.checks.taggedUrl = tag?.url === taggedOrigin ? 'MATCH' : 'MISMATCH';
       result.serviceBaseline = {
@@ -656,7 +662,13 @@ export function inspectPhaseBConfiguration(read = gcloud, {preflight = false, ho
         annotations['run.googleapis.com/invoker-iam-disabled'] === 'false') &&
       value.spec?.template?.spec?.serviceAccountName === runtime &&
       Array.isArray(traffic) &&
-      traffic.length === (hostedTarget ? (fixtureOnlyCanonicalImage ? 3 : 4) : 2) &&
+      traffic.length === (hostedTarget ? (fixtureOnlyCanonicalImage ? 3 : 4) :
+        (onePathPostRollback ? 3 : 2)) &&
+      (!onePathPostRollback || traffic.some((row) =>
+        row.revisionName === fixtureOnlyReviewedCloudBaseline.revision &&
+        (row.percent ?? 0) === 0 &&
+        row.tag === fixtureOnlyReviewedCloudBaseline.tag &&
+        row.url === fixtureOnlyReviewedCloudBaseline.origin)) &&
       (!hostedTarget || fixtureOnlyCanonicalImage ||
         (hostedTarget.tag !== fixtureOnlyReviewedCloudBaseline.tag &&
          hostedTarget.revision !== fixtureOnlyReviewedCloudBaseline.revision &&
@@ -1055,9 +1067,15 @@ async function directFirestoreDeleteDenial(read, request) {
     evidence: 'UNVERIFIED', firestoreCalls: 0, databaseIsolation: 'UNVERIFIED',
     production: 'HOLD_NO_GO',
   };
-  const config = inspectPhaseBConfiguration(read, {preflight: true});
+  const config = inspectPhaseBConfiguration(read, {preflight: true, postRollbackOnePathProbe: true});
   report.configuration = config.configuration === 'MATCH' ? 'PASS' :
     Object.values(config.checks).includes('MISMATCH') ? 'FAIL' : 'UNVERIFIED';
+  // Check names/statuses only; no policy body, IAM member, token or account data.
+  if (report.configuration !== 'PASS') {
+    report.preflightFailures = Object.fromEntries(Object.entries(config.checks)
+      .filter(([, status]) => status !== 'MATCH')
+      .map(([name, status]) => [name, status]));
+  }
   if (report.configuration !== 'PASS' || Date.now() - started >= 60_000) return report;
 
   const call = (url, method, credential, body) => {

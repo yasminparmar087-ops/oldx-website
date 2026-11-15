@@ -4,6 +4,7 @@ import {runOwnerReadAcceptance, runHostedOwnerReadAcceptance, simulateKeylessOwn
   classifyHostedAcceptanceError, completedHostedFailureCategory,
   inspectCorrelatedHostedEdgeDenial, reviewScopedHostedDenialLogShape} from '../../scripts/phase-b-owner-read-acceptance.mjs';
 import {privateProduct} from '../../scripts/phase-b-firestore-typed-fixture-preview.mjs';
+import {planOfflineV2LoggingProcess} from '../../scripts/phase-b-v2-logging-process-plan.mjs';
 
 const googleToken = ('fake.' + Buffer.from(JSON.stringify({aud: 'https://oldx-owner-read-lqpaz3pd5a-el.a.run.app', iss: 'https://accounts.google.com', exp: 4102444800, email: 'oldx-phase-b-invoker@oldx-staging.iam.gserviceaccount.com', email_verified: true})).toString('base64url') + '.token');
 const root = '---oldx-owner-read-lqpaz3pd5a-el.a.run.app';
@@ -300,6 +301,15 @@ test('scoped Cloud Logging adapter accepts only matching mock shape, never live 
   assert.equal(calls.length, 1);
   assert.ok(calls[0].at(-1)?.signal instanceof AbortSignal);
   assert.equal(calls[0].at(-1).signal.aborted, true);
+  const processPlan = planOfflineV2LoggingProcess(...calls[0]);
+  assert.equal(processPlan.decision, 'OFFLINE_PLAN_ONLY');
+  assert.equal(processPlan.executable, false);
+  assert.equal(processPlan.provenance, 'UNVERIFIED');
+  assert.equal(processPlan.file, 'gcloud');
+  assert.equal(processPlan.processOptions.shell, false);
+  assert.equal(processPlan.processOptions.timeout, 1500);
+  assert.equal(processPlan.processOptions.maxBuffer, 65536);
+  assert.equal(processPlan.processOptions.killSignal, 'SIGKILL');
   assert.deepEqual(calls[0].slice(0, -1), [
     'logging', 'read',
     'trace="projects/oldx-staging/traces/' + traceId + '" AND ' +
@@ -368,6 +378,60 @@ test('scoped Cloud Logging adapter accepts only matching mock shape, never live 
     }),
   });
   assert.equal(abortResult, 'UNVERIFIED');
+});
+
+test('V2 CLI process plan blocks identities, extra flags, unbounded filters and expired signals', () => {
+  const abort = new AbortController();
+  const trace = 'a'.repeat(32);
+  const from = '2026-11-15T09:29:55.000Z';
+  const until = '2026-11-15T09:30:06.000Z';
+  const filter = 'trace="projects/oldx-staging/traces/' + trace + '" AND ' +
+    'timestamp>="' + from + '" AND timestamp<="' + until + '"';
+  const exact = [
+    'logging', 'read', filter,
+    '--project=oldx-staging', '--account=yasminparmar087@gmail.com',
+    '--limit=2', '--format=json', '--quiet', {signal: abort.signal},
+  ];
+  const plan = planOfflineV2LoggingProcess(...exact);
+  assert.equal(plan.decision, 'OFFLINE_PLAN_ONLY');
+  assert.equal(plan.executable, false);
+  assert.equal(plan.provenance, 'UNVERIFIED');
+  assert.equal(plan.file, 'gcloud');
+  assert.deepEqual([...plan.argv], exact.slice(0, 8));
+  assert.ok(Object.isFrozen(plan.argv));
+  assert.ok(Object.isFrozen(plan.processOptions));
+  assert.equal(plan.processOptions.timeout, 1500);
+  assert.equal(plan.processOptions.maxBuffer, 65536);
+  assert.equal(plan.processOptions.shell, false);
+  assert.equal(plan.processOptions.signal, abort.signal);
+
+  const blocked = patch => assert.equal(
+    planOfflineV2LoggingProcess(...exact.map((v, i) =>
+      Object.hasOwn(patch, i) ? patch[i] : v)).decision,
+    'BLOCKED');
+  blocked({0: 'iam'});
+  blocked({1: 'write'});
+  blocked({3: '--project=oldx-1c983'});
+  blocked({4: '--account=other@example.invalid'});
+  blocked({5: '--limit=200'});
+  blocked({6: '--format=value(token)'});
+  blocked({7: '--log-http'});
+  blocked({8: {}});
+  blocked({8: {signal: abort.signal, extra: 'true'}});
+  blocked({8: {signal: 'faked'}});
+  blocked({2: filter.replace(trace, 'Z'.repeat(32))});
+  blocked({2: filter + ' OR true'});
+  blocked({2: filter.replace(from, '2026-11-15T09:29:54.000Z').replace(until, '2026-11-15T09:30:26.000Z')});
+  blocked({2: filter.replace(from, '2026-11-15T09:30:07.000Z')});
+  blocked({2: filter.replace(from, '2026-11-31T09:29:55.000Z')});
+  assert.equal(planOfflineV2LoggingProcess(...exact, '--impersonate-service-account=other').decision, 'BLOCKED');
+  assert.equal(planOfflineV2LoggingProcess().decision, 'BLOCKED');
+  abort.abort();
+  assert.equal(planOfflineV2LoggingProcess(...exact).decision, 'BLOCKED');
+  // A previous immutable plan cannot itself execute or become authenticated
+  // Cloud Logging evidence when the signal expires.
+  assert.equal(plan.executable, false);
+  assert.equal(plan.provenance, 'UNVERIFIED');
 });
 
 test('hosted transport fails closed on oversized or unexpected denial body', async () => {

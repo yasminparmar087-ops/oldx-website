@@ -97,12 +97,18 @@ export function openV2LocalJournal(sessionId, manifest) {
     const parent = openSync(homedir(), constants.O_RDONLY | constants.O_DIRECTORY | constants.O_NOFOLLOW);
     try { fsyncSync(parent); } finally { closeSync(parent); }
     let closed = false;
-    let count = 0;
+    const recorded = new Set();
     return Object.freeze({
       recordUnknown(resource, operation) {
-        if (closed || !allowed.has(resource) ||
-            !['CREATE_UNKNOWN', 'UPDATE_UNKNOWN', 'DELETE_UNKNOWN'].includes(operation) ||
-            ++count > 32) throw new Error('V2_JOURNAL_STOP_REQUIRES_OWNER');
+        // V2 currently has NO provider-verified transition receipt; it may
+        // record one CREATE intent per exact resource and nothing afterward.
+        // UPDATE/DELETE and retries require a future independently reviewed
+        // receipt/conditional transition before they can be enabled.
+        if (closed || !allowed.has(resource) || operation !== 'CREATE_UNKNOWN' ||
+            recorded.has(resource) || recorded.size >= 4) {
+          throw new Error('V2_JOURNAL_STOP_REQUIRES_OWNER');
+        }
+        recorded.add(resource);
         append({resource, state: operation});
       },
       close() {

@@ -8,6 +8,8 @@
 import {constants, closeSync, fstatSync, fsyncSync, mkdirSync, openSync, writeSync} from 'node:fs';
 import {homedir} from 'node:os';
 import {join} from 'node:path';
+import {runtimeSessionBudget} from './phase-b-fixture-session-v1.mjs';
+import {conditionalFixtureDelete, validFirestoreReceipt} from './phase-b-offline-cleanup-guard.mjs';
 
 export const V2_LIVE_EXECUTION_ENABLED = false;
 const PROJECT = 'oldx-staging';
@@ -116,5 +118,57 @@ export function openV2LocalJournal(sessionId, manifest) {
     throw error; // Preserve create-once residue on any failure, never delete.
   } finally {
     if (dir !== undefined) closeSync(dir);
+  }
+}
+
+
+// This is the ONLY V1 reusable logic wired into V2 at this stage:
+// a pure attempted-HTTP budget and a deterministic conditional receipt guard.
+// Importing these functions does NOT run V1's hard-disabled CLI. This V2 module
+// has no network/subprocess/token facility and cannot make a hosted request.
+const stopped = () => Object.freeze({
+  decision: 'STOP_MANUAL_RECOVERY', provenance: 'UNVERIFIED',
+  liveExecution: 'DISABLED', cloudAccess: 'NONE',
+});
+
+// Caller-supplied receipt shapes are NOT authenticated provider evidence.
+// Never return a deletion command or claim remote cleanup from this review.
+export function reviewV2OfflineConditionalCleanup({candidate, manifest, sessionId, original, observed} = {}) {
+  if (reviewV2Candidate(candidate).decision !== 'SOURCE_REVIEW_ONLY' ||
+      reviewV2Manifest(manifest) !== 'SOURCE_REVIEW_ONLY' ||
+      typeof sessionId !== 'string' || !UUID.test(sessionId)) return stopped();
+  try {
+    if (!validFirestoreReceipt(original, sessionId)) return stopped();
+    conditionalFixtureDelete(original, observed);
+    return Object.freeze({
+      decision: 'SOURCE_RECEIPT_SHAPE_ONLY', provenance: 'UNVERIFIED',
+      liveExecution: 'DISABLED', cloudAccess: 'NONE',
+    });
+  } catch {
+    return stopped();
+  }
+}
+
+// The only side effect is a NEW private V2 file in a local HOME, never a cloud
+// operation. Its create-once record deliberately ends at CREATE_UNKNOWN.
+// The shared V1 budget guards ONE hypothetical request without performing it;
+// it does NOT authorize or charge for actual HTTP or imply deletion occurred.
+export function rehearseV2AmbiguousCreateOffline({candidate, manifest, sessionId, resource} = {}) {
+  if (reviewV2Candidate(candidate).decision !== 'SOURCE_REVIEW_ONLY' ||
+      reviewV2Manifest(manifest) !== 'SOURCE_REVIEW_ONLY' ||
+      typeof sessionId !== 'string' || !UUID.test(sessionId) ||
+      typeof resource !== 'string' ||
+      ![...manifest.authUids, ...manifest.firestoreDocs].includes(resource)) {
+    return Object.freeze({decision: 'BLOCKED', liveExecution: 'DISABLED', cloudAccess: 'NONE'});
+  }
+  const budget = runtimeSessionBudget(Date.now() + 240_000);
+  budget.beforeMutation();
+  budget.beforeHttpAttempt(); // hypothetical attempt only; no network call
+  const journal = openV2LocalJournal(sessionId, manifest);
+  try {
+    journal.recordUnknown(resource, 'CREATE_UNKNOWN');
+    return stopped(); // Ambiguous simulated create NEVER becomes verified.
+  } finally {
+    journal.close();
   }
 }

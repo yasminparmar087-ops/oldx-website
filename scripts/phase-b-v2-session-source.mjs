@@ -13,6 +13,7 @@ import {conditionalFixtureDelete, validFirestoreReceipt} from './phase-b-offline
 
 export const V2_LIVE_EXECUTION_ENABLED = false;
 const PROJECT = 'oldx-staging';
+const DOCUMENT_ROOT = `projects/${PROJECT}/databases/(default)/documents/`;
 const REGION = 'asia-south1';
 const SERVICE = 'oldx-owner-read';
 const IMAGE = 'asia-south1-docker.pkg.dev/oldx-staging/oldx-staging-images/oldx-owner-read-step3-rc@sha256:c5fc856b45b19ec995167753d0ab7449fea9550f7e06b1b75da025fe179928dc';
@@ -145,6 +146,9 @@ export function reviewV2OfflineConditionalCleanup({candidate, manifest, sessionI
       typeof sessionId !== 'string' || !UUID.test(sessionId) ||
       typeof resource !== 'string' || !manifest.firestoreDocs.includes(resource)) return stopped();
   try {
+    // Like V1 document evidence, bind both receipts to the exact database and path.
+    const expectedName = DOCUMENT_ROOT + resource;
+    if (original?.name !== expectedName || observed?.name !== expectedName) return stopped();
     if (!validFirestoreReceipt(original, sessionId)) return stopped();
     conditionalFixtureDelete(original, observed);
     return Object.freeze({

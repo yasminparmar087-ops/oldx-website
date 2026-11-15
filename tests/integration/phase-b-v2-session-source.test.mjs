@@ -89,7 +89,8 @@ test('create-once private V2 journal never touches V1; unknown mutations remain 
 
 test('offline reuse of V1 conditional receipt guard stops mismatched or unauthenticated provenance', () => {
   const id = '00000000-0000-4000-8000-000000000003';
-  const receipt = {marker:id,
+  const root = 'projects/oldx-staging/databases/(default)/documents/';
+  const receipt = {marker:id, name:root + manifest.firestoreDocs[1],
     createTime:'2026-11-15T00:00:00Z', updateTime:'2026-11-15T00:00:01Z'};
   const input = {candidate, manifest, sessionId:id,
     resource:manifest.firestoreDocs[1], original:receipt, observed:{...receipt}};
@@ -99,6 +100,11 @@ test('offline reuse of V1 conditional receipt guard stops mismatched or unauthen
   });
   for (const change of [
     {resource:'marketplacePrivate_v1/unapproved', original:receipt},
+    {resource:manifest.firestoreDocs[0]},
+    {original:{...receipt, name:undefined}},
+    {observed:{...receipt, name:root + manifest.firestoreDocs[0]}},
+    {observed:{...receipt, name:receipt.name.replace('(default)', 'other')}},
+    {observed:{...receipt, name:receipt.name.replace('oldx-staging', 'other-project')}},
     {observed:{...receipt, updateTime:'2026-11-15T00:00:02Z'}},
     {original:{...receipt, marker:'some-other-session'}},
     {observed:undefined}, {candidate:{...candidate, tag:'ownerbuyertrial'}},

@@ -74,6 +74,36 @@ Before requesting a V2 live-test decision, fill these fields from **fresh, indep
 
 A dated prior plan proposed a *planning envelope* of up to **200 attempted requests per hour and 1,000 billed instance-seconds**; these are **not automatic execution limits or spending authorization**. Confirm the current actual cloud prices and current billing/usage before any cost-bearing approval. The configured monthly ₹2,000 alert is not a hard cap.
 
+### 4A. 15-Nov Step 02: numerical hosted V2 budget candidate (PROPOSAL, not authorization)
+
+The following is one **conservative planning scenario** for G8 of the EXISTING V2 review packet, not an executable runner, billing cap, live consent or a new release plan. All new operations remain forbidden until exact source/image/recovery evidence, owner-specified consent and enforcement are complete.
+
+| Dimension | Proposed limit for one supervised staging session | Must be proven before activation |
+|---|---|---|
+| Project/identity | ONLY oldx-staging, asia-south1, Firestore (default), named invoker and runtime service account under Yasmin | Fresh staging billing-link/credit/usage status and IAM; never touch production or create a secondary database |
+| Time | At most 60 minutes, with an additional named supervised cleanup/rollback window | Monotonic execution guard, owner present, backup/preimage and verified rollback permissions before first mutation |
+| Cloud Run | Request-based example: 1 vCPU, 512 MiB, minimum 0, maximum 1, concurrency 1; one new reviewed digest/tag at 0% MAIN traffic | Actual billing mode, request timeout, source-to-image provenance, protected invoker and original 100/0/0 traffic verified |
+| Operations | At most 200 attempted HTTP invocations (including failed requests and retries) and 1,000 billed instance-seconds | Explicit versioned counters and fail-closed STOP; billing metrics can lag, so these are NOT platform-enforced spending limits |
+| Firestore | Illustration: 2,000 document reads, 1,000 writes and 20 deletes including counters/cleanup | Runner counters must include transaction retries and index reads; only approved exact synthetic IDs, no other customer data |
+| Auth/logging | Two approved synthetic Auth UIDs; propose 10 log queries, 2 returned entries per query | Need separately reviewed quotas/counters and real per-SKU billing; log result limits do not limit ingest, storage or query scanning |
+| Cost | Propose a ₹100 incremental gross-spend escalation/STOP threshold for this one session, NOT YET OWNER-APPROVED | Reliable account-level gross usage observations and automated/manual STOP; monthly ₹2,000 alerts alone DO NOT cap spend |
+
+**Transparent public-list-price arithmetic (NOT an invoice or all-in maximum):** Current published Cloud Run Tier 1 request-based rates are USD 0.000024/vCPU-second, USD 0.0000025/GiB-second and USD 0.40/million requests. For a hypothetical 1,000 active seconds at 1 vCPU + 0.5 GiB and 200 requests: CPU **USD 0.024000**, RAM **USD 0.001250**, requests **USD 0.000080**; Cloud Run subtotal **USD 0.025330**. Firestore *Standard* list pricing is USD 0.03/100k reads, USD 0.09/100k writes, USD 0.01/100k deletes: an illustrative 2,000 reads + 1,000 writes + 20 deletes costs **USD 0.001502**. Combined modelled Cloud Run+Firestore subset: **USD 0.026832**. Assuming only for illustration an exchange rate of INR 90 per USD and 18% tax, this subset is **approximately ₹2.85**. This INR assumption is NOT a verified exchange rate, account quotation, cost ceiling or guaranteed tax treatment.
+
+**Excluded and potentially material costs:** Cloud Build and Artifact Registry image pushes/scans/storage, IAM Credentials and Firebase Auth use, Cloud Logging ingestion/scanning/retention, network egress, Firestore storage/index-entry reads and transaction amplification, cold starts/idle minutes outside model, preexisting services and other linked-account usage, local cloud SKUs and taxes. Free tiers/credits may reduce costs but are NOT verified for this project. Actual monthly billing and billing account project linkage have not been freshly read. A proposed ₹100 human STOP is NOT an enforceable ₹100 hard cap.
+
+**Owner must clear these hard stops before any live staged V2 trial:**
+1. Fresh **read-only** owner check of the project-linked billing account (redact account number), current gross usage and billing plan, active credits, service CPU/memory/billing mode, Logging/Artifact/Auth charges and whether a **service-specific spend cap budget** is supported and already configured. No billing changes or service enablement authorized.
+2. Versioned V2 runner/source/image must independently prove **real** request/runtime/Firestore/Auth/Logging counters and fail-closed abort plus a **separate** supervised same-session four-ID cleanup. Existing runner is hard-OFF; no blind toggle or V1 one-shot reuse.
+3. Fresh private disabled service+IAM preimage, zero-main-traffic new tag, exact immutable image provenance, correct runtime/invoker, and **both** approved rollback mutations (remove only new tag and restore original disabled template); independently confirm traffic 100/0/0 and each exact fixture absent. Stop on partial writes, collision, uncertain Auth UID cleanup, missing logs, no trustworthy cost reading or drift.
+4. Preserve newer owner evidence without repetition: observed one-path runtime DELETE 403, authentic published deny-all Rules match and protected staging 18/18 preflight. Five Firestore database IAM Policy Troubleshooter HTTP400 results are **UNKNOWN**, not denial/grant; cross-database isolation and real CREATE/UPDATE remain UNVERIFIED. No extra database, repeat Policy Troubleshooter, credential/DELETE attempt, or IAM widening to force a PASS.
+5. Require separate action-specific Yasmin approval later for fresh billing read, new image/tagged deploy with 2-part rollback, named invocations/token mint and synthetic data-plane operations. This packet and generic “continue” do NOT authorize any of them.
+
+**Sources checked 15 Nov 2026:** https://cloud.google.com/run/pricing (Cloud Run Tier 1 request-based list prices), https://cloud.google.com/firestore/pricing (Standard document operations), https://docs.cloud.google.com/billing/docs/how-to/budgets (alerts-only budgets DO NOT cap spend). Google also describes service-specific spend-cap budgets at https://docs.cloud.google.com/billing/docs/how-to/budgets-spend-caps; **availability and applicability to OLDX are unverified**, and none is newly enabled here.
+
+**Decision after this calculation:** G8 remains BLOCKED until owner/account-specific pricing and genuinely enforced counters/recovery are checked. No cloud operation, new CI run or code activation was performed by this document. Step 02/15 ACTIVE; staging hosted NO-GO; production HOLD/NO-GO.
+
+
 When ready, ask Yasmin for **separate, concise approvals** covering (a) read-only config/log/identity inspection, (b) new container publish and 0%-traffic tagged deployment plus both rollback mutations, (c) named invocation/token mint and (d) exact synthetic create/update/delete/quota tests with supervised cleanup. A generic “continue” or yesterday's spent approval authorizes none of these.
 
 ## 5. Evidence matrix and decision

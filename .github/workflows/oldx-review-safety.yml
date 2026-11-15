@@ -44,6 +44,9 @@ jobs:
       - name: Run Phase B read-only IAM verifier regression tests
         run: node --test tests/integration/phase-b-configuration.test.mjs
 
+      - name: Run focused retired-hosted-session and anonymous-denial regression tests
+        run: node --test tests/integration/phase-b-fixture-session-v1.test.mjs tests/integration/phase-b-owner-read-acceptance.test.mjs
+
       - name: Run dependency-free safety tests
         run: |
           npm run test:emulator:safety

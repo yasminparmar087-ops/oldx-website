@@ -45,7 +45,7 @@ jobs:
         run: node --test tests/integration/phase-b-configuration.test.mjs
 
       - name: Run focused retired-hosted-session and anonymous-denial regression tests
-        run: node --test tests/integration/phase-b-fixture-session-v1.test.mjs tests/integration/phase-b-owner-read-acceptance.test.mjs
+        run: node --test tests/integration/phase-b-fixture-session-v1.test.mjs tests/integration/phase-b-owner-read-acceptance.test.mjs tests/integration/phase-b-v2-local-process-rehearsal.test.mjs
 
       - name: Run dependency-free safety tests
         run: |

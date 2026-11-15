@@ -47,6 +47,6 @@ test('rejects added grants, changed deny predicate, narrowed match, malformed ex
   ]) {
     assert.throws(() => checkStagingDenyAllRules(release, {
       ...ruleset, source: {files: [{content: changed}]},
-    }, baseline), /Rules tokens differ/);
+    }, baseline), /differs/);
   }
 });

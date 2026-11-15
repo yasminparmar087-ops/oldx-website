@@ -186,10 +186,10 @@ test('hosted failures expose only exact allowlisted stages after verified cleanu
     INVOCATION_IDENTITY_UNVERIFIED: 'TOKEN_IDENTITY',
     INVALID_HOSTED_ACCEPTANCE_INPUT: 'INPUT_GUARD',
     FIXTURE_IDENTITY_UNVERIFIED: 'FIXTURE_IDENTITY_GUARD',
-    ACCEPTANCE_STOPPED_invoker-denied: 'PROBE_INVOKER_DENIAL',
+    'ACCEPTANCE_STOPPED_invoker-denied': 'PROBE_INVOKER_DENIAL',
     ACCEPTANCE_STOPPED_owner: 'PROBE_OWNER',
-    ACCEPTANCE_STOPPED_foreign-buyer: 'PROBE_BUYER_DENIAL',
-    ACCEPTANCE_STOPPED_quota-limit: 'PROBE_QUOTA_LIMIT',
+    'ACCEPTANCE_STOPPED_foreign-buyer': 'PROBE_BUYER_DENIAL',
+    'ACCEPTANCE_STOPPED_quota-limit': 'PROBE_QUOTA_LIMIT',
   };
   for (const [message, expected] of Object.entries(names)) {
     assert.equal(classifyHostedAcceptanceError(new Error(message)), expected);

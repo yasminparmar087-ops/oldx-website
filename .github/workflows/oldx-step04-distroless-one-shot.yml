@@ -38,7 +38,14 @@ jobs:
           trap cleanup EXIT
           echo "SOURCE_SHA=$GITHUB_SHA"
           echo 'ONE local runner-only assessment; no cloud push, deployment, tokens, Firebase, or artifacts'
-          base_digest="$(docker buildx imagetools inspect "$BASE_TAG" | awk '$1=="Digest:" {print $2; exit}')"
+          # Preserve the original public-image metadata error for any newly approved run.
+          # The first (consumed) attempt hid tool stdout inside a command substitution.
+          if ! docker buildx imagetools inspect "$BASE_TAG" > "$tmp/base-inspect.txt" 2>&1; then
+            echo 'STOP: BASE_INSPECTION_FAILED (no retries)'
+            sed -n '1,5p' "$tmp/base-inspect.txt" | cut -c1-200
+            exit 1
+          fi
+          base_digest="$(awk '$1=="Digest:" {print $2; exit}' "$tmp/base-inspect.txt")"
           if [[ ! "$base_digest" =~ ^sha256:[0-9a-f]{64}$ ]]; then
             echo 'STOP: invalid base digest'; exit 1
           fi

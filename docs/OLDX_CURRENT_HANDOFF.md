@@ -3013,3 +3013,38 @@ Yasmin expressly approved the previously prepared no-push/free-public-DB **ONE l
 **Definitive local assistant-side cause identified, superseding the generic earlier STOP interpretation:** The SHA string copied by ChatGPT from the owner's Grype screenshot into the subsequent offline-classification command was `81d93db09925529e7e33b4440860ecdfd30f3d76f8033a2546033dcf8dfa2bb`, whose length is **63 hex characters**, not the mandatory 64 for a SHA-256 digest. The original Grype script calculates a full 64-character SHA-256 with `hashlib.sha256(raw).hexdigest()`; the assistant's 63-character transcription cannot match **any** actual SHA-256, so the displayed `STOP: PRIVATE_REPORT_INTEGRITY_OR_FORMAT` is explained by the **faulty expected-checksum literal supplied in chat**, and **does not demonstrate file corruption or failed scan**. This is a source transcription/copy error, not an owner operational failure. The exact correct 64-character private-report SHA from the owner Cloud Shell must be re-observed, rather than inventing a missing digit. Leave existing evidence and private report intact.
 
 **One authorized safe local correction:** Do NOT re-run Grype, any docker save, image pull/build or scan. A simple Python read of the **same private report** can independently print its actual full SHA-256 (public hash only), verify `matches` is a list with exactly **209** entries and **60 HIGH** from the earlier scan, and derive HIGH counts by package, unique vulnerability IDs and fix states from that existing JSON. Redact all raw JSON. There are no network, credentials or provider calls. Once shown, correct the exact SHA transcription in a new dated source checkpoint while preserving historic notes. Step03/G2/G8 operational statuses are unchanged.
+
+
+## 2026-11-16 ~21:34 IST — Task 9 private Grype offline summary PASS: 60 package matches / 17 unique IDs
+
+**Owner screenshot at ~21:34 IST (no second scan):** Using the **same existing private Grype v0.121.3 JSON report**, a local-only read succeeded: `OFFLINE_REPORT_CHECK: PASS`; exact known totals **209 matches**, **60 HIGH matches**, and **17 unique HIGH vulnerability IDs**; `FIX_STATES: {'wont-fix': 60}`; `FINAL: OFFLINE_SUMMARY_COMPLETE`. Python computed and displayed the actual full report SHA-256 locally. The assistant's earlier *63-character pasted checksum* was the reason for previous grouping STOP; this latest PASS supersedes that parsing attempt, without invalidating the original successful Grype scan. To prevent a **second SHA transcription error**, retain the reporter-computed hash and screenshot as the private primary integrity evidence; do not copy or fabricate a full 64-character value into this public GitHub log. Prior exact local image `sha256:3843f41b640aea2950d6c94bcf2f4ead37364a41870eb5d92be9d6256dcc82c9` from image-source `9cf799521f1e464d684abc5af25cdb9bfddbec36`; **no new build/Grype scan/paid service/provider call** in this operation.
+
+**Sanitized screenshot package distribution of 60 HIGH `matches`:**
+```
+bsdutils=4
+libblkid1=4
+liblastlog2-2=4
+libmount1=4
+libsmartcols1=4
+libuuid1=4
+login=4
+mount=4
+util-linux=4
+libc-bin=3
+libc6=3
+libsqlite3-0=3
+perl-base=2
+gcc-14-base=2
+libatomic1=2
+libgcc-s1=2
+libstdc++6=2
+libacl1=2
+libtinfo6=1
+ncurses-base=1
+OTHER_PACKAGES_COUNT=1 (single match; not identified in truncated top-20 output)
+```
+Math checks: 9 x 4 = **36** util-linux-family *package matches*, 3 x 3 = 9, 6 x 2 = 12, 2 x 1 = 2, remaining other 1 = **60**. Each source CVE can produce multiple binary package matches. **Do not interpret 60 as 60 distinct vulnerabilities** or as 60 independently exploited components. The owner screenshot does not provide the mapping of *all 17 unique HIGH IDs* to source packages nor authoritative package CVE fixed-versions. The earlier scan printed 14 focused tuples; those remain separately in the previous dated checkpoint and cannot be treated as the exhaustive 17-unique set.
+
+**Fix-state interpretation:** Official [Anchore Grype filtering guide](https://oss.anchore.com/docs/guides/vulnerability/filter-results/) describes `wont-fix` as a scanner-fed statement that the particular **package maintainer/current source** will not fix the vulnerability; it is **not proof of risk acceptance, absence of upstream patched versions, exploitability, or universal unfixability**. For example Debian [util-linux tracker](https://security-tracker.debian.org/tracker/source-package/util-linux) records Trixie vulnerable on the CVE-2026-76642/78408/78409/78410 group while forky/sid have fixes. **Do not blindly upgrade Debian 13 with Debian unstable packages or uninstall base ABI components.** Risk mitigation may require a reviewed runtime image redesign, independent reachability review, or an explicit vendor-supported risk exception; each has separate actual image testing/security and rollout gates.
+
+**Next efficient source-only Codex task (ONE bounded review, no routine code churn):** Given the already saved sanitized package distribution and existing immutable local image evidence, inspect Dockerfile final-stage base/provenance, dependency graph and the *documented* Debian CVE preconditions; identify whether a minimally different vendor-supported runtime base or uninstall of genuinely unnecessary OS binaries safely removes the HIGH match source without breaking Node+Sharp/nonroot/default-off/health/SIGTERM. Make at most one justified small source-only patch with two focused tests if and ONLY if real, reproducible gain with low compatibility risk; otherwise return a concrete STOP/BLOCKED decision and **no repeated paper plan**. No Docker build/scan/registry push, paid CVE or staging cloud mutations without fresh exact owner authorization. **Master Step03 is owner-scoped staging permission decisions, not Step04/05 hosted acceptance:** a documented G2 blocker can be handed forward only by a separate explicit owner decision, not by fabricating a PASS. G1 PARTIAL/OFF; G2 PARTIAL/BLOCKED (17 scanner HIGH IDs + build provenance unresolved); G8 BLOCKED (account-level costs/no whole-project cap); B1/R1/R2 NOT APPROVED; Staging Hosted NO-GO; Production HOLD/NO-GO.

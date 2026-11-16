@@ -4,10 +4,6 @@ on:
   push:
     branches:
       - security-hardening-review
-    # A standalone owner-approved Step04 runtime experiment is not a code change.
-    # Every production-source push still runs the complete safety workflow.
-    paths-ignore:
-      - '.github/workflows/oldx-step04-distroless-one-shot.yml'
   pull_request:
     branches:
       - security-hardening-review

@@ -1,5 +1,5 @@
 # Third owner-approved ONE attempt after independent source dry-run; never retry automatically.
-# Owner-approved THIRD single runner-only attempt; earlier two attempts consumed, do not auto-retry.
+# Historical one-shot Step04 Distroless test; three approvals consumed. Disabled, do not rerun.
 # Owner-approved single local runner experiment (no public deployment, no auto-retries).
 name: OLDX Step04 one-shot Distroless candidate
 on:
@@ -15,7 +15,8 @@ concurrency:
 jobs:
   candidate:
     # Owner specifically approved one THIRD attempt after previous two deterministic STOPs.
-    if: "github.event.head_commit.message == 'test: execute owner-approved OLDX Step04 Distroless third attempt 2026-11-16'"
+    # Third owner-approved attempt succeeded in runner 43929110726; reexecution is blocked.
+    if: false
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:

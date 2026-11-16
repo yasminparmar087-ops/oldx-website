@@ -2775,3 +2775,25 @@ This targets the four undici and two brace-expansion HIGH occurrences if they be
 **No-repeat next action:** Do **not rebuild, rerun paid scan, repush or deploy**. Using the *already built local* image `oldx-g2-local:ae761328`, make one **read-only, network-disabled** `docker run --rm --network none --entrypoint /usr/bin/dpkg-query oldx-g2-local:ae761328 -W '-f=${binary:Package}=${Version}\\n'` and filter the host output for `acl/libacl1, util-linux/libuuid1, attr/libattr1, perl/perl-base, zlib1g and libpam*`. Passing the formatter as a literal argument to dpkg-query bypasses shell expansion. Confirm exact image ID and inventory. Record versions/absence only, no CVE PASS without proper vulnerability/provider evidence. The owner-approved build-only inspection scope permits examining the same local image; no other Cloud actions. If missing/failed, stop with the package-verification issue documented; do not silently mark it resolved.
 
 **Gate state:** G2 PARTIAL / CVE remediation unverified; G8 BLOCKED; B1/R1/R2 not authorized. Step03 ACTIVE (2/15 DONE); Staging Hosted NO-GO; Production HOLD/NO-GO. Original immutable published image and existing 100/0/0 traffic unchanged.
+
+
+## 2026-11-16 ~19:33 IST — Task 9 one-shot existing-image Debian inventory successful
+
+**Exact evidence:** Owner Cloud Shell screenshot (local owner-executed, not a connected ChatGPT cloud read) shows a single *network-disabled* docker inspection of the **previously built** local image `oldx-g2-local:ae761328` using the direct `dpkg-query` entrypoint and a quoted `-f=\${binary:Package}=\${Version}\\n` argument, filtered on original six OS package families. Returned image `sha256:42a6d5646d0f9bfe616434522326c14fbb260de779d04ae9b6c2a70cab1f164`, architecture `amd64`; no shell substitution failure, prompt returned. The prior **inventory-only** gap from `fb73cc4` is now CLOSED, without rebuilding or paid scanning.
+
+**Installed binaries and exact versions printed in the screenshot (these are Debian binary packages, not scanner CVE determinations):**
+```
+libpam-modules:amd64=1.5.2-6+deb12u2
+libpam-modules-bin=1.5.2-6+deb12u2
+libpam-runtime=1.5.2-6+deb12u2
+libpam0g:amd64=1.5.2-6+deb12u2
+perl-base=5.36.0-7+deb12u4
+util-linux=2.38.1-5+deb12u3
+```
+The targeted filter printed **no** `acl`/`libacl1`, `attr`/`libattr1` or `zlib1g` package matches. This is strong evidence these *filtered binary package names* are not installed in the local final runtime image, **not** proof all possible affected library/source paths or CVEs are absent. `perl-base` presence does not prove the vulnerable `Archive::Tar` module is present.
+
+**Source-backed version findings (read-only external Debian Security Tracker, not a new image scan):** `pam@1.5.2-6+deb12u2` is marked vulnerable for CVE-2025-6020 on Debian Bookworm (https://security-tracker.debian.org/tracker/CVE-2025-6020). `util-linux@2.38.1-5+deb12u3` is marked vulnerable for CVE-2026-53613 and CVE-2026-53615 on Bookworm (https://security-tracker.debian.org/tracker/CVE-2026-53613 ; https://security-tracker.debian.org/tracker/CVE-2026-53615). Bookworm `perl` source package version `5.36.0-7+deb12u4` is also tagged vulnerable for CVE-2026-9538; actual `Archive::Tar` installed file/path and exploitability remain **unknown** (https://security-tracker.debian.org/tracker/CVE-2026-9538). Upgrading only to Trixie may fix those PAM/util-linux package CVEs, but Trixie perl and other sources still have issues; do not assume any base-image change is CVE-clean. No OS or npm scanner findings are marked remediated without actual final-image path and updated scanner/independent package evidence.
+
+**Efficient next step:** Without rerunning the prior Docker build or cloud scan, perform one **source-only** decision on a minimal supported Trixie runtime/base or an even leaner runtime with preserved native `sharp` ABI, Node, non-root and unchanged API behavior. Only if this yields a justified source candidate, make a **new separately scoped request** for a single new local validation of the changed candidate; new publish and on-demand paid scan are distinct approvals. Avoid speculative CI/full-suite tests. The previously built image stays local and unpushed. This inventory read is within already approved local build-validation scope.
+
+**Gates:** Step 03 ACTIVE/2 of 15 DONE. G2 PARTIAL/REMEDIATION REQUIRED (original 15 HIGH not independently proven cleared); G8 all-service cost/STOP BLOCKED; B1/R1/R2 NOT APPROVED; staging-hosted NO-GO and production HOLD/NO-GO.

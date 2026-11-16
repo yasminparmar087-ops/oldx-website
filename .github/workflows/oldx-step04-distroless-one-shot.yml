@@ -13,7 +13,9 @@ concurrency:
   cancel-in-progress: false
 jobs:
   candidate:
-    if: "github.event.head_commit.message == 'test: execute approved OLDX Step04 Distroless one-shot 2026-11-16'"
+    # Both owner-approved attempts were consumed (runs 43925591161, 43927447239).
+    # Explicit new owner consent and reviewed action-scoped change required to reactivate.
+    if: false
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:

@@ -1,3 +1,4 @@
+# Third owner-approved ONE attempt after independent source dry-run; never retry automatically.
 # Owner-approved THIRD single runner-only attempt; earlier two attempts consumed, do not auto-retry.
 # Owner-approved single local runner experiment (no public deployment, no auto-retries).
 name: OLDX Step04 one-shot Distroless candidate

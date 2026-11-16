@@ -14,6 +14,9 @@ test('Docker COPY sources start on PORT without SDK credentials or operational a
  const dockerfile=await readFile(join(root,'Dockerfile.product-read'),'utf8');
  const [dependencies,runtime]=dockerfile.split(/^FROM debian:trixie-slim\r?$/m);
  assert.ok(runtime);
+ // Fail closed when the Debian Trixie security repository lacks patched zlib.
+ assert.ok(runtime.includes('libstdc++6 zlib1g'));
+ assert.ok(runtime.includes("dpkg --compare-versions \"$(dpkg-query -W -f='${Version}' zlib1g)\" ge '1:1.3.dfsg+really1.3.1-1+deb13u1'"));
  assert.match(dependencies,/^FROM node:24-bookworm-slim AS dependencies$/m);
  assert.match(dependencies,/^RUN npm ci --omit=dev --ignore-scripts$/m);
  assert.deepEqual(runtime.match(/^COPY --from=.*$/gm),[

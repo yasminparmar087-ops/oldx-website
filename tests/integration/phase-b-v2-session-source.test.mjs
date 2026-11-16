@@ -189,6 +189,7 @@ test('V2 offline probe rejects retired targets, fixture replay and unsupported r
   for (const draft of [
     probeDraft({tag: 'ownerbuyertrial'}),
     probeDraft({revision: 'oldx-owner-read-00003-nus'}),
+    probeDraft({revision: 'oldx-owner-read-00004-jus'}),
     probeDraft({image}),
     probeDraft({sourceSha: '2eebfa7a0c1a66d6c8563162aa5e612570f7a1e1'}),
     probeDraft({invoker: 'unapproved'}),
@@ -207,7 +208,9 @@ test('V2 offline probe stops on invalid expiry, insufficient cleanup time or unk
     {issuedAt: now - 1_000, expiresAt: now + 80_000},
     {maxGrossPaise: 0},
   ]) assert.equal(reviewV2OfflineProbe(probeDraft({}, review)).decision, 'BLOCKED');
-  assert.equal(reviewV2OfflineProbe({...probeDraft(), journalState: 'CREATE_UNKNOWN'}).decision,
-    'STOP_MANUAL_RECOVERY');
+  for (const journalState of ['CREATE_UNKNOWN', 'UPDATE_UNKNOWN', 'DELETE_UNKNOWN']) {
+    assert.equal(reviewV2OfflineProbe({...probeDraft(), journalState}).decision,
+      'STOP_MANUAL_RECOVERY');
+  }
   assert.equal(reviewV2OfflineProbe({...probeDraft(), journalState: undefined}).decision, 'BLOCKED');
 });

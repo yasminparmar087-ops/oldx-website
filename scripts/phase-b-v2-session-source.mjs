@@ -202,6 +202,7 @@ const HISTORICAL_DIGESTS = new Set([
 ]);
 const HISTORICAL_REVISIONS = new Set([
   'oldx-owner-read-00001-8kr', 'oldx-owner-read-00002-tid', 'oldx-owner-read-00003-nus',
+  'oldx-owner-read-00004-jus', // Consumed V1 tagged trial; never reuse as V2.
 ]);
 const V2_IMAGE = /^asia-south1-docker\.pkg\.dev\/oldx-staging\/oldx-staging-images\/[a-z0-9][a-z0-9._-]{0,127}@(sha256:[a-f0-9]{64})$/;
 
@@ -210,7 +211,8 @@ const V2_IMAGE = /^asia-south1-docker\.pkg\.dev\/oldx-staging\/oldx-staging-imag
 export function reviewV2OfflineProbe(input) {
   const {target, manifest, sessionId, review, journalState, probe} = input ?? {};
   const blocked = () => Object.freeze({
-    decision: journalState === 'CREATE_UNKNOWN' ? 'STOP_MANUAL_RECOVERY' : 'BLOCKED',
+    decision: ['CREATE_UNKNOWN', 'UPDATE_UNKNOWN', 'DELETE_UNKNOWN'].includes(journalState)
+      ? 'STOP_MANUAL_RECOVERY' : 'BLOCKED',
     ownerConsent: 'UNVERIFIED', liveExecution: 'DISABLED', cloudAccess: 'NONE',
   });
   if (!exactKeys(input, ['target', 'manifest', 'sessionId', 'review', 'journalState', 'probe']) ||

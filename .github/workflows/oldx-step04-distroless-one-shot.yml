@@ -1,3 +1,4 @@
+# Owner-approved SECOND and FINAL runner-only attempt, fail closed; old first attempt consumed.
 # Owner-approved single local runner experiment (no public deployment, no auto-retries).
 name: OLDX Step04 one-shot Distroless candidate
 on:

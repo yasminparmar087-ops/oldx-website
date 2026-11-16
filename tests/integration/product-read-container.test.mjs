@@ -12,7 +12,7 @@ import {setTimeout as delay} from 'node:timers/promises';
 test('Docker COPY sources start on PORT without SDK credentials or operational access',async()=>{
  const root=fileURLToPath(new URL('../../',import.meta.url));
  const dockerfile=await readFile(join(root,'Dockerfile.product-read'),'utf8');
- const [dependencies,runtime]=dockerfile.split(/^FROM debian:bookworm-slim\r?$/m);
+ const [dependencies,runtime]=dockerfile.split(/^FROM debian:trixie-slim\r?$/m);
  assert.ok(runtime);
  assert.match(dependencies,/^FROM node:24-bookworm-slim AS dependencies$/m);
  assert.match(dependencies,/^RUN npm ci --omit=dev --ignore-scripts$/m);

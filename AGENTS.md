@@ -1,5 +1,14 @@
 # OLDX Agent Instructions
 
+## Current owner precedence — 16 November 2026, fast execution WITHOUT cutting features
+
+**READ FIRST.** The owner explicitly rejects the previously floated idea of cutting agreed OLDX functions or postponing them to an invented V1.1 for speed. **Preserve ALL approved core and supplementary functionality** and the Blue–White–Orange/gu-hi-en/mobile/Capacitor-compatible architecture as recorded in the canonical architecture, feature and design decisions. Do not remove, silently postpone, or downgrade previously agreed recommendations, sharing, real-only reviews, messaging UI, admin controls, images, privacy or any other feature. Existing intentional default-OFF paths must stay OFF until real authorization; do not pretend they are operational.
+
+**ACCELERATION = less repetitive process, not less safety.** Reuse existing working modules, ports, code and trustworthy exact-source evidence. Do no speculative coding/audits/tests; change only a verified missing real-Website user path, regression or necessary safety blocker. Keep actual change-impact tests and mandatory prelaunch E2E/permissions/data privacy/media/rollback/security checks; do NOT rerun unrelated past CI, legacy Google scans, old Docker or consumed hosted trials. Use Codex for ONE bounded high-value, multi-file source-only integration at a time, only 1–3 relevant focused tests; use direct GitHub/ChatGPT for trivial changes. Do not waste time on repeated plans or approval micro-requests. Parallelize independently viable source-only Website Steps06–12 while Step04 waits for external approval. **Never falsely mark a blocked step DONE or activate inactive interfaces.**
+
+**Current truth supersedes dated Step03 instructions lower in this file:** 03/15 DONE only planning/preflight/decision-HOLD, Step04 NEXT/BLOCKED-owner and NOT AUTHORIZED; G1 PARTIAL/OFF, G2 PARTIAL/BLOCKED (17 unique HIGH scanner IDs on an unpublished local image plus unresolved immutable registry/provenance), G8 BLOCKED, effective Firestore CREATE/UPDATE & isolation UNVERIFIED, B1/R1/R2 individually UNAPPROVED. Staging hosted NO-GO and production HOLD/NO-GO. No cloud, Firebase, IAM, billing, registry, token, rollback, live tests, release or paid operation without separately precise owner consent. This instruction is only a workflow optimization, NOT a scope/security/release change. See the current owner-approved fast-track paragraph in `docs/OLDX_SINGLE_EXECUTION_PLAN_2026-11-13.md` Section 0 and latest tail of `docs/OLDX_CURRENT_HANDOFF.md`.
+
+
 
 ## Mandatory new-chat/current-status handoff
 - **Before requesting the owner to repeat OLDX status, read [docs/OLDX_CURRENT_HANDOFF.md](docs/OLDX_CURRENT_HANDOFF.md).** It tracks the latest verified cloud revisions, tests, approvals, remaining blockers and exact next step. Historical sections below may describe older stages; reconcile with dated verification, never silently overwrite evidence.

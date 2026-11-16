@@ -2892,3 +2892,41 @@ Final terminal line: `FINAL: EXISTING_IMAGE_OFFLINE_AUDIT_COMPLETE_NO_BUILD_NO_P
 **Efficient next action:** Keep current Trixie candidate (with source-only `zlib1g` minimum-version gate in commit `959aa43`), with acl/attr as **documented residual scanner/ABI risk**. There is no justified further `acl`/`attr` code change under current evidence. The old locally built Trixie image `sha256:876e3480...` predates the zlib source gate and must not be retested as patched. Next new operation only after new action-specific Yasmin consent: ONE bounded **new** local linux/amd64 build of exact current source (pin base digests) with Debian patched zlib version and focused nonroot/Sharp/default-off/SIGTERM, plus full all-layer audit already implemented, then an independent exact-image residual-vulnerability/provenance review if necessary. Registry push, paid scan, Cloud Run B1/R1/R2 require independent owner decisions. G8 still needs all-service project-cost exposure and enforceable STOP; historic ₹100 Cloud Run-only cap is not all-project hard ceiling. Do not rerun prior 11-layer audit, prior unpatched build, prior vendor lookups or full CI.
 
 **Gates:** Step03 ACTIVE, 02/15 DONE; G1 PARTIAL execution OFF; G2 PARTIAL (new zlib source fix NOT image-verified; acl/attr vendor-open; no new image scan); G8 BLOCKED, B1/R1/R2 NOT APPROVED, Staging Hosted NO-GO, Production HOLD-NO-GO.
+
+
+## 2026-11-16 ~20:39 IST — Task 9 one-shot patched-zlib linux/amd64 local image validation PASS
+
+**Owner-executed result and consumed authorization:** The exact, prior owner-approved one-shot Cloud Shell local Docker build-only + all-layer audit was completed at approximately 20:39 IST. This checkpoint is transcribed from the owner's terminal screenshot, **not** an independently authenticated Docker/GCP session. It used review-branch source `9cf799521f1e464d684abc5af25cdb9bfddbec36`, with the `Dockerfile.product-read` Trixie final-stage **fail-closed** `zlib1g >= 1:1.3.dfsg+really1.3.1-1+deb13u1` gate (already committed in `959aa43`, source-only test adjustment in `e805b7a`). A new local `linux/amd64` image was built. **New exact LOCAL image ID** from screenshot: `sha256:3843f41b640aea2950d6c94bcf2f4ead37364a41870eb5d92be9d6256dcc82c9`; this is **NOT** a published Artifact Registry OCI digest.
+
+**Verified terminal outcomes:**
+```
+IMAGE_ID=sha256:3843f41b640aea2950d6c94bcf2f4ead37364a41870eb5d92be9d6256dcc82c9 ARCH=amd64 OS=linux
+libpam-modules:amd64=1.7.0-5
+libpam-modules-bin=1.7.0-5
+libpam-runtime=1.7.0-5
+libpam0g:amd64=1.7.0-5
+perl-base=5.40.1-6+deb13u1
+util-linux=2.41.5-0+deb13u1
+INVENTORY_DIRECT_DPKG_QUERY: PASS (not CVE-remediation proof)
+ZLIB_FIXED_VENDOR_MINIMUM: PASS (1:1.3.dfsg+really1.3.1-1+deb13u1 >= 1:1.3.dfsg+really1.3.1-1+deb13u1; not image CVE scan)
+VENDOR_MIN_VERSION_CHECK libpam0g 1.7.0-5 >= 1.7.0-5: PASS (not scan)
+VENDOR_MIN_VERSION_CHECK util-linux 2.41.5-0+deb13u1 >= 2.41.5-0+deb13u1: PASS (not scan)
+v24.22.3
+RUNTIME_NONROOT_AND_NO_NPM_CLI: PASS
+NESTED_RUNTIME_UNDICI_OR_BRACE_PACKAGE_PATHS (inventory, not a CVE scan): [no listed matches]
+LINUX_SHARP: PASS 0.35.5
+DEFAULT_OFF_HEALTH_AND_503: PASS
+SIGTERM_GRACEFUL: PASS
+NEW_IMAGE_LAYER_COUNT=11
+ALL_LAYER_AUDIT_STARTED: YES
+Bundled package managers and credentials checked across 11 image layers; config/history checked for credentials
+ALL_LAYER_AUDIT: PASS (not a CVE scan)
+FINAL: NEW_ZLIB_IMAGE_LOCAL_VALIDATION_COMPLETE_NO_PUSH_NO_PAID_SCAN_NO_DEPLOY
+```
+The owner screenshot also shows the summary path `$HOME/oldx-g2-buildonly-9cf79952-20261116-150738.txt` and returned the shell prompt.
+
+**Interpretation and no-repeat boundary:** The amended Dockerfile's **actual installed zlib** is at Debian's fixed vendor minimum in the newly built local image, so the previous `+b1`-only local runtime is superseded for zlib-version evidence. PAM/util-linux vendor minimums and 11 saved-layer package-manager/credential-marker checks pass. This is **NOT** independent new-image CVE-clean evidence, full supply-chain/build provenance, complete native dependency / exploitability or external scan coverage. Existing Trixie binary `libacl1:amd64=2.3.2-2+b1` and `libattr1:amd64=1:2.5.2-3` were previously vendor-open; screenshot did **not** newly establish fixes for these packages. `Archive/Tar.pm` was absent from inspected Perl `@INC` paths in an earlier local image, not independently revalidated for this new image. Keep remaining `acl`/`attr` and CVE mapping risk **OPEN**, not waived. No new Docker code was changed or triggered by this checkpoint; do not rebuild, rerun full CI, old tests, paid old-image scan or this one-shot local validation merely to re-record it.
+
+**Next meaningful gate decisions:** Need a source-and-digest-bound **image-specific** vulnerability/provenance assessment strategy that can evaluate residual original CVEs without treating the old OCI image scan as evidence for the new local image. G8 still needs the whole-project and third-party spend/STOP plan (existing ₹100 Cloud Run-only cap is not a guaranteed account-wide hard cap). Exact new registry publishing, paid scan, B1 tagged private runtime and separately controlled R1/R2 rollback plus G4 IAM effective proof require individually scoped authorized owner decisions with finite cost/call/time/STOP, not a general "continue". Step03 exit remains approval-decision-specific and does **not** authorize executing later Steps 04–05.
+
+**Current gates:** **Step03 ACTIVE (02/15 DONE), G1 PARTIAL/execution OFF, G2 PARTIAL with new patched-zlib local image validation PASS but residual CVE/provenance UNVERIFIED, G8 BLOCKED, B1/R1/R2 NOT APPROVED, Staging Hosted NO-GO, Production HOLD/NO-GO.**

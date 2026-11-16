@@ -1,9 +1,22 @@
-FROM node:24-bookworm-slim
+FROM node:24-bookworm-slim AS dependencies
 WORKDIR /app
 ENV NODE_ENV=production
 
 COPY package.json package-lock.json ./
 RUN npm ci --omit=dev --ignore-scripts
+
+# Keep the same Debian/glibc family for Node and the locked sharp binaries.
+FROM debian:bookworm-slim
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends ca-certificates libatomic1 libstdc++6 \
+    && rm -rf /var/lib/apt/lists/* \
+    && groupadd --gid 1000 node \
+    && useradd --uid 1000 --gid node --shell /bin/bash --create-home node
+WORKDIR /app
+ENV NODE_ENV=production
+COPY --from=dependencies /usr/local/bin/node /usr/local/bin/docker-entrypoint.sh /usr/local/bin/
+COPY --from=dependencies /app/node_modules ./node_modules
+COPY package.json package-lock.json ./
 
 COPY functions/staging-marketplace/product-read-server.mjs functions/staging-marketplace/runtime.mjs ./functions/staging-marketplace/
 COPY features/service-providers/provider-discovery.mjs features/service-providers/provider-profile.mjs features/service-providers/provider-public-card.mjs features/service-providers/provider-public-profile.mjs features/service-providers/service-selections.mjs ./features/service-providers/
@@ -14,4 +27,5 @@ COPY scripts/atomic-rate.mjs scripts/bounded-json.mjs scripts/classify-product-i
 USER node
 EXPOSE 8080
 STOPSIGNAL SIGTERM
+ENTRYPOINT ["docker-entrypoint.sh"]
 CMD ["node", "functions/staging-marketplace/product-read-server.mjs"]

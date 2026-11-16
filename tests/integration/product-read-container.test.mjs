@@ -12,8 +12,15 @@ import {setTimeout as delay} from 'node:timers/promises';
 test('Docker COPY sources start on PORT without SDK credentials or operational access',async()=>{
  const root=fileURLToPath(new URL('../../',import.meta.url));
  const dockerfile=await readFile(join(root,'Dockerfile.product-read'),'utf8');
- assert.match(dockerfile,/^FROM node:24-bookworm-slim$/m);
- assert.match(dockerfile,/^RUN npm ci --omit=dev --ignore-scripts$/m);
+ const [dependencies,runtime]=dockerfile.split(/^FROM debian:bookworm-slim\r?$/m);
+ assert.ok(runtime);
+ assert.match(dependencies,/^FROM node:24-bookworm-slim AS dependencies$/m);
+ assert.match(dependencies,/^RUN npm ci --omit=dev --ignore-scripts$/m);
+ assert.deepEqual(runtime.match(/^COPY --from=.*$/gm),[
+  'COPY --from=dependencies /usr/local/bin/node /usr/local/bin/docker-entrypoint.sh /usr/local/bin/',
+  'COPY --from=dependencies /app/node_modules ./node_modules',
+ ]);
+ assert.doesNotMatch(runtime,/^FROM |^RUN npm\b/m);
  assert.match(dockerfile,/^USER node$/m);
  assert.match(dockerfile,/^STOPSIGNAL SIGTERM$/m);
  const [,entry]=/^CMD \["node", "([^"]+)"\]$/m.exec(dockerfile);
@@ -23,7 +30,7 @@ test('Docker COPY sources start on PORT without SDK credentials or operational a
  const dir=await mkdtemp(join(tmpdir(),'oldx-product-container-'));
  let child,exited;
  try{
-  for(const line of dockerfile.match(/^COPY .+$/gm)){
+  for(const line of runtime.match(/^COPY (?!--from=).+$/gm)){
    const sources=line.slice(5).split(/\s+/),destination=sources.pop();
    assert.match(destination,/^\.\/(?:[\w/-]+\/)?$/);
    const target=join(dir,destination);

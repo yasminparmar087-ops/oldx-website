@@ -129,6 +129,50 @@ test('Product Chat route keeps the composer hidden for guest or unverified threa
   assert.deepEqual(remote,[]);
  }finally{await context.close();}
 });
+test('shared host immediately hides a verified Product Chat on logout and account switch',async()=>{
+ const {context,page,remote}=await fixture(375,'gu');
+ try{
+  await page.evaluate(async()=>{
+   binding.destroy();
+   history.replaceState(null,'','#chat-private-thread');
+   const {mountMarketplaceHost}=await import('/features/marketplace/host-integration.mjs');
+   const thread={id:'private-thread',productId:'product-one',productRevision:1,revision:1,role:'buyer'};
+   window.host=mountMarketplaceHost({enabled:true,root:document,
+    product:{ports:{
+     thread:async(_,{session})=>session?.uid==='buyer'?{ok:true,thread}:{ok:false,code:'DENIED'},
+     read:async(_,{session})=>session?.uid==='buyer'?{ok:true,thread,messages:[{sequence:1,senderRole:'buyer',text:'private message'}],hasMore:false}:{ok:false,code:'DENIED'}
+    }},
+    store:{ports:{}}
+   });
+   await host.setSession({uid:'buyer',sessionId:'buyer-session'});
+  });
+  assert.equal(await page.locator('#fullChatPage').isVisible(),true);
+  assert.match(await page.locator('#fullChatMessages').textContent(),/private message/);
+  const observed=await page.evaluate(async()=>{
+   const logout=host.setSession(null);
+   const hiddenImmediatelyOnLogout=document.getElementById('fullChatPage').style.display==='none';
+   await logout;
+   const hiddenAfterLogout=document.getElementById('fullChatPage').style.display==='none';
+   const clearedOnLogout=document.getElementById('fullChatMessages').textContent==='';
+   await host.setSession({uid:'buyer',sessionId:'buyer-new'});
+   const restoredForBuyer=document.getElementById('fullChatPage').style.display==='flex';
+   const switchAccount=host.setSession({uid:'foreign',sessionId:'foreign-session'});
+   const hiddenImmediatelyOnSwitch=document.getElementById('fullChatPage').style.display==='none';
+   await switchAccount;
+   const deniedAccountStillHidden=document.getElementById('fullChatPage').style.display==='none';
+   const noForeignPrivateText=document.getElementById('fullChatMessages').textContent==='';
+   await host.destroy();
+   return {hiddenImmediatelyOnLogout,hiddenAfterLogout,clearedOnLogout,restoredForBuyer,hiddenImmediatelyOnSwitch,deniedAccountStillHidden,noForeignPrivateText,hash:location.hash};
+  });
+  assert.deepEqual(observed,{
+   hiddenImmediatelyOnLogout:true,hiddenAfterLogout:true,clearedOnLogout:true,
+   restoredForBuyer:true,hiddenImmediatelyOnSwitch:true,deniedAccountStillHidden:true,noForeignPrivateText:true,
+   hash:'#chat-private-thread'
+  });
+  assert.deepEqual(remote,[]);
+ }finally{await context.close();}
+});
+
 test('actual controls preserve unknown-outcome retry key and clear private content offline',async()=>{const {context,page}=await fixture(320,'gu');try{await page.locator('#adTitle').fill('Sample product');await page.locator('#adDesc').fill('Private draft');await page.locator('#adPrice').fill('10');await page.evaluate(()=>fixtureLoseAck());await page.locator('#productSaveDraft').click();await page.waitForFunction(()=>binding.model.snapshot().command.canRetry);assert.equal(await page.locator('#productSaveDraft').isDisabled(),true);await page.locator('#productRetry').click();await page.waitForFunction(()=>binding.model.snapshot().owner?.revision===1);await page.evaluate(()=>window.dispatchEvent(new Event('offline')));assert.equal(await page.locator('#fullChatMessages').textContent(),'');assert.equal(await page.locator('#productPortStatus').getAttribute('role'),'status');}finally{await context.close();}});
 test('language switching, narrow keyboard viewport, and delayed private-form preparation cannot cross sessions',async()=>{const {context,page}=await fixture(320,'en');try{
  await page.evaluate(async()=>{const {loadTranslator}=await import('/features/i18n/i18n.mjs'),{applyCatalog}=await import('/features/i18n/dom.mjs');for(const locale of ['gu','hi','en']){const catalog=await loadTranslator(locale);applyCatalog(document,catalog);document.dispatchEvent(new CustomEvent('oldx:locale-changed',{detail:{locale}}));} });await page.waitForFunction(()=>document.getElementById('productSaveDraft').textContent==='Save private draft');await page.locator('#adTitle').fill('Private previous seller');

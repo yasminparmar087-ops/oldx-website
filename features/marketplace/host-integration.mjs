@@ -54,5 +54,12 @@ export function mountMarketplaceHost({root=document,enabled=false,product={},sto
  if(providers?.navigation)for(const node of root.querySelectorAll('a[href="./service-preview.html?mode=website#services"]'))listen(node,'click',event=>{event.preventDefault();event.stopImmediatePropagation();navigation.go('providers');});
  if(unifiedInbox)for(const node of [root.getElementById('productOwnerInbox'),...root.querySelectorAll('[onclick="openInboxModal()"]')])listen(node,'click',event=>{event.preventDefault();event.stopImmediatePropagation();openInbox();});
  const sessions=createMarketplaceSessionIntegration({enabled,bindings:[products,stores,...(unifiedInbox?[unifiedInbox]:[]),...(providers?.journey?[providerSessionBinding(providers.journey)]:[])]});
- return Object.freeze({product:products,store:stores,inbox:unifiedInbox,restoreRoute,async setSession(value){const result=sessions.setSession(value);if(!value&&active&&view.location.hash==='#sell')products.show('homeView');if(await result&&active){await restoreRoute();return true;}return false;},go:(page,id)=>navigation.go(page,id),async destroy(){active=false;view.clearTimeout(traversalTimer);listeners.forEach(fn=>fn());navigation.clear();await sessions.logout();unifiedInbox?.destroy();products.destroy();stores.destroy();}});
+ return Object.freeze({product:products,store:stores,inbox:unifiedInbox,restoreRoute,async setSession(value){
+  // Hide private routes synchronously while Auth fanout and trusted reads settle.
+  // The hash remains unchanged for a later authorized restore.
+  if(active&&['sell','owner','thread'].includes(parseProductRoute(view.location.hash)?.page))products.show('homeView');
+  const result=sessions.setSession(value);
+  if(await result&&active){await restoreRoute();return true;}
+  return false;
+ },go:(page,id)=>navigation.go(page,id),async destroy(){active=false;view.clearTimeout(traversalTimer);listeners.forEach(fn=>fn());navigation.clear();await sessions.logout();unifiedInbox?.destroy();products.destroy();stores.destroy();}});
 }

@@ -14,7 +14,7 @@ export async function readExistingProductForm({root=document,getCategory,readPho
 }
 export function mountProductIntegration({root=document,enabled=false,ports,readProfile,translate=key=>key,managedRoutes=false,media,...options}={}){
  bindings.get(root)?.destroy();if(enabled!==true)return Object.freeze({destroy(){}});
- const $=id=>root.getElementById(id),listeners=[],saved=[],view=root.defaultView;const oldStyle=root.body.dataset.oldxProduct;root.body.dataset.oldxProduct='true';saved.push(()=>{if(oldStyle===undefined)delete root.body.dataset.oldxProduct;else root.body.dataset.oldxProduct=oldStyle;});let model,enquiryMode=false,localeRevision=0,formRevision=0,loadedPhotos=[],sessionScope=null,photoSession=null,recovering=false,exiting=false;
+ const $=id=>root.getElementById(id),listeners=[],saved=[],view=root.defaultView;const oldStyle=root.body.dataset.oldxProduct;root.body.dataset.oldxProduct='true';saved.push(()=>{if(oldStyle===undefined)delete root.body.dataset.oldxProduct;else root.body.dataset.oldxProduct=oldStyle;});let model,enquiryMode=false,localeRevision=0,formRevision=0,formSaveRevision=null,loadedPhotos=[],sessionScope=null,photoSession=null,recovering=false,exiting=false;
  const mediaInput=$('adImages');
  const ownedWorkflow=media?.enabled===true&&!options.photoWorkflow&&mediaInput
   ?mountMandatoryPhotos({root,enabled:true,kind:'product',container:mediaInput.parentElement,input:mediaInput,mediaClient:media.mediaClient,translate}):null;
@@ -31,14 +31,17 @@ export function mountProductIntegration({root=document,enabled=false,ports,readP
   if(!recovering&&!exiting&&sessionScope){const ticket=model.pendingReceipt();const old=view.history.state??{};if(ticket)view.history.replaceState({...old,oldxProductRecovery:{scope:sessionScope,...ticket}},'');else if(state.command.status==='saved'&&old.oldxProductRecovery){const {oldxProductRecovery,...rest}=old;view.history.replaceState(rest,'');}}
 text('productPortStatus','market.product.'+(state.command.status==='idle'?(state.statuses.owner??state.statuses.read??state.statuses.thread??state.statuses.detail??state.statuses.list??'idle'):state.command.status));
   if($('productStoreDraftNotice'))$('productStoreDraftNotice').hidden=!state.authenticated||!state.storeLinked;
-  const blocked=state.command.status==='loading'||state.command.canRetry||state.statuses.owner==='loading';for(const id of ['adSubmitBtn','productSaveDraft','productWithdraw','productRemove','chatSendButton'])if($(id))$(id).disabled=blocked||!state.authenticated;
+  const blocked=state.command.status==='loading'||state.command.canRetry||state.statuses.owner==='loading';
+  const savingForm=formSaveRevision===formRevision;
+  for(const id of ['adSubmitBtn','productSaveDraft','productWithdraw','productRemove'])if($(id))$(id).disabled=blocked||savingForm||!state.authenticated;
+  if($('chatSendButton'))$('chatSendButton').disabled=blocked||!state.authenticated;
   if($('productNext'))$('productNext').disabled=!state.nextCursor||state.statuses.list==='loading';if($('productStoreLink')){$('productStoreLink').hidden=!state.detail?.storeId||typeof options.openStore!=='function';}
   $('productEnquire').disabled=!state.detail||!state.authenticated;$('productOwnerInbox').disabled=!state.authenticated;
   if(productOwnsInbox()&&$('productInboxNext'))$('productInboxNext').disabled=!state.inboxCursor;if($('productHistoryNext'))$('productHistoryNext').disabled=!state.historyHasMore||state.readAcknowledgement.queueFull;
   if($('productChatRetry'))$('productChatRetry').hidden=!(state.chatCommandCanRetry||state.readAcknowledgement.canRetry);
-  $('productRetry').disabled=!(state.command.canRetry||state.readAcknowledgement.canRetry);for(const id of ['productWithdraw','productRemove'])$(id).disabled=blocked||!state.owner;
+  $('productRetry').disabled=!(state.command.canRetry||state.readAcknowledgement.canRetry);for(const id of ['productWithdraw','productRemove'])$(id).disabled=blocked||savingForm||!state.owner;
   if($('fullChatInput'))$('fullChatInput').readOnly=blocked;
-  $('productIntegrationPanel').setAttribute('aria-busy',String(state.command.status==='loading'));
+  $('productIntegrationPanel').setAttribute('aria-busy',String(state.command.status==='loading'||savingForm));
   const grid=$('productGrid');if(grid){grid.replaceChildren();const query=($('searchInput')?.value??'').normalize('NFC').trim().toLocaleLowerCase();const matches=state.items.filter(p=>(p.title+' '+p.description).normalize('NFC').toLocaleLowerCase().includes(query));if(state.statuses.list==='ready'&&!matches.length){const p=root.createElement('p');p.textContent=translate('market.product.empty');grid.append(p);}for(const p of matches){const button=root.createElement('button');button.type='button';button.dataset.productId=p.id;button.className='oldx-public-card text-left border rounded-xl p-3 min-w-0';const title=root.createElement('span'),price=root.createElement('span');title.textContent=p.title;price.textContent=new Intl.NumberFormat(root.documentElement.lang||'en',{style:'currency',currency:'INR',maximumFractionDigits:2}).format(p.basePrice);title.style.overflowWrap='anywhere';title.style.display=price.style.display='block';button.append(title,price);grid.append(button);}}
   if(!exiting)photoWorkflow?.setScope(photoSession&&state.owner?{...photoSession,parentId:state.owner.id,revision:state.owner.revision}:null);publicPhotoView?.setScope(state.detail?{kind:'product',parentId:state.detail.id,expectedParentRevision:state.detail.revision}:null);
  const p=state.detail;for(const [id,key] of [['detailTitle','title'],['detailDescription','description'],['detailLocation','locationLabel']])if($(id))$(id).textContent=p?.[key]??'';if($('detailPrice'))$('detailPrice').textContent=p?new Intl.NumberFormat(root.documentElement.lang||'en',{style:'currency',currency:'INR'}).format(p.basePrice):'';
@@ -62,7 +65,29 @@ text('productPortStatus','market.product.'+(state.command.status==='idle'?(state
  },true);
  function showDraftStep(){for(let step=1;step<=4;step++)if($('wizardStage'+step))$('wizardStage'+step).style.display=step===4?'block':'none';}
  const form=$('adSubmitBtn')?.closest('form');listen(form,'submit',event=>{event.preventDefault();event.stopImmediatePropagation();save('publish');},true);
- async function save(publication){const version=formRevision;try{const profile=await (readProfile?readProfile():readExistingProductForm({root,...options,owner:model.snapshot().owner,readPhotoReferences:async()=>{const selection=photoWorkflow?.model.snapshot();if(ownedWorkflow&&selection?.changed&&selection.items.some(item=>item.status!=='uploaded'))throw Error('Pending photos');const changed=selection?.changed,staged=ownedWorkflow||changed?photoWorkflow.references():await options.readPhotoReferences?.();return changed?staged:staged?.length?staged:[...loadedPhotos];}}));if(version!==formRevision)return;if(publication==='publish'&&(!Array.isArray(profile?.photos)||profile.photos.length===0))throw new Error('Photos required');await model.save(profile,publication);const current=model.snapshot();if(current.command.status==='saved'&&current.owner)view.history.replaceState(view.history.state,'',view.location.pathname+view.location.search+productRoute('owner',current.owner.id));}catch{text('productPortStatus','market.product.photosUnavailable');}}
+ async function save(publication){
+  const version=formRevision;
+  if(formSaveRevision===version)return;
+  formSaveRevision=version;
+  let failed=false;
+  try{
+   status(model.snapshot());
+   const profile=await (readProfile?readProfile():readExistingProductForm({root,...options,owner:model.snapshot().owner,readPhotoReferences:async()=>{const selection=photoWorkflow?.model.snapshot();if(ownedWorkflow&&selection?.changed&&selection.items.some(item=>item.status!=='uploaded'))throw Error('Pending photos');const changed=selection?.changed,staged=ownedWorkflow||changed?photoWorkflow.references():await options.readPhotoReferences?.();return changed?staged:staged?.length?staged:[...loadedPhotos];}}));
+   if(version!==formRevision)return;
+   if(publication==='publish'&&(!Array.isArray(profile?.photos)||profile.photos.length===0))throw new Error('Photos required');
+   await model.save(profile,publication);
+   if(version!==formRevision)return;
+   const current=model.snapshot();
+   if(current.command.status==='saved'&&current.owner)view.history.replaceState(view.history.state,'',view.location.pathname+view.location.search+productRoute('owner',current.owner.id));
+  }catch{failed=true;}
+  finally{
+   if(formSaveRevision===version)formSaveRevision=null;
+   if(version===formRevision){
+    status(model.snapshot());
+    if(failed)text('productPortStatus','market.product.photosUnavailable');
+   }
+  }
+ }
  listen($('productSaveDraft'),'click',()=>save('draft'));listen($('productWithdraw'),'click',()=>save('withdraw'));listen($('productRemove'),'click',()=>model.archive());listen($('productRetry'),'click',()=>model.retry());
  listen($('productReloadOwner'),'click',()=>{const id=model.snapshot().owner?.id??parseProductRoute(view.location.hash)?.id;if(id)model.loadOwner(id);});listen($('productInboxNext'),'click',()=>{if(productOwnsInbox())model.nextInbox();});listen($('productHistoryNext'),'click',()=>model.nextHistory());listen($('productNext'),'click',()=>model.nextPage());listen($('productDiscover'),'click',()=>{navigate('home');});listen($('productOwnerInbox'),'click',()=>{enquiryMode=false;$('inboxModal').style.display='flex';model.loadInbox('seller');});
  listen($('productStoreLink'),'click',()=>{const id=model.snapshot().detail?.storeId;if(id&&typeof options.openStore==='function'){model.changeScope();options.openStore(id);}});listen($('productEnquire'),'click',()=>{enquiryMode=true;show('fullChatPage');$('fullChatInput').focus();});

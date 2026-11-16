@@ -63,6 +63,35 @@ test('trusted Product search filters the loaded page without keystroke re-reads 
  }finally{await context.close();}
 });
 
+test('trusted Product draft prevents duplicate writes during asynchronous form preparation',async()=>{
+ const {context,page}=await fixture(375,'gu');
+ try{
+  await page.evaluate(async()=>{
+   binding.destroy();
+   const {mountProductIntegration}=await import('/features/marketplace/product-integration-dom.mjs');
+   window.draftPreparations=[];
+   window.draftWrites=[];
+   window.binding=mountProductIntegration({enabled:true,root:document,
+    readProfile:()=>new Promise(resolve=>draftPreparations.push(resolve)),
+    ports:{save:body=>{draftWrites.push(body);return {ok:true,id:'draft-product',revision:body.expectedRevision+1};}}
+   });
+   await binding.setSession({uid:'seller',sessionId:'seller-session'});
+   binding.show('sellWizardPage');
+  });
+  const save=page.locator('#productSaveDraft');
+  await save.click();
+  assert.equal(await save.isDisabled(),true);
+  await save.dispatchEvent('click');
+  assert.equal(await page.evaluate(()=>draftPreparations.length),1);
+  await page.evaluate(()=>draftPreparations[0]({title:'ગુજરાતી draft',photos:[]}));
+  await page.waitForFunction(()=>binding.model.snapshot().owner?.revision===1);
+  assert.equal(await save.isDisabled(),false);
+  await save.click();
+  await page.evaluate(()=>draftPreparations[1]({title:'Edited draft',photos:[]}));
+  await page.waitForFunction(()=>binding.model.snapshot().owner?.revision===2);
+  assert.deepEqual(await page.evaluate(()=>draftWrites.map(item=>item.expectedRevision)),[0,1]);
+ }finally{await context.close();}
+});
 test('actual controls preserve unknown-outcome retry key and clear private content offline',async()=>{const {context,page}=await fixture(320,'gu');try{await page.locator('#adTitle').fill('Sample product');await page.locator('#adDesc').fill('Private draft');await page.locator('#adPrice').fill('10');await page.evaluate(()=>fixtureLoseAck());await page.locator('#productSaveDraft').click();await page.waitForFunction(()=>binding.model.snapshot().command.canRetry);assert.equal(await page.locator('#productSaveDraft').isDisabled(),true);await page.locator('#productRetry').click();await page.waitForFunction(()=>binding.model.snapshot().owner?.revision===1);await page.evaluate(()=>window.dispatchEvent(new Event('offline')));assert.equal(await page.locator('#fullChatMessages').textContent(),'');assert.equal(await page.locator('#productPortStatus').getAttribute('role'),'status');}finally{await context.close();}});
 test('language switching, narrow keyboard viewport, and delayed private-form preparation cannot cross sessions',async()=>{const {context,page}=await fixture(320,'en');try{
  await page.evaluate(async()=>{const {loadTranslator}=await import('/features/i18n/i18n.mjs'),{applyCatalog}=await import('/features/i18n/dom.mjs');for(const locale of ['gu','hi','en']){const catalog=await loadTranslator(locale);applyCatalog(document,catalog);document.dispatchEvent(new CustomEvent('oldx:locale-changed',{detail:{locale}}));} });await page.waitForFunction(()=>document.getElementById('productSaveDraft').textContent==='Save private draft');await page.locator('#adTitle').fill('Private previous seller');

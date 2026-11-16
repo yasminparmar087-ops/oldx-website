@@ -179,6 +179,61 @@ test('language switching, narrow keyboard viewport, and delayed private-form pre
  await page.evaluate(async()=>{binding.destroy();const {mountProductIntegration}=await import('/features/marketplace/product-integration-dom.mjs');window.calls=0;window.binding=mountProductIntegration({enabled:true,root:document,ports:{save:()=>{calls++;return {ok:true,id:'p',revision:1};}},readProfile:()=>new Promise(resolve=>window.finishDraft=resolve)});binding.setSession({uid:'seller',sessionId:'one'});binding.show('sellWizardPage');});await page.locator('#productSaveDraft').click();await page.waitForFunction(()=>typeof finishDraft==='function');await page.evaluate(()=>{binding.setSession({uid:'buyer',sessionId:'two'});finishDraft({title:'Private previous seller',photos:[]});});await page.waitForTimeout(20);assert.equal(await page.evaluate(()=>calls),0);assert.equal(await page.locator('#adTitle').inputValue(),'');
  await page.evaluate(()=>binding.show('fullChatPage'));await page.setViewportSize({width:320,height:480});await page.locator('#fullChatInput').focus();await page.locator('#fullChatInput').scrollIntoViewIfNeeded();assert.equal(await page.locator('#fullChatInput').evaluate(n=>document.activeElement===n),true);assert.equal(await page.locator('#fullChatInput').isVisible(),true);
  }finally{await context.close();}});
+test('Product owner route and recovery stay scoped to the active account',async()=>{
+ const {context,page,remote}=await fixture(320,'gu');
+ try{
+  await page.evaluate(async()=>{
+   binding.destroy();
+   const {mountProductIntegration}=await import('/features/marketplace/product-integration-dom.mjs');
+   const profile={title:'ખાનગી ડ્રાફ્ટ',description:'Private details',category:'cars',locationLabel:'Ahmedabad',basePrice:10,isSold:false,storeId:null,photos:[]};
+   window.ownerReads=[];
+   window.productWrites=[];
+   window.binding=mountProductIntegration({enabled:true,root:document,makeRequestId:()=> 'private-save',
+    readProfile:async()=>profile,
+    ports:{
+     owner:(body,{session})=>{ownerReads.push({uid:session.uid,...body});return session.uid==='seller'?{ok:true,id:'draft-one',revision:1,profile,published:false,publicationRevision:0,receipt:null}:{ok:false,code:'DENIED'};},
+     save:(body,{session})=>{productWrites.push({uid:session.uid,...body});return {ok:false,code:'OUTCOME_UNKNOWN'};},
+     list:()=>({ok:true,items:[{id:'public-one',kind:'product',revision:1,title:'જાહેર ફોન',description:'Public listing',category:'cars',locationLabel:'Ahmedabad',basePrice:100,isSold:false,storeId:null}],nextCursor:null})
+    }});
+   await binding.navigate('owner','draft-one');
+  });
+  const form=page.locator('#sellWizardPage');
+  assert.equal(await form.isVisible(),false);
+  assert.equal(await page.evaluate(()=>ownerReads.length),0);
+  await page.evaluate(()=>binding.setSession({uid:'seller',sessionId:'shared-fixture-id'}));
+  assert.equal(await form.isVisible(),true);
+  assert.equal(await page.locator('#adTitle').inputValue(),'ખાનગી ડ્રાફ્ટ');
+  const save=page.locator('#productSaveDraft');
+  await save.focus();
+  await save.press('Enter');
+  await page.waitForFunction(()=>binding.model.snapshot().command.canRetry);
+  assert.equal(await page.evaluate(()=>history.state.oldxProductRecovery.requestId),'private-save');
+  const switched=await page.evaluate(async()=>{
+   const switching=binding.setSession({uid:'other',sessionId:'shared-fixture-id'});
+   const hidden=document.getElementById('sellWizardPage').style.display==='none';
+   const cleared=document.getElementById('adTitle').value==='';
+   await switching;
+   return {hidden,cleared};
+  });
+  assert.deepEqual(switched,{hidden:true,cleared:true});
+  assert.equal(await form.isVisible(),false);
+  assert.equal(await page.evaluate(()=>ownerReads.some(read=>read.uid==='other'&&read.requestId!==null)),false);
+  assert.equal(await page.evaluate(()=>history.state.oldxProductRecovery??null),null);
+  await page.evaluate(()=>binding.setSession({uid:'seller',sessionId:'seller-new'}));
+  assert.equal(await form.isVisible(),true);
+  await page.evaluate(()=>window.dispatchEvent(new Event('offline')));
+  assert.equal(await page.locator('#adTitle').inputValue(),'');
+  assert.equal(await page.locator('#fullChatMessages').textContent(),'');
+  await page.evaluate(()=>window.dispatchEvent(new Event('online')));
+  await page.evaluate(()=>binding.setSession(null));
+  assert.equal(await form.isVisible(),false);
+  assert.equal(await page.locator('#adTitle').inputValue(),'');
+  await page.evaluate(()=>binding.navigate('search'));
+  assert.match(await page.locator('#productGrid button').textContent(),/જાહેર ફોન/);
+  assert.equal(await page.evaluate(()=>productWrites.length),1);
+  assert.deepEqual(remote,[]);
+ }finally{await context.close();}
+});
 test('refresh restores exact owner Unicode and lost acknowledgement receipt without another write',async()=>{const {context,page,boot}=await fixture(320,'gu');try{
  const title='મૂળ हिन्दी Cafe\u0301',description='Seller original e\u0301 ગુજરાતી';await page.locator('#adTitle').fill(title);await page.locator('#adDesc').fill(description);await page.locator('#adPrice').fill('19.25');await page.evaluate(()=>fixtureLoseAck());await page.locator('#productSaveDraft').click();await page.waitForFunction(()=>binding.model.snapshot().command.canRetry);assert.ok(await page.evaluate(()=>history.state.oldxProductRecovery.requestId));
  await page.reload();await boot('hi');assert.equal(await page.locator('#adTitle').inputValue(),title);assert.equal(await page.locator('#adDesc').inputValue(),description);assert.equal(await page.evaluate(()=>binding.model.snapshot().owner.revision),1);assert.equal(await page.evaluate(()=>history.state.oldxProductRecovery??null),null);await page.locator('#adDesc').fill(description+' edited');await page.locator('#productSaveDraft').click();await page.waitForFunction(()=>binding.model.snapshot().owner?.revision===2);

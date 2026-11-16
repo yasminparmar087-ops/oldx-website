@@ -14,7 +14,7 @@ export async function readExistingProductForm({root=document,getCategory,readPho
 }
 export function mountProductIntegration({root=document,enabled=false,ports,readProfile,translate=key=>key,managedRoutes=false,media,...options}={}){
  bindings.get(root)?.destroy();if(enabled!==true)return Object.freeze({destroy(){}});
- const $=id=>root.getElementById(id),listeners=[],saved=[],view=root.defaultView;const oldStyle=root.body.dataset.oldxProduct;root.body.dataset.oldxProduct='true';saved.push(()=>{if(oldStyle===undefined)delete root.body.dataset.oldxProduct;else root.body.dataset.oldxProduct=oldStyle;});let model,enquiryMode=false,localeRevision=0,formRevision=0,formSaveRevision=null,loadedPhotos=[],sessionScope=null,photoSession=null,recovering=false,exiting=false;
+ const $=id=>root.getElementById(id),listeners=[],saved=[],view=root.defaultView;const oldStyle=root.body.dataset.oldxProduct;root.body.dataset.oldxProduct='true';saved.push(()=>{if(oldStyle===undefined)delete root.body.dataset.oldxProduct;else root.body.dataset.oldxProduct=oldStyle;});let model,enquiryMode=false,localeRevision=0,formRevision=0,formSaveRevision=null,loadedPhotos=[],sessionScope=null,photoSession=null,recoveringRevision=null,exiting=false;
  const mediaInput=$('adImages');
  const ownedWorkflow=media?.enabled===true&&!options.photoWorkflow&&mediaInput
   ?mountMandatoryPhotos({root,enabled:true,kind:'product',container:mediaInput.parentElement,input:mediaInput,mediaClient:media.mediaClient,translate}):null;
@@ -25,10 +25,15 @@ export function mountProductIntegration({root=document,enabled=false,ports,readP
  function text(id,key){const n=$(id);if(n){n.dataset.i18n=key;n.textContent=translate(key);n.dispatchEvent(new view.Event('oldx:translate-ui',{bubbles:true}));}}
  function show(id){for(const v of ['homeView','sellWizardPage','productDetailView','fullChatPage','storePage','profilePage','productSkeletonSlide','fullEditPage'])if($(v))$(v).style.display=v===id?(id==='fullChatPage'?'flex':'block'):'none';}
  function resetForm(){for(const id of ['adTitle','adDesc','adPrice','adPhone','adImages'])if($(id))$(id).value='';if($('aiImagePreviewContainer')){$('aiImagePreviewContainer').replaceChildren();$('aiImagePreviewContainer').style.display='none';}}
+ function concealPrivate(){
+  if(enquiryMode||['sell','owner','thread'].includes(parseProductRoute(view.location.hash)?.page))show('homeView');
+  enquiryMode=false;
+ }
+ function changeScope(){formRevision++;concealPrivate();model.changeScope();}
  function resetPrivate(){if($('fullChatMessages'))$('fullChatMessages').replaceChildren();if($('fullChatInput'))$('fullChatInput').value='';}
  const productOwnsInbox=()=>root.documentElement.dataset.oldxUnifiedInbox!=='true';
  function status(state){
-  if(!recovering&&!exiting&&sessionScope){const ticket=model.pendingReceipt();const old=view.history.state??{};if(ticket)view.history.replaceState({...old,oldxProductRecovery:{scope:sessionScope,...ticket}},'');else if(state.command.status==='saved'&&old.oldxProductRecovery){const {oldxProductRecovery,...rest}=old;view.history.replaceState(rest,'');}}
+  if(recoveringRevision!==formRevision&&!exiting&&sessionScope){const ticket=model.pendingReceipt();const old=view.history.state??{};if(ticket)view.history.replaceState({...old,oldxProductRecovery:{scope:sessionScope,...ticket}},'');else if(state.command.status==='saved'&&old.oldxProductRecovery){const {oldxProductRecovery,...rest}=old;view.history.replaceState(rest,'');}}
 text('productPortStatus','market.product.'+(state.command.status==='idle'?(state.statuses.owner??state.statuses.read??state.statuses.thread??state.statuses.detail??state.statuses.list??'idle'):state.command.status));
   if($('productStoreDraftNotice'))$('productStoreDraftNotice').hidden=!state.authenticated||!state.storeLinked;
   const blocked=state.command.status==='loading'||state.command.canRetry||state.statuses.owner==='loading';
@@ -99,13 +104,23 @@ text('productPortStatus','market.product.'+(state.command.status==='idle'?(state
  // Search is a local filter over the already loaded bounded page; do not
  // issue a new backend list read for each keystroke. Navigation/Next owns reads.
  listen($('searchInput'),'input',event=>{event.stopImmediatePropagation();status(model.snapshot());},true);
+ async function restoreOwnerView(id,receipt){
+  const version=formRevision,hash=view.location.hash;
+  show('homeView');
+  await model.loadOwner(id,receipt);
+  if(version!==formRevision||hash!==view.location.hash)return null;
+  const state=model.snapshot();
+  if(!state.authenticated||state.statuses.owner!=='ready'||!state.owner)return null;
+  show('sellWizardPage');
+  return state.owner;
+ }
  async function restoreRoute(storeId=null){const route=parseProductRoute(view.location.hash);if(!route)return;formRevision++;if(route.page==='sell'){
   if(!model.snapshot().authenticated){model.changeScope();show('homeView');return;}
   const fresh=model.startDraft(storeId);show('sellWizardPage');
   if(fresh)view.prepareSellWizard?.();else showDraftStep();
   return;
  }
- model.changeScope();if(route.page==='product'){show('productDetailView');await model.openProduct(route.id);}else if(route.page==='owner'){show('sellWizardPage');await model.loadOwner(route.id);}else if(route.page==='thread'){
+ model.changeScope();if(route.page==='product'){show('productDetailView');await model.openProduct(route.id);}else if(route.page==='owner'){await restoreOwnerView(route.id);}else if(route.page==='thread'){
   enquiryMode=false;
   const version=formRevision,hash=view.location.hash;
   show('homeView');
@@ -120,7 +135,26 @@ text('productPortStatus','market.product.'+(state.command.status==='idle'?(state
  function navigate(page,id,{replace=false}={}){options.beforeNavigate?.();const hash=productRoute(page,id);if(hash===null)return;if(view.location.hash!==hash)view.history[replace?'replaceState':'pushState'](view.history.state,'',view.location.pathname+view.location.search+hash);return restoreRoute(page==='sell'?id:null);}
  for(const type of managedRoutes?[]:['popstate','hashchange'])listen(view,type,event=>{if(parseProductRoute(view.location.hash)){event.stopImmediatePropagation();restoreRoute();}else model.changeScope();},true);listen(root,'oldx:locale-changed',async event=>{const version=++localeRevision;const catalog=await loadTranslator(event.detail?.locale);if(version===localeRevision){translate=key=>catalog.t(key);status(model.snapshot());}});listen(view,'pagehide',()=>{formRevision++;exiting=true;model.clear();});listen(view,'offline',()=>{formRevision++;model.setOnline(false);});listen(view,'online',()=>model.setOnline(true));
  listen(root,'visibilitychange',()=>{if(root.visibilityState!=='hidden'&&$('fullChatMessages').getClientRects().length)model.acknowledgeVisible();});
- const api=Object.freeze({model,async setSession(value){exiting=false;formRevision++;photoSession=value?.uid&&value?.sessionId?{uid:value.uid,sessionId:value.sessionId}:null;sessionScope=value?.sessionId??null;const ticket=view.history.state?.oldxProductRecovery;recovering=true;model.setSession(value);resetPrivate();resetForm();
-   try{if(ticket&&sessionScope&&ticket.scope===sessionScope){show('sellWizardPage');await model.loadOwner(ticket.id,{requestId:ticket.requestId});if(model.snapshot().statuses.owner==='ready'){const {oldxProductRecovery,...rest}=view.history.state??{};view.history.replaceState(rest,'',view.location.pathname+view.location.search+productRoute('owner',model.snapshot().owner.id));}}else {if(ticket){const {oldxProductRecovery,...rest}=view.history.state??{};view.history.replaceState(rest,'');}if(!managedRoutes)await restoreRoute();}}finally{recovering=false;}
+ const api=Object.freeze({model,changeScope,async setSession(value){
+   exiting=false;
+   const version=++formRevision;
+   concealPrivate();
+   photoSession=value?.uid&&value?.sessionId?{uid:value.uid,sessionId:value.sessionId}:null;
+   sessionScope=photoSession?JSON.stringify([photoSession.uid,photoSession.sessionId]):null;
+   const ticket=view.history.state?.oldxProductRecovery;
+   recoveringRevision=version;
+   model.setSession(value);resetPrivate();resetForm();
+   try{
+    if(ticket&&sessionScope&&ticket.scope===sessionScope){
+     const owner=await restoreOwnerView(ticket.id,{requestId:ticket.requestId});
+     if(owner){
+      const {oldxProductRecovery,...rest}=view.history.state??{};
+      view.history.replaceState(rest,'',view.location.pathname+view.location.search+productRoute('owner',owner.id));
+     }
+    }else{
+     if(ticket){const {oldxProductRecovery,...rest}=view.history.state??{};view.history.replaceState(rest,'');}
+     if(!managedRoutes)await restoreRoute();
+    }
+   }finally{if(recoveringRevision===version)recoveringRevision=null;}
   },restoreRoute,navigate,show,destroy(){photoWorkflow?.setScope(null);publicPhotoView?.clear();ownedWorkflow?.destroy();ownedPhotoView?.destroy();exiting=true;formRevision++;localeRevision++;listeners.forEach(remove=>remove());model.clear();resetForm();saved.forEach(restore=>restore());panel.hidden=true;if($('productStoreDraftNotice'))$('productStoreDraftNotice').hidden=true;$('productEnquire').hidden=true;$('productPortStatus').hidden=true;$('productNext').hidden=true;for(const id of ['productHistoryNext','productReloadOwner','productChatRetry'])if($(id))$(id).hidden=true;if(productOwnsInbox()&&$('productInboxNext'))$('productInboxNext').hidden=true;bindings.delete(root);}});bindings.set(root,api);status(model.snapshot());return api;
 }

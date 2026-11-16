@@ -29,6 +29,40 @@ for(const width of [320,375,768,1280])test('actual Product form/discovery/detail
  await page.evaluate(async()=>{await fixtureSession('seller');const changing=useChatSession('seller');window.clearedAtSwitch=document.getElementById('fullChatMessages').textContent==='';await changing;binding.show('sellWizardPage');});assert.equal(await page.locator('#adTitle').inputValue(),'');assert.equal(await page.evaluate(()=>clearedAtSwitch),true);await page.locator('#productOwnerInbox').click();await page.waitForFunction(()=>document.querySelector('#inboxConversationsList button'));await page.locator('#inboxConversationsList button').click();assert.equal(await page.locator('#inboxModal').isVisible(),false);await page.waitForFunction(()=>document.querySelector('#fullChatMessages').textContent.includes('Private ગુજરાતી enquiry'));await page.locator('#fullChatInput').fill('Reply हिन्दी હા');if(width===320)await page.evaluate(()=>fixtureLoseAck());await page.locator('#fullChatInput').press('Enter');if(width===320){await page.locator('#productChatRetry').click();await page.waitForFunction(()=>document.getElementById('productChatRetry').hidden);}await page.waitForFunction(()=>document.querySelector('#fullChatMessages').textContent.includes('Reply हिन्दी હા'));
  await page.evaluate(()=>{document.body.style.fontSize='200%';});assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),true);await page.goBack();assert.equal(await page.locator('#fullChatMessages').textContent(),'');await page.goForward();await page.waitForFunction(()=>document.querySelector('#fullChatMessages').textContent.includes('Reply हिन्दी હા'));assert.deepEqual(remote,[]);
  }finally{await context.close();}});
+test('trusted Product search filters the loaded page without keystroke re-reads or legacy rendering',async()=>{
+ const {context,page,remote}=await fixture(375,'gu');
+ try{
+  await page.evaluate(async()=>{
+   window.trustedSearchReads=0;
+   window.legacySearchRuns=0;
+   window.handleSearchInput=()=>{legacySearchRuns++;document.getElementById('productGrid').textContent='LEGACY CONTENT';};
+   window.publicPorts={...window.publicPorts,list:async()=>{
+    trustedSearchReads++;
+    return {ok:true,items:[
+     {id:'p-gu',kind:'product',revision:1,title:'ગુજરાતી ફોન',description:'સારો ફોન',category:'cars',locationLabel:'Ahmedabad',basePrice:100,isSold:false,storeId:null},
+     {id:'p-en',kind:'product',revision:1,title:'Car listing',description:'Road car',category:'cars',locationLabel:'Rajkot',basePrice:200,isSold:false,storeId:null}
+    ],nextCursor:null};
+   }};
+   await binding.navigate('home');
+  });
+  assert.equal(await page.locator('#productGrid button').count(),2);
+  const reads=await page.evaluate(()=>trustedSearchReads);
+  assert.equal(reads,1);
+  await page.locator('#searchInput').fill('ફોન');
+  assert.equal(await page.locator('#productGrid button').count(),1);
+  assert.match(await page.locator('#productGrid button').first().textContent(),/ગુજરાતી ફોન/);
+  await page.locator('#searchInput').fill('car');
+  assert.equal(await page.locator('#productGrid button').count(),1);
+  assert.match(await page.locator('#productGrid button').first().textContent(),/Car listing/);
+  await page.locator('#searchInput').fill('no-match');
+  assert.equal(await page.locator('#productGrid button').count(),0);
+  await page.locator('#searchInput').fill('');
+  assert.equal(await page.locator('#productGrid button').count(),2);
+  assert.deepEqual(await page.evaluate(()=>[trustedSearchReads,legacySearchRuns]),[reads,0]);
+  assert.deepEqual(remote,[]);
+ }finally{await context.close();}
+});
+
 test('actual controls preserve unknown-outcome retry key and clear private content offline',async()=>{const {context,page}=await fixture(320,'gu');try{await page.locator('#adTitle').fill('Sample product');await page.locator('#adDesc').fill('Private draft');await page.locator('#adPrice').fill('10');await page.evaluate(()=>fixtureLoseAck());await page.locator('#productSaveDraft').click();await page.waitForFunction(()=>binding.model.snapshot().command.canRetry);assert.equal(await page.locator('#productSaveDraft').isDisabled(),true);await page.locator('#productRetry').click();await page.waitForFunction(()=>binding.model.snapshot().owner?.revision===1);await page.evaluate(()=>window.dispatchEvent(new Event('offline')));assert.equal(await page.locator('#fullChatMessages').textContent(),'');assert.equal(await page.locator('#productPortStatus').getAttribute('role'),'status');}finally{await context.close();}});
 test('language switching, narrow keyboard viewport, and delayed private-form preparation cannot cross sessions',async()=>{const {context,page}=await fixture(320,'en');try{
  await page.evaluate(async()=>{const {loadTranslator}=await import('/features/i18n/i18n.mjs'),{applyCatalog}=await import('/features/i18n/dom.mjs');for(const locale of ['gu','hi','en']){const catalog=await loadTranslator(locale);applyCatalog(document,catalog);document.dispatchEvent(new CustomEvent('oldx:locale-changed',{detail:{locale}}));} });await page.waitForFunction(()=>document.getElementById('productSaveDraft').textContent==='Save private draft');await page.locator('#adTitle').fill('Private previous seller');

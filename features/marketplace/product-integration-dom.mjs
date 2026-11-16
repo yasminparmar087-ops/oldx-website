@@ -71,7 +71,9 @@ text('productPortStatus','market.product.'+(state.command.status==='idle'?(state
  async function send(event){event.preventDefault();event.stopImmediatePropagation();const value=$('fullChatInput').value;await afterChatCommand(()=>enquiryMode?model.enquire(value):model.reply(value));}
  listen($('productChatRetry'),'click',()=>model.snapshot().chatCommandCanRetry?afterChatCommand(()=>model.retry()):model.retryReadAcknowledgement());
  listen($('chatSendButton'),'click',send,true);listen($('fullChatInput'),'keydown',event=>{if(event.key==='Enter'&&!event.isComposing)send(event);},true);
- listen($('searchInput'),'input',event=>{event.stopImmediatePropagation();formRevision++;model.changeScope();model.discover();},true);
+ // Search is a local filter over the already loaded bounded page; do not
+ // issue a new backend list read for each keystroke. Navigation/Next owns reads.
+ listen($('searchInput'),'input',event=>{event.stopImmediatePropagation();status(model.snapshot());},true);
  async function restoreRoute(storeId=null){const route=parseProductRoute(view.location.hash);if(!route)return;formRevision++;if(route.page==='sell'){
   if(!model.snapshot().authenticated){model.changeScope();show('homeView');return;}
   const fresh=model.startDraft(storeId);show('sellWizardPage');

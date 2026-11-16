@@ -1,0 +1,168 @@
+name: OLDX Step04 one-shot Distroless candidate
+on:
+  push:
+    branches: [security-hardening-review]
+    paths:
+      - '.github/workflows/oldx-step04-distroless-one-shot.yml'
+permissions:
+  contents: read
+concurrency:
+  group: oldx-step04-distroless-one-shot
+  cancel-in-progress: false
+jobs:
+  candidate:
+    if: "github.event.head_commit.message == 'test: execute approved OLDX Step04 Distroless one-shot 2026-11-16'"
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Verify signed base and assess ONE ephemeral local container
+        shell: bash
+        env:
+          BASE_TAG: gcr.io/distroless/nodejs24-debian13:nonroot
+          COSIGN_SHA256: 424e2c97d0b45fd7a6b608a87f090f35633f4c23ece5f092d48bba11aaf4bbfa
+          GRYPE_SHA256: e9da18cc1429e786722e32161288103600efffd8e483c90761f90485bd1bec85
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REF_NAME" = "security-hardening-review"
+          image='oldx-step04-distroless:one'
+          tmp="$RUNNER_TEMP/oldx-step04"
+          mkdir -m 700 "$tmp"
+          cleanup() {
+            docker rm -f oldx-step04-disabled oldx-step04-files >/dev/null 2>&1 || true
+            rm -rf "$tmp"
+          }
+          trap cleanup EXIT
+          echo "SOURCE_SHA=$GITHUB_SHA"
+          echo 'ONE local runner-only assessment; no cloud push, deployment, tokens, Firebase, or artifacts'
+          base_digest="$(docker buildx imagetools inspect "$BASE_TAG" | awk '$1=="Digest:" {print $2; exit}')"
+          if [[ ! "$base_digest" =~ ^sha256:[0-9a-f]{64}$ ]]; then
+            echo 'STOP: invalid base digest'; exit 1
+          fi
+          base_pin="gcr.io/distroless/nodejs24-debian13@$base_digest"
+          echo "SIGNED_BASE_INDEX=$base_pin"
+          docker buildx imagetools inspect "$base_pin" --raw > "$tmp/base-index.json"
+          python3 - "$tmp/base-index.json" <<'PY'
+          import json,sys
+          m=json.load(open(sys.argv[1]))
+          ids=[x.get("digest","") for x in m.get("manifests",[])
+               if (x.get("platform") or {}).get("os")=="linux" and (x.get("platform") or {}).get("architecture")=="amd64"]
+          if len(ids)!=1 or not ids[0].startswith("sha256:") or len(ids[0])!=71:
+              raise SystemExit("STOP: no unique linux/amd64 base child")
+          print("BASE_AMD64_CHILD="+ids[0])
+          PY
+          curl -fLsS --retry 0 --connect-timeout 10 --max-time 120 -o "$tmp/cosign" \
+            https://github.com/sigstore/cosign/releases/download/v3.1.4/cosign-linux-amd64
+          printf '%s  %s\n' "$COSIGN_SHA256" "$tmp/cosign" | sha256sum -c -
+          chmod 700 "$tmp/cosign"
+          "$tmp/cosign" verify "$base_pin" \
+            --certificate-oidc-issuer https://accounts.google.com \
+            --certificate-identity keyless@distroless.iam.gserviceaccount.com \
+            > "$tmp/base-signature.json"
+          echo 'BASE_KEYLESS_SIGNATURE: PASS'
+          python3 - "$tmp/Dockerfile.step04" <<'PY'
+          import pathlib,sys
+          src=pathlib.Path("Dockerfile.product-read").read_text()
+          oldbase="FROM debian:trixie-slim"
+          if src.count(oldbase)!=1 or not src.startswith("FROM node:24-bookworm-slim\n"):
+              raise SystemExit("STOP: Dockerfile source drift")
+          builder,old=src.split(oldbase,1)
+          start=old.find("WORKDIR /app\n")
+          if start<0: raise SystemExit("STOP: runtime WORKDIR missing")
+          body=old[start:]
+          oldcopy="COPY --from=dependencies /usr/local/bin/node /usr/local/bin/docker-entrypoint.sh /usr/local/bin/\n"
+          oldentry='ENTRYPOINT ["docker-entrypoint.sh"]\nCMD ["node", "functions/staging-marketplace/product-read-server.mjs"]'
+          if body.count(oldcopy)!=1 or body.count(oldentry)!=1 or body.count("USER node\n")!=1:
+              raise SystemExit("STOP: copy or entrypoint drift")
+          body=body.replace(oldcopy,"").replace("USER node\n","USER 65532:65532\n")
+          body=body.replace(oldentry,'CMD ["functions/staging-marketplace/product-read-server.mjs"]')
+          candidate="ARG DISTROLESS_BASE\n"+builder+"FROM "+chr(36)+"{DISTROLESS_BASE}\n"+body
+          pathlib.Path(sys.argv[1]).write_text(candidate)
+          print("EPHEMERAL_DOCKERFILE_ONLY: PASS")
+          PY
+          docker build --no-cache --pull --platform linux/amd64 \
+            --build-arg "DISTROLESS_BASE=$base_pin" \
+            -f "$tmp/Dockerfile.step04" -t "$image" .
+          test "$(docker image inspect -f '{{.Os}}/{{.Architecture}}' "$image")" = linux/amd64
+          test "$(docker image inspect -f '{{.Config.User}}' "$image")" = 65532:65532
+          echo "LOCAL_CANDIDATE_IMAGE_ID=$(docker image inspect -f '{{.Id}}' "$image")"
+          docker run --rm --network none --entrypoint /nodejs/bin/node "$image" -e '
+            const a=require("node:assert/strict");
+            const v=process.versions.node.split(".").map(Number);
+            a.equal(v[0],24);a.ok(v[1]>12||(v[1]===12&&v[2]>=0));
+            a.equal(process.getuid(),65532);
+            const sharp=require("sharp");
+            sharp({create:{width:8,height:8,channels:3,background:{r:1,g:2,b:3}}})
+              .resize(4,4).png().toBuffer({resolveWithObject:true})
+              .then(x=>{a.equal(x.info.width,4);a.equal(x.info.height,4);
+                console.log("NODE24_SHARP_TRANSFORM_NONROOT: PASS; node_zlib="+process.versions.zlib)})
+              .catch(()=>{console.error("STOP: Sharp native transform");process.exitCode=1});
+          '
+          docker create --name oldx-step04-files "$image" >/dev/null
+          mkdir -p "$tmp/dpkg-info"
+          docker cp oldx-step04-files:/var/lib/dpkg/status.d "$tmp/dpkg-info" >/dev/null 2>&1 || true
+          python3 - "$tmp/dpkg-info" <<'PY'
+          import pathlib,re,sys,subprocess
+          versions=[]
+          for p in pathlib.Path(sys.argv[1]).rglob("*"):
+              if not p.is_file():continue
+              if p.name=="zlib1g" or p.name.startswith("zlib1g:"):
+                  m=re.search(r"(?m)^Version:\s*(\S+)",p.read_text(errors="replace"))
+                  if m:versions.append(m.group(1))
+          if len(versions)!=1:
+              print("ZLIB_OS_PACKAGE_FLOOR: UNVERIFIED (package status inventory absent or ambiguous)")
+          else:
+              version=versions[0]
+              minimum="1:1.3.dfsg+really1.3.1-1+deb13u1"
+              ok=subprocess.run(["dpkg","--compare-versions",version,"ge",minimum]).returncode==0
+              print("ZLIB_OS_PACKAGE_VERSION="+version)
+              print("ZLIB_OS_PACKAGE_FLOOR="+("PASS" if ok else "FAILED"))
+              if not ok:raise SystemExit("STOP: zlib patched minimum not met")
+          PY
+          docker run -d --name oldx-step04-disabled --network none -e PORT=18091 "$image" >/dev/null
+          docker exec oldx-step04-disabled /nodejs/bin/node -e '
+            const a=require("node:assert/strict");
+            (async()=>{
+              let health;
+              for(let i=0;i<12&&!health;i++){
+                try{health=await fetch("http://127.0.0.1:18091/healthz",{signal:AbortSignal.timeout(800)})}
+                catch{await new Promise(r=>setTimeout(r,250))}
+              }
+              a.ok(health);a.equal(health.status,200);
+              const denied=await fetch("http://127.0.0.1:18091/api/staging/marketplace/owner",
+                {method:"POST",signal:AbortSignal.timeout(1500)});
+              a.equal(denied.status,503);
+              console.log("HEALTH_200_DEFAULT_OFF_503: PASS");
+            })().catch(()=>{console.error("STOP: HTTP health/default-off");process.exitCode=1})
+          '
+          docker stop --time 10 --signal SIGTERM oldx-step04-disabled >/dev/null
+          test "$(docker inspect -f '{{.State.ExitCode}}' oldx-step04-disabled)" = 0
+          echo 'SIGTERM_BOUNDED_STOP: PASS'
+          curl -fLsS --retry 0 --connect-timeout 10 --max-time 90 -o "$tmp/grype.tar.gz" \
+            https://github.com/anchore/grype/releases/download/v0.121.3/grype_0.121.3_linux_amd64.tar.gz
+          printf '%s  %s\n' "$GRYPE_SHA256" "$tmp/grype.tar.gz" | sha256sum -c -
+          tar -xzf "$tmp/grype.tar.gz" -C "$tmp" grype
+          chmod 700 "$tmp/grype"
+          export GRYPE_DB_CACHE_DIR="$tmp/grype-cache"
+          timeout --signal=TERM --kill-after=3s 170s \
+            "$tmp/grype" "docker:$image" --scope squashed -o json > "$tmp/grype-report.json"
+          python3 - "$tmp/grype-report.json" <<'PY'
+          import collections,hashlib,json,pathlib,re,sys
+          p=pathlib.Path(sys.argv[1]);raw=p.read_bytes();r=json.loads(raw)
+          if not isinstance(r.get("matches"),list):raise SystemExit("STOP: incomplete Grype report")
+          counts=collections.Counter(str((m.get("vulnerability") or {}).get("severity","Unknown")).upper() for m in r["matches"])
+          high=[m for m in r["matches"] if str((m.get("vulnerability") or {}).get("severity","")).upper()=="HIGH"]
+          ids={str((m.get("vulnerability") or {}).get("id","unknown")) for m in high}
+          print("SCANNED_LOCAL_IMAGE: one unpublished runner-only candidate")
+          print("GRYPE_TOTAL_MATCHES="+str(len(r["matches"])))
+          print("GRYPE_CRITICAL="+str(counts["CRITICAL"]))
+          print("GRYPE_HIGH_PACKAGE_MATCHES="+str(len(high)))
+          print("GRYPE_UNIQUE_HIGH_IDS="+str(len(ids)))
+          print("CANDIDATE_HIGH_IDS="+",".join(sorted(x for x in ids if re.fullmatch(r"CVE-\d{4}-\d{4,10}",x))))
+          print("EPHEMERAL_REPORT_SHA256="+hashlib.sha256(raw).hexdigest())
+          print("CANDIDATE_VULNERABILITY_REDUCTION: NOT_AUTOMATICALLY_PROVEN")
+          print("ADC_FIRESTORE_IAM_G8_PROVENANCE: UNVERIFIED")
+          print("FINAL: STEP04_ONE_RUNNER_CANDIDATE_ASSESSMENT_COMPLETE_NO_PUSH_NO_DEPLOY")
+          PY

@@ -40,7 +40,8 @@ jobs:
           echo 'ONE local runner-only assessment; no cloud push, deployment, tokens, Firebase, or artifacts'
           # Preserve the original public-image metadata error for any newly approved run.
           # The first (consumed) attempt hid tool stdout inside a command substitution.
-          if ! docker buildx imagetools inspect "$BASE_TAG" > "$tmp/base-inspect.txt" 2>&1; then
+          echo "DOCKER_BUILDX_VERSION=$(docker buildx version)"
+          if ! timeout --signal=TERM --kill-after=5s 65s docker buildx imagetools inspect "$BASE_TAG" > "$tmp/base-inspect.txt" 2>&1; then
             echo 'STOP: BASE_INSPECTION_FAILED (no retries)'
             sed -n '1,5p' "$tmp/base-inspect.txt" | cut -c1-200
             exit 1

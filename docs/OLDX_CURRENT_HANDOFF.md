@@ -2725,3 +2725,36 @@ FINAL: FINDINGS_SUMMARY_RETRIEVED
 **Immediate gate decision:** **G2 vulnerability subgate = FINDINGS CONFIRMED / REMEDIATION REVIEW REQUIRED, not PASS.** Previously verified OCI attestation structure/digest subject MATCH remains PASS; builder trust/source commit/base image still UNVERIFIED. **B1 must remain NO-GO** pending explicit review of at least all **15 High** findings against exact package/installed/fixed versions, recommended remediation or formally accepted residual risk, plus independent scanner coverage and source trust; no auto upgrade/rebuild/push of the owner-approved immutable image candidate. Because [Google's existing On-Demand results](https://docs.cloud.google.com/artifact-analysis/docs/scan-os-on-demand) are time-limited to **48 hours** after completion (~18:14 IST 16 Nov → ~18:14 IST 18 Nov 2026), the least-cost next option is one **NEW separately owner-approved**, bounded **read-only** query of **the same scan ID**, locally sanitize *only* 15 HIGH CVE identifiers, package names, installed and fixed versions, per-CVE fix status, without raw JSON or tokens. This is a result re-read, **NOT** a new scan; if a sufficient existing private redacted report exists, prefer that instead. Do not claim risk acceptance or modify dependencies until exact remediation provenance is reviewed. G8 total-cost/STOP remains BLOCKED and is independent of image scan success.
 
 **State:** Review branch only; Step03/15 ACTIVE/BLOCKED-owner (2 of 15 DONE), G1 PARTIAL/default-OFF, G2 PARTIAL/high findings confirmed, G8 BLOCKED; B1/R1/R2 NOT APPROVED, Staging Hosted NO-GO, Production HOLD/NO-GO. No CI/Codex credits/reset, code changes or cloud resource mutation from this findings read.
+
+
+## 2026-11-16 ~18:28 IST — G2 exact 15 HIGH findings and image/base package provenance root cause
+
+**Read consent already logged and consumed:** [Issue #17 6916989735](https://github.com/yasminparmar087-ops/oldx-website/issues/17#issuecomment-6916989735) recorded owner `ha manjuri chhe` for ONE exact existing-scan `list-vulnerabilities` detail read. Four owner Cloud Shell screenshots at ~18:26–18:28 IST prove `EXISTING_SCAN_READ: PASS`, `TOTAL_RECORDS: 119`, `HIGH_RECORDS: 15`, `NO_NEW_SCAN: TRUE`, `FINAL: HIGH_FINDINGS_DETAILS_RETRIEVED`. This is owner-screen evidence, not an independent connected GCP read; no repeat allowed under consumed scope.
+
+**All 15 HIGH records from the screenshots (not necessarily distinct issues at package/path level):**
+
+| # | CVE | Package | Type | Installed | Scanner fixedVersion | fixAvailable |
+|---|---|---|---|---|---|---|
+| 1 | CVE-2026-54369 | acl | OS | 2.3.1-3 | MAXIMUM | UNKNOWN |
+| 2 | CVE-2026-109383 | undici | NPM | 6.28.0 | 6.29.1 | YES |
+| 3 | CVE-2026-53613 | util-linux | OS | 2.38.1-5+deb12u3 | MAXIMUM | UNKNOWN |
+| 4 | CVE-2026-102278 | brace-expansion | NPM | 5.0.9 | 5.0.11 | YES |
+| 5 | CVE-2026-54371 | attr | OS | 1:2.5.1-4 | MAXIMUM | UNKNOWN |
+| 6 | CVE-2026-102276 | brace-expansion | NPM | 5.0.9 | 5.0.10 | YES |
+| 7 | CVE-2026-9538 | perl | OS | 5.36.0-7+deb12u4 | MAXIMUM | UNKNOWN |
+| 8 | CVE-2026-19534 | undici | NPM | 6.28.0 | 6.28.1 | YES |
+| 9 | CVE-2026-53615 | util-linux | OS | 2.38.1-5+deb12u3 | MAXIMUM | UNKNOWN |
+| 10 | CVE-2026-54370 | acl | OS | 2.3.1-3 | MAXIMUM | UNKNOWN |
+| 11 | CVE-2026-87018 | undici | NPM | 6.28.0 | 6.29.1 | YES |
+| 12 | CVE-2026-85091 | zlib | OS | 1:1.2.13.dfsg-1 | MAXIMUM | UNKNOWN |
+| 13 | CVE-2026-109869 | undici | NPM | 6.28.0 | 6.29.1 | YES |
+| 14 | CVE-2026-76844 | zlib | OS | 1:1.2.13.dfsg-1 | MAXIMUM | UNKNOWN |
+| 15 | CVE-2025-6020 | pam | OS | 1.5.2-6+deb12u2 | MAXIMUM | UNKNOWN |
+
+**Interpretation:** Six NPM highs across `undici` (4; 6.28.0, latest required scanner fix among them 6.29.1) and `brace-expansion` (2; 5.0.9, latest required scanner fix 5.0.11), each with `fixAvailable:YES`. Nine OS highs across `acl` (2), `util-linux` (2), `attr` (1), `perl` (1), `zlib` (2), `pam` (1), all printed `fixedVersion:MAXIMUM` and `fixAvailable:UNKNOWN`. `MAXIMUM` is a Grafeas VersionKind sentinel indicating no fixed version given for that occurrence, not a numeric version; UNKNOWN from this sanitizer does **not** establish permanent lack of a vendor fix. The previously noted 0 CRITICAL and 119 total are scanner *occurrence* counts, not a full coverage proof. B1 remains NO-GO with 15 HIGH.
+
+**New root-source dependency comparison — no live provider calls:** Read `Dockerfile.product-read`, `package.json`, and `package-lock.json` at BOTH selected published image source commit `2eebfa7a0c1a66d6c8563162aa5e612570f7a1e1` and current review branch `f55a7c4`. Dockerfile unchanged: `FROM node:24-bookworm-slim`, `RUN npm ci --omit=dev --ignore-scripts`, `USER node`. Only direct production dependencies `firebase-admin@14.5.1`, `qrcode@1.5.4`, `sharp@0.35.5`. Published-source lock records `undici@6.29.1` at `node_modules/undici` **dev-only**, `undici@8.12.3` nested under `node-gyp` dev/optional, `brace-expansion@1.1.21` and `2.1.7` **dev-only**; it contains neither the scanner's `undici@6.28.0` nor `brace-expansion@5.0.9`. The six NPM findings thus strongly suggest the official Node base image's **globally bundled npm CLI**, not OLDX's app production lock tree; this exact 6.28.0/5.0.9 npm global issue is independently documented in [npm/cli issue #10111](https://github.com/npm/cli/issues/10111). However the sanitized scan did NOT read `fileLocation`, so label origin **HIGH-CONFIDENCE INFERENCE / EXACT PATH UNVERIFIED**. **Do not blindly npm-update OLDX's project lockfile**; it would not remove a global npm CLI bundled in immutable published base image. Base's `node:24-bookworm-slim` is mutable and OS packages may be remediated by a refreshed distro or lean runtime, but no fixes have been built, scanned or validated yet.
+
+**Next efficient source-only engineering direction:** One narrowly bounded remediation plan/candidate (not a new approved build): keep `npm ci` in builder stage, design minimal final Node runtime with *no unnecessary bundled npm CLI* and updated supported Debian OS packages/base, preserve existing native `sharp` needs, Firebase Admin, `USER node`, runtime env/health, exact 29 Docker COPY source inputs, and prior API behavior. Compare security tradeoffs; avoid changing immutable published digest or Dockerfile until reviewed. If implementation becomes substantial, a **single targeted Codex prompt** for only source branch work and focused offline tests is appropriate; cloud image build/push/new scan/Cloud Run deployment, IAM/Firebase/Billing/Rules, R1/R2 require distinct owner action consent. No additional Cloud reads/scan/CI/Codex/reset was done here.
+
+**Current gates:** G2 vulnerability HIGH remediation required, trusted source/builder still unverified; G1 V2 default-off PARTIAL; G8 all-service cost STOP BLOCKED; B1/R1/R2 NOT APPROVED. Step03 ACTIVE (02/15 DONE); Staging Hosted NO-GO; Production HOLD/NO-GO.

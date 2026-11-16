@@ -9,7 +9,6 @@ from pathlib import Path
 
 
 AUDITOR = runpy.run_path(str(Path(__file__).resolve().parents[2] / "scripts/audit-product-read-image.py"))
-NPMRC = AUDITOR["NPMRC"]
 KEY = b"-----BEGIN PRIVATE KEY-----\n" + b"A" * 32
 
 
@@ -31,12 +30,12 @@ def audit(first, second=(), config=None, count=2):
         ("one.tar", tar(first)),
         ("two.tar", tar(second)),
     ])
-    return AUDITOR["audit"](io.BytesIO(image), b"built-in", count)
+    return AUDITOR["audit"](io.BytesIO(image), count)
 
 
 class ProductReadImageAudit(unittest.TestCase):
     def test_clean_image(self):
-        self.assertEqual(audit([(NPMRC, b"built-in")], [("app/source", b"safe")]), 2)
+        self.assertEqual(audit([], [("app/source", b"safe")]), 2)
 
     def test_deleted_sensitive_filename(self):
         with self.assertRaisesRegex(ValueError, "Sensitive filename in layer 1"):
@@ -50,9 +49,17 @@ class ProductReadImageAudit(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "Credential marker in image config or history"):
             audit([], config={"history": [{"created_by": KEY.decode()}]})
 
-    def test_modified_builtin_config(self):
-        with self.assertRaisesRegex(ValueError, "Modified built-in npm config"):
-            audit([(NPMRC, b"changed")])
+    def test_package_managers_rejected_even_if_removed_in_later_layer(self):
+        for path in (
+            "./usr/local/lib/node_modules/npm/.npmrc",
+            "usr/local/bin/npx",
+            "usr/local/bin/corepack",
+            "opt/yarn-v1.22.22/bin/yarn",
+        ):
+            with self.subTest(path=path):
+                with self.assertRaisesRegex(ValueError, "Bundled package manager in layer 1"):
+                    member = Path(path)
+                    audit([(path, b"bundled")], [(str(member.parent / (".wh." + member.name)), b"")])
 
     def test_missing_layer(self):
         with self.assertRaisesRegex(ValueError, "Saved layer count"):

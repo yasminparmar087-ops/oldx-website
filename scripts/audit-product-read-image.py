@@ -24,7 +24,10 @@ SECRET = re.compile(
     rb"(?<![\w])(?:_authToken|_auth)\s*=\s*[A-Za-z0-9+/=_-]{12,256}",
     re.I,
 )
-NPMRC = "usr/local/lib/node_modules/npm/.npmrc"
+PACKAGE_MANAGER = re.compile(
+    r"^(?:(?:usr/local|usr)/bin/(?:npm|npx|yarn|yarnpkg|corepack)|"
+    r"usr/(?:local/lib/node_modules|share/nodejs)/(?:npm|yarn|corepack)|opt/yarn(?:-v[^/]+)?)(?:/|$)"
+)
 # The public Debian base ships GnuTLS known-answer self-test key material.
 # A changed binary or a copy in any later layer is scanned normally.
 GNUTLS_PATH = "usr/lib/x86_64-linux-gnu/libgnutls.so.30.34.3"
@@ -41,7 +44,7 @@ def contains_marker(stream):
     return False
 
 
-def audit(image_stream, base_npmrc, expected_layers):
+def audit(image_stream, expected_layers):
     with tarfile.open(fileobj=image_stream, mode="r:") as archive:
         manifest, = json.load(archive.extractfile("manifest.json"))
         with archive.extractfile(manifest["Config"]) as config_stream:
@@ -54,10 +57,8 @@ def audit(image_stream, base_npmrc, expected_layers):
             with archive.extractfile(layer_name) as blob, tarfile.open(fileobj=blob, mode="r|*") as layer:
                 for entry in layer:
                     path = PurePosixPath(entry.name)
-                    if path.as_posix() == NPMRC and entry.isfile():
-                        if layer.extractfile(entry).read(len(base_npmrc) + 1) != base_npmrc:
-                            raise ValueError(f"Modified built-in npm config in layer {index}")
-                        continue
+                    if PACKAGE_MANAGER.match(path.as_posix().lstrip("/")):
+                        raise ValueError(f"Bundled package manager in layer {index}")
                     if SENSITIVE_NAME.fullmatch(path.name):
                         raise ValueError(f"Sensitive filename in layer {index}")
                     if entry.isfile():
@@ -78,14 +79,14 @@ def audit(image_stream, base_npmrc, expected_layers):
 
 if __name__ == "__main__":
     try:
-        with open(sys.argv[1], "rb") as image, open(sys.argv[2], "rb") as npmrc:
-            count = audit(image, npmrc.read(), int(sys.argv[3]))
+        with open(sys.argv[1], "rb") as image:
+            count = audit(image, int(sys.argv[2]))
     except ValueError as error:
         # Report only messages authored above. Parser errors may include input.
         message = str(error)
-        if not re.fullmatch(r"(?:Credential marker in image config or history|Saved layer count does not match the inspected image|(?:Modified built-in npm config|Sensitive filename|Credential marker|Sensitive link target|Unreviewed GnuTLS binary size) in layer \d+)", message):
+        if not re.fullmatch(r"(?:Credential marker in image config or history|Saved layer count does not match the inspected image|(?:Bundled package manager|Sensitive filename|Credential marker|Sensitive link target|Unreviewed GnuTLS binary size) in layer \d+)", message):
             message = "Invalid saved image metadata"
         sys.exit(message)
     except (OSError, KeyError, TypeError, tarfile.TarError):
         sys.exit("Saved image could not be inspected")
-    print(f"Credential markers and sensitive filenames checked across {count} image layers and image config/history")
+    print(f"Bundled package managers and credentials checked across {count} image layers; config/history checked for credentials")

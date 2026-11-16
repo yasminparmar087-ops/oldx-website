@@ -43,24 +43,17 @@ jobs:
           esac
           metadata=$(docker image inspect --format 'local_image_id={{.Id}} size_bytes={{.Size}} platform={{.Os}}/{{.Architecture}}' "$image")
           echo "::notice title=Product read image::source_sha=$GITHUB_SHA $metadata"
-          docker run --rm --network none --entrypoint cat node:24-bookworm-slim /usr/local/lib/node_modules/npm/.npmrc > "$RUNNER_TEMP/oldx-base-npmrc"
           docker save -o "$RUNNER_TEMP/oldx-product-read.tar" "$image"
           layer_count=$(docker image inspect --format '{{len .RootFS.Layers}}' "$image")
-          layer_result=$(python3 scripts/audit-product-read-image.py "$RUNNER_TEMP/oldx-product-read.tar" "$RUNNER_TEMP/oldx-base-npmrc" "$layer_count")
+          layer_result=$(python3 scripts/audit-product-read-image.py "$RUNNER_TEMP/oldx-product-read.tar" "$layer_count")
           echo "::notice title=Product read layer audit::$layer_result"
           docker create --name oldx-image-audit oldx-product-read:smoke >/dev/null
           docker export oldx-image-audit | tar -tf - > "$RUNNER_TEMP/oldx-image-files"
           sed -nE 's|^\./||; /^app\/node_modules(\/|$)/d; /^app\/[^/]/ { /\/$/!p; }' "$RUNNER_TEMP/oldx-image-files" | sort > "$RUNNER_TEMP/oldx-app-files"
           sed -nE '/^![^!].*[^/]$/s|^!|app/|p' Dockerfile.product-read.dockerignore | sort > "$RUNNER_TEMP/oldx-expected-files"
           diff -u "$RUNNER_TEMP/oldx-expected-files" "$RUNNER_TEMP/oldx-app-files"
-          # Allow only npm's unchanged built-in config from the base image.
-          npm_config_path=usr/local/lib/node_modules/npm/.npmrc
           sed 's|^\./||' "$RUNNER_TEMP/oldx-image-files" > "$RUNNER_TEMP/oldx-normalized-files"
-          if grep -Fxq "$npm_config_path" "$RUNNER_TEMP/oldx-normalized-files"; then
-            docker cp "oldx-image-audit:/$npm_config_path" "$RUNNER_TEMP/oldx-image-npmrc"
-            cmp "$RUNNER_TEMP/oldx-base-npmrc" "$RUNNER_TEMP/oldx-image-npmrc"
-          fi
-          if grep -vFx "$npm_config_path" "$RUNNER_TEMP/oldx-normalized-files" | grep -Ei '(^|/)(\.env(\.[^/]*)?|\.npmrc|\.git-credentials|application_default_credentials\.json|service[-_]?account[^/]*\.json|firebase-env\.js|google-services\.json|id_(rsa|ed25519))$'; then
+          if grep -Ei '(^|/)(\.env(\.[^/]*)?|\.npmrc|\.git-credentials|application_default_credentials\.json|service[-_]?account[^/]*\.json|firebase-env\.js|google-services\.json|id_(rsa|ed25519))$' "$RUNNER_TEMP/oldx-normalized-files"; then
             echo 'Sensitive filename found in image' >&2
             exit 1
           fi

@@ -4,9 +4,6 @@ on:
   push:
     branches:
       - security-hardening-review
-    # Temporary: third owner-approved Step04 one-shot path only; restore immediately.
-    paths-ignore:
-      - '.github/workflows/oldx-step04-distroless-one-shot.yml'
   pull_request:
     branches:
       - security-hardening-review

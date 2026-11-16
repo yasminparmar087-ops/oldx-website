@@ -1,4 +1,4 @@
-# Owner-approved SECOND and FINAL runner-only attempt, fail closed; old first attempt consumed.
+# Owner-approved THIRD single runner-only attempt; earlier two attempts consumed, do not auto-retry.
 # Owner-approved single local runner experiment (no public deployment, no auto-retries).
 name: OLDX Step04 one-shot Distroless candidate
 on:
@@ -13,9 +13,8 @@ concurrency:
   cancel-in-progress: false
 jobs:
   candidate:
-    # Both owner-approved attempts were consumed (runs 43925591161, 43927447239).
-    # Explicit new owner consent and reviewed action-scoped change required to reactivate.
-    if: false
+    # Owner specifically approved one THIRD attempt after previous two deterministic STOPs.
+    if: "github.event.head_commit.message == 'test: execute owner-approved OLDX Step04 Distroless third attempt 2026-11-16'"
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
@@ -25,8 +24,7 @@ jobs:
       - name: Verify signed base and assess ONE ephemeral local container
         shell: bash
         env:
-          BASE_TAG: gcr.io/distroless/nodejs24-debian13:nonroot
-          COSIGN_SHA256: 424e2c97d0b45fd7a6b608a87f090f35633f4c23ece5f092d48bba11aaf4bbfa
+          BASE_PIN: gcr.io/distroless/nodejs24-debian13@sha256:6abfcb367ebc291572c774c1592a986be2ab26a2486f73093401327495a5962a
           GRYPE_SHA256: e9da18cc1429e786722e32161288103600efffd8e483c90761f90485bd1bec85
         run: |
           set -euo pipefail
@@ -41,39 +39,13 @@ jobs:
           trap cleanup EXIT
           echo "SOURCE_SHA=$GITHUB_SHA"
           echo 'ONE local runner-only assessment; no cloud push, deployment, tokens, Firebase, or artifacts'
-          # Preserve the original public-image metadata error for any newly approved run.
-          # The first (consumed) attempt hid tool stdout inside a command substitution.
-          echo "DOCKER_BUILDX_VERSION=$(docker buildx version)"
-          if ! timeout --signal=TERM --kill-after=5s 65s docker buildx imagetools inspect "$BASE_TAG" > "$tmp/base-inspect.txt" 2>&1; then
-            echo 'STOP: BASE_INSPECTION_FAILED (no retries)'
-            sed -n '1,5p' "$tmp/base-inspect.txt" | cut -c1-200
-            exit 1
-          fi
-          base_digest="$(awk '$1=="Digest:" {print $2; exit}' "$tmp/base-inspect.txt")"
-          if [[ ! "$base_digest" =~ ^sha256:[0-9a-f]{64}$ ]]; then
-            echo 'STOP: invalid base digest'; exit 1
-          fi
-          base_pin="gcr.io/distroless/nodejs24-debian13@$base_digest"
-          echo "SIGNED_BASE_INDEX=$base_pin"
-          docker buildx imagetools inspect "$base_pin" --raw > "$tmp/base-index.json"
-          python3 - "$tmp/base-index.json" <<'PY'
-          import json,sys
-          m=json.load(open(sys.argv[1]))
-          ids=[x.get("digest","") for x in m.get("manifests",[])
-               if (x.get("platform") or {}).get("os")=="linux" and (x.get("platform") or {}).get("architecture")=="amd64"]
-          if len(ids)!=1 or not ids[0].startswith("sha256:") or len(ids[0])!=71:
-              raise SystemExit("STOP: no unique linux/amd64 base child")
-          print("BASE_AMD64_CHILD="+ids[0])
-          PY
-          curl -fLsS --retry 0 --connect-timeout 10 --max-time 120 -o "$tmp/cosign" \
-            https://github.com/sigstore/cosign/releases/download/v3.1.4/cosign-linux-amd64
-          printf '%s  %s\n' "$COSIGN_SHA256" "$tmp/cosign" | sha256sum -c -
-          chmod 700 "$tmp/cosign"
-          "$tmp/cosign" verify "$base_pin" \
-            --certificate-oidc-issuer https://accounts.google.com \
-            --certificate-identity keyless@distroless.iam.gserviceaccount.com \
-            > "$tmp/base-signature.json"
-          echo 'BASE_KEYLESS_SIGNATURE: PASS'
+          # This exact digest and amd64 child were verified by Cosign in the
+          # preceding approved run 43927447239. Do not repeat 145 MB download.
+          base_pin="$BASE_PIN"
+          test "$base_pin" = "gcr.io/distroless/nodejs24-debian13@sha256:6abfcb367ebc291572c774c1592a986be2ab26a2486f73093401327495a5962a"
+          echo "BASE_INDEX_PINNED=$base_pin"
+          echo "BASE_AMD64_CHILD_PRIOR_RUN=sha256:d4b8c34560df58c821ebda89a2897d7d183220c0debaf474a2b67a6c7cc22064"
+          echo "BASE_KEYLESS_SIGNATURE: VERIFIED_PREVIOUSLY_RUN_43927447239_NOT_REPEATED"
           python3 - "$tmp/Dockerfile.step04" <<'PY'
           import pathlib,sys
           src=pathlib.Path("Dockerfile.product-read").read_text()

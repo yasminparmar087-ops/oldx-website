@@ -5,9 +5,11 @@
  * a live execution. V1 one-shot approvals and journals are deliberately separate.
  * Review of a candidate and a local journal are NOT owner operational consent.
  */
+import {createHash} from 'node:crypto';
 import {constants, closeSync, fstatSync, fsyncSync, mkdirSync, openSync, writeSync} from 'node:fs';
 import {homedir} from 'node:os';
 import {join} from 'node:path';
+import {inspectAnonymousDenial} from './phase-b-owner-read-acceptance.mjs';
 import {runtimeSessionBudget} from './phase-b-fixture-session-v1.mjs';
 import {conditionalFixtureDelete, validFirestoreReceipt} from './phase-b-offline-cleanup-guard.mjs';
 
@@ -185,5 +187,81 @@ export function rehearseV2AmbiguousCreateOffline({candidate, manifest, sessionId
     return stopped(); // Ambiguous simulated create NEVER becomes verified.
   } finally {
     journal.close();
+  }
+}
+
+const V2_TARGET_KEYS = ['project', 'region', 'service', 'tag', 'revision', 'image', 'amd64Digest',
+  'sourceSha', 'runtime', 'invoker'];
+const V2_REVIEW_KEYS = ['scopeSha256', 'issuedAt', 'expiresAt', 'maxGrossPaise', 'evidence'];
+const V2_EVIDENCE = ['tagAvailability', 'sourceImageProvenance', 'identity', 'effectiveIam',
+  'financeStop', 'fiveCveDisposition', 'b1', 'r1', 'r2', 'cleanup'];
+const SHA256 = /^[a-f0-9]{64}$/;
+const HISTORICAL_DIGESTS = new Set([
+  IMAGE.split('@')[1],
+  'sha256:eabe4207e307d1e487a30e4afd3abe8cda3792883a752864a5d6f80c45cd082c',
+]);
+const HISTORICAL_REVISIONS = new Set([
+  'oldx-owner-read-00001-8kr', 'oldx-owner-read-00002-tid', 'oldx-owner-read-00003-nus',
+]);
+const V2_IMAGE = /^asia-south1-docker\.pkg\.dev\/oldx-staging\/oldx-staging-images\/[a-z0-9][a-z0-9._-]{0,127}@(sha256:[a-f0-9]{64})$/;
+
+// These are offline evidence references, not authenticated consent. The scope
+// fingerprint uses this documented field order, independent of JSON key order.
+export function reviewV2OfflineProbe(input) {
+  const {target, manifest, sessionId, review, journalState, probe} = input ?? {};
+  const blocked = () => Object.freeze({
+    decision: journalState === 'CREATE_UNKNOWN' ? 'STOP_MANUAL_RECOVERY' : 'BLOCKED',
+    ownerConsent: 'UNVERIFIED', liveExecution: 'DISABLED', cloudAccess: 'NONE',
+  });
+  if (!exactKeys(input, ['target', 'manifest', 'sessionId', 'review', 'journalState', 'probe']) ||
+      journalState !== 'UNUSED' || !exactKeys(target, V2_TARGET_KEYS) ||
+      reviewV2Manifest(manifest) !== 'SOURCE_REVIEW_ONLY' ||
+      typeof sessionId !== 'string' || !UUID.test(sessionId) ||
+      !exactKeys(review, V2_REVIEW_KEYS)) return blocked();
+
+  const index = typeof target.image === 'string' && V2_IMAGE.exec(target.image)?.[1];
+  if (target.project !== PROJECT || target.region !== REGION || target.service !== SERVICE ||
+      target.runtime !== RUNTIME || target.invoker !== INVOKER ||
+      typeof target.tag !== 'string' || !/^[a-z][a-z0-9-]{0,30}$/.test(target.tag) ||
+      RETIRED_TAGS.has(target.tag) ||
+      typeof target.revision !== 'string' || !/^oldx-owner-read-[a-z0-9-]{1,47}$/.test(target.revision) ||
+      HISTORICAL_REVISIONS.has(target.revision) ||
+      !index || HISTORICAL_DIGESTS.has(index) || typeof target.amd64Digest !== 'string' ||
+      !/^sha256:[a-f0-9]{64}$/.test(target.amd64Digest) || index === target.amd64Digest ||
+      HISTORICAL_DIGESTS.has(target.amd64Digest) ||
+      typeof target.sourceSha !== 'string' || !/^[a-f0-9]{40}$/.test(target.sourceSha) ||
+      target.sourceSha === '2eebfa7a0c1a66d6c8563162aa5e612570f7a1e1') return blocked();
+
+  const {issuedAt, expiresAt, maxGrossPaise, evidence, scopeSha256} = review;
+  const now = Date.now();
+  if (!Number.isSafeInteger(issuedAt) || !Number.isSafeInteger(expiresAt) ||
+      issuedAt > now || expiresAt <= now || expiresAt - issuedAt > 20 * 60_000 ||
+      !Number.isSafeInteger(maxGrossPaise) || maxGrossPaise < 1 ||
+      !exactKeys(evidence, V2_EVIDENCE) ||
+      !V2_EVIDENCE.every(key => typeof evidence[key] === 'string' && SHA256.test(evidence[key])) ||
+      new Set([evidence.b1, evidence.r1, evidence.r2, evidence.cleanup]).size !== 4) return blocked();
+
+  // The OCI index is target.image; amd64Digest is its derived runnable child.
+  // This digest binds the offline shape only; it authenticates no documents.
+  const fingerprint = createHash('sha256').update(JSON.stringify([
+    'OLDX_V2_OFFLINE_PROBE', V2_TARGET_KEYS.map(key => target[key]), sessionId,
+    manifest.authUids, manifest.firestoreDocs, issuedAt, expiresAt, maxGrossPaise,
+    V2_EVIDENCE.map(key => evidence[key]),
+  ])).digest('hex');
+  if (scopeSha256 !== fingerprint || !exactKeys(probe, ['scopeSha256', 'status', 'redirected', 'body']) ||
+      probe.scopeSha256 !== fingerprint || probe.status !== 403 || probe.redirected !== false ||
+      typeof probe.body !== 'string' || Buffer.byteLength(probe.body) > 32_768) return blocked();
+
+  try {
+    // One synthetic attempted request; reuse V1's time and cleanup reserve.
+    runtimeSessionBudget(expiresAt).beforeHttpAttempt();
+    if (inspectAnonymousDenial({status: probe.status, redirected: probe.redirected,
+      headers: new Headers()}, probe.body).result !== 'MATCH') return blocked();
+    return Object.freeze({
+      decision: 'SOURCE_PROBE_SHAPE_ONLY', ownerConsent: 'UNVERIFIED',
+      liveExecution: 'DISABLED', cloudAccess: 'NONE',
+    });
+  } catch {
+    return blocked();
   }
 }

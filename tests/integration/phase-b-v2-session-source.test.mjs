@@ -1,3 +1,4 @@
+import {createHash} from 'node:crypto';
 import assert from 'node:assert/strict';
 import {spawnSync} from 'node:child_process';
 import {mkdtempSync, rmSync, readFileSync} from 'node:fs';
@@ -5,7 +6,7 @@ import {tmpdir} from 'node:os';
 import {join} from 'node:path';
 import test from 'node:test';
 import {reviewV2Candidate, reviewV2Manifest, requireV2LiveExecution,
-  reviewV2OfflineConditionalCleanup, rehearseV2AmbiguousCreateOffline,
+  reviewV2OfflineConditionalCleanup, reviewV2OfflineProbe, rehearseV2AmbiguousCreateOffline,
   V2_LIVE_EXECUTION_ENABLED} from '../../scripts/phase-b-v2-session-source.mjs';
 
 const moduleUrl = new URL('../../scripts/phase-b-v2-session-source.mjs', import.meta.url);
@@ -147,4 +148,66 @@ test('V2 offline adapter reuses V1 attempted-request budget, records only UNKNOW
   } finally {
     rmSync(home, {recursive:true, force:true});
   }
+});
+
+function probeDraft(targetChanges = {}, reviewChanges = {}) {
+  const target = {...candidate, tag: 'v2-source-probe', revision: 'oldx-owner-read-v2probe',
+    image: image.replace(/sha256:.+/, 'sha256:' + 'a'.repeat(64)),
+    amd64Digest: 'sha256:' + 'b'.repeat(64), sourceSha: 'c'.repeat(40), ...targetChanges};
+  const sessionId = '00000000-0000-4000-8000-000000000004';
+  const issuedAt = Date.now() - 1_000;
+  const evidence = Object.fromEntries(['tagAvailability', 'sourceImageProvenance', 'identity',
+    'effectiveIam', 'financeStop', 'fiveCveDisposition', 'b1', 'r1', 'r2', 'cleanup']
+    .map((key, i) => [key, String(i + 1).padStart(64, '0')]));
+  const review = {issuedAt, expiresAt: issuedAt + 180_000, maxGrossPaise: 100,
+    evidence, ...reviewChanges};
+  const {project, region, service, tag, revision, image: uri, amd64Digest, sourceSha, runtime, invoker} = target;
+  review.scopeSha256 = createHash('sha256').update(JSON.stringify(['OLDX_V2_OFFLINE_PROBE',
+    [project, region, service, tag, revision, uri, amd64Digest, sourceSha, runtime, invoker],
+    sessionId, manifest.authUids, manifest.firestoreDocs, review.issuedAt, review.expiresAt,
+    review.maxGrossPaise, Object.values(review.evidence)])).digest('hex');
+  return {target, manifest, sessionId, review, journalState: 'UNUSED',
+    probe: {scopeSha256: review.scopeSha256, status: 403, redirected: false, body: ''}};
+}
+
+test('V2 offline probe binds exact scope and accepts only a denial shape with execution OFF', () => {
+  const draft = probeDraft();
+  assert.deepEqual(reviewV2OfflineProbe(draft), {decision: 'SOURCE_PROBE_SHAPE_ONLY',
+    ownerConsent: 'UNVERIFIED', liveExecution: 'DISABLED', cloudAccess: 'NONE'});
+  assert.throws(() => requireV2LiveExecution(draft), /V2_LIVE_EXECUTION_DISABLED/);
+  for (const change of [
+    {ownerApproved: true},
+    {target: {...draft.target, tag: 'v2-unbound'}},
+    {probe: {...draft.probe, scopeSha256: 'd'.repeat(64)}},
+    {probe: {...draft.probe, redirected: true}},
+    {probe: {...draft.probe, body: 'unverified denial'}},
+    {probe: {...draft.probe, body: ' '.repeat(32_769)}},
+  ]) assert.equal(reviewV2OfflineProbe({...draft, ...change}).decision, 'BLOCKED');
+});
+
+test('V2 offline probe rejects retired targets, fixture replay and unsupported review evidence', () => {
+  for (const draft of [
+    probeDraft({tag: 'ownerbuyertrial'}),
+    probeDraft({revision: 'oldx-owner-read-00003-nus'}),
+    probeDraft({image}),
+    probeDraft({sourceSha: '2eebfa7a0c1a66d6c8563162aa5e612570f7a1e1'}),
+    probeDraft({invoker: 'unapproved'}),
+    probeDraft({}, {evidence: {...probeDraft().review.evidence, fiveCveDisposition: true}}),
+    probeDraft({}, {evidence: {...probeDraft().review.evidence, r1: probeDraft().review.evidence.r2}}),
+    {...probeDraft(), manifest: {...manifest, authUids: ['synthetic-seller-a', manifest.authUids[1]]}},
+  ]) assert.equal(reviewV2OfflineProbe(draft).decision, 'BLOCKED');
+});
+
+test('V2 offline probe stops on invalid expiry, insufficient cleanup time or unknown journal', () => {
+  const now = Date.now();
+  for (const review of [
+    {issuedAt: now - 1_000, expiresAt: now - 1},
+    {issuedAt: now + 60_000, expiresAt: now + 180_000},
+    {issuedAt: now - 1_000, expiresAt: now + 20 * 60_000},
+    {issuedAt: now - 1_000, expiresAt: now + 80_000},
+    {maxGrossPaise: 0},
+  ]) assert.equal(reviewV2OfflineProbe(probeDraft({}, review)).decision, 'BLOCKED');
+  assert.equal(reviewV2OfflineProbe({...probeDraft(), journalState: 'CREATE_UNKNOWN'}).decision,
+    'STOP_MANUAL_RECOVERY');
+  assert.equal(reviewV2OfflineProbe({...probeDraft(), journalState: undefined}).decision, 'BLOCKED');
 });

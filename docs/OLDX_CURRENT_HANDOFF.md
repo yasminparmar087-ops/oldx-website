@@ -2696,3 +2696,32 @@ The CLI reports `Scanning container image`, `Locally extracting packages and ver
 **Critical result boundary:** A completed scan is **NOT** proof of zero vulnerabilities or acceptable severity. The screenshot does **not** contain vulnerability occurrence list, coverage, platform identity or remediations. G2 image vulnerability **FINDINGS UNVERIFIED until existing scan result is retrieved**. Official [On-Demand scan docs](https://docs.cloud.google.com/artifact-analysis/docs/scan-os-on-demand) and [gcloud list-vulnerabilities](https://docs.cloud.google.com/sdk/gcloud/reference/artifacts/docker/images/list-vulnerabilities) require a **SEPARATE read-only results invocation** with the exact scan name; results retained **48 hours** after operation. For this one already-completed scan, owner can specifically approve ONE bounded `gcloud artifacts docker images list-vulnerabilities projects/oldx-staging/locations/asia/scans/019a5ad3-e3ef-4e0b-8e07-fadf118e4e86` query with local sanitized severity/count and fixed top-CVE details, no raw provider report or tokens and **NO new scan**. STOP on nonzero exit, incomplete/truncated results, unknown schema or timestamps; do not claim PASS from empty/truncated output. **No new result read was approved by the previously consumed A/B actions.**
 
 **Other outstanding Step03 blockers unchanged:** G2 BuildKit SLSA attestation structure/subject PASS, but trusted builder signature, published source SHA and actual base-image pin remain UNVERIFIED. G1 V2 default-OFF/one-shot owner-consent runner PARTIAL. G8 all-services financial STOP BLOCKED; B1/R1/R2 not approved. Step03 ACTIVE/BLOCKED-owner, staging hosted NO-GO; production HOLD/NO-GO. Do not repeat OCI/Cloud Run/IAM/scan or create any new fixture. Codex reset not used.
+
+
+## 2026-11-16 ~18:20 IST — approved existing G2 on-demand scan findings READ: 119 records incl 15 HIGH, no CRITICAL
+
+**Owner-specific read consent:** The owner explicitly responded `ha manjuri chhe` to exactly **one** read-only `gcloud artifacts docker images list-vulnerabilities` for the already completed immutable-image on-demand scan `projects/oldx-staging/locations/asia/scans/019a5ad3-e3ef-4e0b-8e07-fadf118e4e86`; consent was recorded **BEFORE** the read in [Issue #17 6916860477](https://github.com/yasminparmar087-ops/oldx-website/issues/17#issuecomment-6916860477). No new scan, re-enable, Cloud Run, image build/push, IAM/Billing/Rules, Firebase/Auth/Firestore/Logging, token impersonation or production access included.
+
+**Actual owner-provided Cloud Shell screenshot, ~18:20 IST:** local active account `yasminparmar087@gmail.com` and project `oldx-staging` guards precede the approved **one** `gcloud artifacts docker images list-vulnerabilities <exact-scan> --project=oldx-staging --account=yasminparmar087@gmail.com --format=json --quiet`, captured locally and parsed in-memory into sanitized aggregate counts. The CLI returned successfully; the normal prompt returned. The terminal reported exactly:
+
+```text
+SCAN_FINDINGS_READ: PASS
+TOTAL_VULNERABILITIES: 119
+CRITICAL: 0
+HIGH: 15
+MEDIUM: 16
+LOW: 53
+MINIMAL: 35
+UNKNOWN: 0
+FIX_AVAILABLE: 19
+FIX_NOT_AVAILABLE: 0
+FIX_STATUS_UNKNOWN: 100
+SCANNER_COVERAGE: NOT_INDEPENDENTLY_VERIFIED
+FINAL: FINDINGS_SUMMARY_RETRIEVED
+```
+
+**Interpretation limits:** These are **119 vulnerability occurrence records counted by the sanitizer**, not necessarily 119 unique CVEs/packages. High **15** is a material G2 security remediation/review blocker; zero CRITICAL observed is not zero critical risk, scanner coverage unverified. Fix summary is an aggregate over occurrences: 19 with any `fixAvailable=True` at vulnerability/package issue, 0 explicitly marked false under the parser, **100 unknown**, **NOT 100 unfixable**. The screenshot intentionally omits CVE IDs, affected OS/library/packages, base-vs-application origin, whether any of the 15 HIGH are fixable, exploitability, precise version/fix availability, scan coverage, SBOM and risk/waiver. No vulnerabilities were fixed and no new scan was started. The result list read consent is **1/1 consumed**; do not repeat summary read simply for documentation.
+
+**Immediate gate decision:** **G2 vulnerability subgate = FINDINGS CONFIRMED / REMEDIATION REVIEW REQUIRED, not PASS.** Previously verified OCI attestation structure/digest subject MATCH remains PASS; builder trust/source commit/base image still UNVERIFIED. **B1 must remain NO-GO** pending explicit review of at least all **15 High** findings against exact package/installed/fixed versions, recommended remediation or formally accepted residual risk, plus independent scanner coverage and source trust; no auto upgrade/rebuild/push of the owner-approved immutable image candidate. Because [Google's existing On-Demand results](https://docs.cloud.google.com/artifact-analysis/docs/scan-os-on-demand) are time-limited to **48 hours** after completion (~18:14 IST 16 Nov → ~18:14 IST 18 Nov 2026), the least-cost next option is one **NEW separately owner-approved**, bounded **read-only** query of **the same scan ID**, locally sanitize *only* 15 HIGH CVE identifiers, package names, installed and fixed versions, per-CVE fix status, without raw JSON or tokens. This is a result re-read, **NOT** a new scan; if a sufficient existing private redacted report exists, prefer that instead. Do not claim risk acceptance or modify dependencies until exact remediation provenance is reviewed. G8 total-cost/STOP remains BLOCKED and is independent of image scan success.
+
+**State:** Review branch only; Step03/15 ACTIVE/BLOCKED-owner (2 of 15 DONE), G1 PARTIAL/default-OFF, G2 PARTIAL/high findings confirmed, G8 BLOCKED; B1/R1/R2 NOT APPROVED, Staging Hosted NO-GO, Production HOLD/NO-GO. No CI/Codex credits/reset, code changes or cloud resource mutation from this findings read.

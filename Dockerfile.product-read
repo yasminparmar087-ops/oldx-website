@@ -5,8 +5,9 @@ ENV NODE_ENV=production
 COPY package.json package-lock.json ./
 RUN npm ci --omit=dev --ignore-scripts
 
-# Keep the same Debian/glibc family for Node and the locked sharp binaries.
-FROM debian:bookworm-slim
+# Use Debian 13 runtime with a newer glibc; the Node 24 Bookworm builder stays unchanged.
+# Linux sharp, Node linking and residual CVEs require a separate new-image validation.
+FROM debian:trixie-slim
 RUN apt-get update \
     && apt-get install -y --no-install-recommends ca-certificates libatomic1 libstdc++6 \
     && rm -rf /var/lib/apt/lists/* \

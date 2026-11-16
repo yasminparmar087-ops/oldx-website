@@ -76,7 +76,7 @@ jobs:
           import pathlib,sys
           src=pathlib.Path("Dockerfile.product-read").read_text()
           oldbase="FROM debian:trixie-slim"
-          if src.count(oldbase)!=1 or not src.startswith("FROM node:24-bookworm-slim\n"):
+          if src.count(oldbase)!=1 or not src.startswith("FROM node:24-bookworm-slim AS dependencies\n"):
               raise SystemExit("STOP: Dockerfile source drift")
           builder,old=src.split(oldbase,1)
           start=old.find("WORKDIR /app\n")

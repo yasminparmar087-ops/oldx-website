@@ -301,3 +301,25 @@ This Windows machine: i5-7300U, 7.8 GiB physical RAM, C: ~25.3 GiB and D: ~88.9 
 **PROGRESS:** WSL feature/kernel, signed-checksum Ubuntu tar, D:-located WSL2 import, successful first boot, x86_64 Ubuntu release are now DONE. Never repeat. **Next smallest read-only host-storage check:** One Windows CMD `powershell -NoProfile -Command "$w=Get-ChildItem HKCU:\Software\Microsoft\Windows\CurrentVersion\Lxss | ForEach-Object {Get-ItemProperty $_.PSPath} | Where-Object {$_.DistributionName -eq 'OLDX-Ubuntu-24.04'}; 'LinuxBasePath='+$w.BasePath; 'D_FreeGiB='+[math]::Round((Get-PSDrive D).Free/1GB,1); 'WSLConfigExists='+(Test-Path (Join-Path $env:USERPROFILE '.wslconfig'))"` to confirm exact WSL2 backing path, CURRENT physically free D: bytes and whether a pre-existing global `.wslconfig` must be preserved. Do not assume no config. This is distinct from earlier pre-import D: free check. Do not delete/reconfigure any other distribution or alter global WSL memory before inspecting settings. If host disk still sufficient, a separate bounded decision about WSL memory/swap, unprivileged build identity and Docker *Engine inside Ubuntu* (not Windows Docker Desktop) is needed; avoid auto-install and mass package downloads. WSL 3.7Gi RAM +1Gi swap may be inadequate for resource-intensive one-shot private G2 BuildKit/Grype; stop on measured memory pressure rather than retry.
 
 **Continuity / restrictions:** Step04 G2 five HIGH CVEs HOLD, G4 effective Firestore IAM unresolved, G8 complete-cost STOP BLOCKED, B1/R1/R2 not authorized, staging and production NO-GO. No container pull/build/scan, registry, Google Cloud, IAM/Billing/deployment, public evidence upload occurred in this step.
+
+## 17 Nov 2026 20:00 IST — D-backed WSL registration and 87.4 GiB host free confirmed
+
+Owner screenshot of Windows CMD non-mutating command (independently observed after Ubuntu first boot):
+```
+LinuxBasePath=D:\OLDX\WSL\OLDX-Ubuntu-24.04
+D_FreeGiB=87.4
+WSLConfigExists=False
+```
+**VERIFIED**: WSL distro physical VHD backing path is on D:, D: currently has **87.4 GiB free**, and **no pre-existing Windows-user global `%USERPROFILE%\.wslconfig` exists**. This is after earlier Ubuntu image import and first boot; no need to repeat any WSL kernel/feature, path, small transfer, checksum or source verification. Linux `df -h /` reports an apparent virtual `955G` free but it is NOT real physical free; base G2 14GiB scratch reservation remains the required lower bound for real available storage after Docker setup. With 7.8GiB physical host RAM and current WSL 3.7Gi RAM/1Gi swap, peak transient process memory is the next risk.
+
+**One bounded next owner-side Windows configuration proposal** (NOT YET EXECUTED): Create a fresh global `%USERPROFILE%\.wslconfig` ONLY IF still absent, containing:
+```ini
+[wsl2]
+memory=4GB
+processors=2
+swap=4GB
+swapFile=D:\\OLDX\\WSL\\swap.vhdx
+```
+Microsoft WSL official docs document `memory`, `swap`, `swapFile`, `processors`; quote the swapFile Windows path using double backslashes in actual INI; changes require `wsl --shutdown` then subsequent start. Sources: https://learn.microsoft.com/en-us/windows/wsl/wsl-config and https://learn.microsoft.com/en-us/windows/wsl/basic-commands . This is a conservative 4GB WSL RAM max (near measured default), 2 vCPU and 4GB D-backed swap; a *configuration ceiling*, NOT proof that image build/Grype scan will complete, nor a minimum hardware requirement. It leaves Windows RAM headroom but paging to D: can slow scans. This is a global WSL2 setting; if any previously absent config appears or other WSL installations start in future, STOP and review before overwriting. Do not touch the imported rootfs, the archive or existing Windows/cloud assets. Use a single Powershell command to generate 5 lines and print them, avoiding the owner's previous multiline CMD echo paste error; do not install Docker/Grype or run G2 yet. After successful write owner can shut down/relaunch WSL and inspect `free -h`; the future actual Docker engine choice must be capacity/scope approved and source pinned.
+
+**Status:** Step04 G2 five HIGH HOLD; G4 effective Firebase IAM unknown, G8 full-services spending hard STOP blocked, B1/R1/R2 not authorized; staging and production NO-GO. No cloud/VM, Docker/Grype/install, image scan or OCI artifact created by this checkpoint.

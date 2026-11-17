@@ -3,8 +3,26 @@
  * Continue only with a pinned source/context, private create-once destination,
  * verified inputs and zero incremental provider spend. The owner supplies the
  * window, byte and retention limits. Stop on first failure; no retry or upload.
- * Retain the OCI layout and raw evidence privately. Clean only the exact run's
- * temporary staging files; remove retained evidence under its own approval.
+ * Future procedure, in order (never invoked from this module):
+ * 1. Before any write, verify the approved source/context, immutable input
+ *    manifests and tool bytes, Grype DB digest/freshness, and both destinations.
+ *    Measure scratch free bytes on the shared Docker/root filesystem. Never sum
+ *    Docker and /tmp. Check the remaining allocations before each phase; stop
+ *    before consuming the headroom. A recycled/mismatched builder is a STOP.
+ * 2. Use only the existing pinned oldx-g2-oci builder, one linux/amd64 export,
+ *    mode=max provenance and SBOM. Use an allowlisted clean context, no secrets,
+ *    no push and no second archive. Verify the OCI index, child, blobs, and
+ *    provenance materials. Run that child locally without external networking;
+ *    retain the existing Node/Sharp/UID/8080/200/503/SIGTERM checks.
+ * 3. Scan that same OCI archive once using Grype squashed scope, timestamp on,
+ *    pinned DB auto-update off, age/hash validation on, no filters or VEX.
+ *    Preserve raw JSON; do not synthesize missing identities or DB fields.
+ * 4. Hash each evidence file and transfer it once via approved SCP directly
+ *    into a create-once private D:/OLDX run directory using partial names.
+ *    Independently rehash on Windows before promotion or scratch cleanup.
+ *    On mismatch, timeout, quota drift, or any failed check: STOP, no retry.
+ *    Keep the private failure evidence; clean only approved run-owned paths
+ *    after verified transfer. No prune, automatic deletion, or cloud storage.
  * This module neither executes the run nor verifies signatures or disk custody.
  */
 import {createHash} from 'node:crypto';
@@ -16,6 +34,11 @@ export function requireG2ImageExecution() {
 
 const DOCKERFILE = 'Dockerfile.product-read.distroless';
 const BUILDER = 'node:24-bookworm-slim';
+// Build input resolved by historical run 43929110726; verify its amd64 mapping
+// independently before a future run. This is not the derived image identity.
+const BUILDER_DIGEST = 'sha256:dc26ae92c9fb15cf6b1d63e20f0944b2efe0f115b20e00be48fb23fceb061c54';
+const BUILDKIT_DIGEST = 'sha256:97719ccb2ac86fb44fd36f330a6d302f63dddd5326f3ada24f9c05ccac0d9098';
+const GRYPE_ARCHIVE_DIGEST = 'sha256:e9da18cc1429e786722e32161288103600efffd8e483c90761f90485bd1bec85';
 const BASE = 'gcr.io/distroless/nodejs24-debian13@sha256:6abfcb367ebc291572c774c1592a986be2ab26a2486f73093401327495a5962a';
 const HISTORICAL = new Set([
   BASE.split('@')[1],
@@ -26,6 +49,27 @@ const HISTORICAL = new Set([
 ]);
 const HIGH_IDS = ['CVE-2026-102010', 'CVE-2026-19499', 'CVE-2026-5435',
   'CVE-2026-84243', 'CVE-2026-95619'];
+const MiB = 1024 ** 2;
+const SCRATCH_MIB = Object.freeze({
+  builderLayersAndCache: 3_072,
+  dependencySnapshots: 2_048,
+  scannerAndDatabase: 1_536,
+  ociArchive: 1_536,
+  runtimeImport: 1_536,
+  scanLayerTemporaryCopies: 1_536,
+  contextAndReports: 512,
+  headroom: 2_560,
+});
+const REQUIRED_SCRATCH = Object.values(SCRATCH_MIB).reduce((sum, mib) => sum + mib, 0) * MiB;
+
+export function reviewG2ScratchCapacity(availableBytes) {
+  return Object.freeze({
+    decision: Number.isSafeInteger(availableBytes) && availableBytes >= REQUIRED_SCRATCH
+      ? 'CAPACITY_SHAPE_ONLY' : 'STOP',
+    requiredBytes: REQUIRED_SCRATCH, allocationsMiB: SCRATCH_MIB, liveExecution: 'DISABLED',
+  });
+}
+
 const MEDIA = 'application/vnd.oci.image.';
 const sha = value => typeof value === 'string' && /^sha256:[a-f0-9]{64}$/.test(value);
 const digest = bytes => 'sha256:' + createHash('sha256').update(bytes).digest('hex');
@@ -53,18 +97,21 @@ export function reviewG2ImageEvidence({scope, recipe, index, manifest, config, p
       scope.retainUntil <= scope.expiresAt || scope.maxBytes < 1 ||
       scope.maxDbAgeMs < 1 || scope.maxDbAgeMs > 5 * 24 * 60 * 60_000 ||
       typeof scope.sourceSha !== 'string' || !/^[a-f0-9]{40}$/.test(scope.sourceSha) ||
-      !isNewDigest(scope.builderDigest) || typeof scope.scannerVersion !== 'string' ||
-      !/^0\.\d+\.\d+$/.test(scope.scannerVersion) ||
+      scope.builderDigest !== BUILDER_DIGEST || !isNewDigest(scope.builderAmd64Digest) ||
+      scope.scannerVersion !== '0.121.3' || scope.scannerArchiveDigest !== GRYPE_ARCHIVE_DIGEST ||
       ![scope.contextDigest, scope.recipeDigest, scope.approvalDigest, scope.scannerDigest,
         scope.databaseDigest, scope.scanPolicyDigest].every(sha)) {
     return stop('SCOPE');
   }
+  if (reviewG2ScratchCapacity(scope.scratchAvailableBytes).decision === 'STOP') return stop('DISK_BUDGET');
   const metadata = [recipe, index, manifest, config, provenance];
   if (!metadata.every(value => validBytes(value, 256 * 1024)) ||
       ![report, sbom, runtimeLog].every(value => validBytes(value, 32 * 1024 * 1024))) return stop('EVIDENCE_BYTES');
   const pinned = pinnedRecipe(recipe, scope.builderDigest);
   if (!pinned || receipt?.dockerfile !== DOCKERFILE ||
       receipt.sourceSha !== scope.sourceSha || receipt.builderDigest !== scope.builderDigest ||
+      receipt.builderAmd64Digest !== scope.builderAmd64Digest ||
+      receipt.buildkitDigest !== BUILDKIT_DIGEST ||
       receipt.contextDigest !== scope.contextDigest || receipt.approvalDigest !== scope.approvalDigest ||
       receipt.base !== BASE || receipt.originalRecipeDigest !== scope.recipeDigest ||
       scope.recipeDigest !== digest(recipe) ||
@@ -72,12 +119,15 @@ export function reviewG2ImageEvidence({scope, recipe, index, manifest, config, p
       receipt.provenanceDigest !== digest(provenance) || receipt.sbomDigest !== digest(sbom) ||
       receipt.runtimeLogDigest !== digest(runtimeLog) ||
       !sha(receipt.archiveDigest) || !Number.isSafeInteger(receipt.archiveBytes) ||
-      receipt.archiveBytes < 1 || !Number.isSafeInteger(receipt.retainedBytes) ||
+      receipt.archiveBytes < 1 || receipt.archiveBytes > SCRATCH_MIB.ociArchive * MiB ||
+      !Number.isSafeInteger(receipt.retainedBytes) ||
       receipt.retainedBytes < receipt.archiveBytes + report.length + provenance.length + sbom.length + runtimeLog.length ||
       receipt.retainedBytes > scope.maxBytes ||
       !Number.isSafeInteger(receipt.completedAt) || receipt.completedAt > scope.expiresAt ||
       receipt.destination !== scope.destination || receipt.retainUntil !== scope.retainUntil ||
-      receipt.attempt !== 1) return stop('PROVENANCE_OR_RETENTION');
+      receipt.attempt !== 1 || receipt.windowsArchiveDigest !== receipt.archiveDigest ||
+      receipt.windowsReportDigest !== receipt.reportDigest ||
+      !sha(receipt.evidenceManifestDigest) || receipt.windowsManifestDigest !== receipt.evidenceManifestDigest) return stop('PROVENANCE_OR_RETENTION');
 
   const indexDigest = digest(index), childDigest = digest(manifest), configDigest = digest(config);
   const identities = [indexDigest, childDigest, configDigest];
@@ -109,10 +159,15 @@ export function reviewG2ImageEvidence({scope, recipe, index, manifest, config, p
 
     const scan = parse(report);
     const scannedAt = Date.parse(scan.descriptor?.timestamp);
-    const built = Date.parse(scan.descriptor?.db?.status?.built);
+    const dbStatus = scan.descriptor?.db?.status;
+    const built = Date.parse(dbStatus?.built);
     if (scan.source?.type !== 'image' || scan.source.target?.manifestDigest !== childDigest ||
+        scan.source.target.os !== 'linux' || scan.source.target.architecture !== 'amd64' ||
+        dbStatus?.valid !== true || typeof dbStatus.schemaVersion !== 'string' ||
+        !/^6(?:\.\d+){0,2}$/.test(dbStatus.schemaVersion) ||
         scan.source.target.imageID !== configDigest || scan.descriptor?.name !== 'grype' ||
         scan.descriptor.version !== scope.scannerVersion || receipt.scannerDigest !== scope.scannerDigest ||
+        receipt.scannerArchiveDigest !== scope.scannerArchiveDigest ||
         receipt.databaseDigest !== scope.databaseDigest || receipt.scanScope !== 'squashed' ||
         receipt.scanPolicyDigest !== scope.scanPolicyDigest ||
         !Number.isFinite(scannedAt) || scannedAt < scope.startedAt || scannedAt > receipt.completedAt ||

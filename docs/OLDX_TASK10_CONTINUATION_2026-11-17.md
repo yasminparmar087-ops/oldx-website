@@ -558,3 +558,32 @@ wsl -d OLDX-Ubuntu-24.04 --exec /bin/sh -c "d=/root/.oldx-g2-tools; echo DB_CACH
 Do **not** use `set -e` here: missing DB is expected to make `db status` return nonzero and we need to retain error text. `Status: invalid` and immediate nonzero status confirms Grype command startup and status path function, narrowing hanging portion to import/unarchive/hydration; `DB_STATUS_EXIT=124` suggests general Grype DB command startup/status hang. A temp directory can be left by failed import; do not delete it without separate narrow approval. This 15s probe does NOT import, download, run image scan or mutate/rewrite DB cache. If status has unexpected errors, STOP and review output. Any future chosen offline alternative must preserve Grype 0.121.3, exact original tar SHA256, fresh DB metadata/SQLite SHA, and private no-push G2 decision.
 
 **Still HOLD/NO-GO**: Step04 G2 five HIGH CVEs, G4 effective IAM unknown, G8 hard whole-project cost STOP blocked, B1/R1/R2 unapproved; staging/production NO-GO. Previous Ubuntu/Docker/BuildKit/Grype verified setup should not be repeated.
+
+## 17 Nov 2026 21:42 IST — Grype db status responsive/invalid; targeted 45s stage diagnostic
+
+**Owner's Windows CMD screenshot of the one-time 15-second, read-only Grype DB status probe**:
+```
+DB_CACHE_ENTRIES:
+[none]
+DB_STATUS_PROBE:
+Path: /root/.oldx-g2-tools/db-cache/6/vulnerability.db
+Schema: [blank]
+Built: 0001-01-01T00:00:00Z
+Status: invalid
+[0000] ERROR database does not exist
+DB_STATUS_EXIT=1
+```
+The same screenshot preserves independent earlier evidence `PRIOR_IMPORT_EXIT=124` from the 300s timeout, cgroup OOM counts 0 and physical D: free ~86GiB. **DIAGNOSIS:** Grype's `db status` CLI starts promptly and reports absent DB. Its own status `Exit=1` is expected for a missing DB; don't misinterpret as a crashed binary. No temp/active DB cache entries remain following the timeout. Previously downloaded owner-private `/root/.oldx-g2-tools/vulnerability-db_v6.1.10_2026-11-17.tar.zst` 194MB SHA256 **3f0cbdbc9d40fb69eaeacec1869b27a8c74f1894108804ace8b7468513e2df07** PASS is preserved, but Grype database is NOT installed and no G2 scan happened. The 300s import timeout remains stage-UNKNOWN; no evidence of corrupt archive, CPU/OOM, specific network failure, or cache file write. Repeated `db status` is unnecessary.
+
+**Independent exact Grype v0.121.3 source review (read-only) via GitHub app:**
+- https://github.com/anchore/grype/blob/v0.121.3/cmd/grype/cli/commands/db_import.go : init distribution client+curator then `curator.Import(reference)`, status.
+- https://github.com/anchore/grype/blob/v0.121.3/grype/db/v6/installation/curator.go : for local archive `Import()` creates `tmp-v6-import...` under private cache, calls `unarchive()`, then `activate()->hydrate()->WriteImportMetadata()->replaceDB()`. Since default log level suppresses INFO on `unarchiving DB`, the prior 300s operation's **stage is unknowable** from empty cache alone. It may have been gracefully cleaned on timeout. Need one short diagnostic with explicit progress logs to distinguish unzip versus hydration; no full repeated 300s attempt.
+- Official Anchore Grype config supports `GRYPE_LOG_LEVEL=info` and Grype `-v` INFO: https://oss.anchore.com/docs/reference/grype/configuration/ , https://oss.anchore.com/docs/reference/grype/cli/ .
+
+**NEXT ONE scoped owner-local focused diagnostic**: specifically *one* new short maximum 45 seconds manual `db import` **of the already SHA-verified local archive**, with INFO logging enabled (changes visibility vs previous silent attempt), existing empty cache guard, 45s timeout/5s kill-after, fail-close (NO retry), report exit and remaining temp directory names. This **is a local import attempt**, may create temp database files, and is NOT a read-only command; if it actually completes, validate status and DB hash separately before any G2 build. It does NOT download any image, install packages, scan, build, or spend with cloud providers. The command is:
+```bat
+wsl -d OLDX-Ubuntu-24.04 --exec /bin/sh -c "d=/root/.oldx-g2-tools; a=$d/vulnerability-db_v6.1.10_2026-11-17.tar.zst; test -x $d/grype && test -f $a && test -d $d/db-cache || { echo STOP_REQUIRED_INPUT_MISSING; exit 1; }; if find $d/db-cache -mindepth 1 -print -quit | grep -q .; then echo STOP_DB_CACHE_NOT_EMPTY; exit 1; fi; export GRYPE_DB_CACHE_DIR=$d/db-cache GRYPE_DB_AUTO_UPDATE=false GRYPE_CHECK_FOR_APP_UPDATE=false GRYPE_LOG_LEVEL=info; echo IMPORT_DIAG_START; timeout --signal=TERM --kill-after=5s 45s $d/grype db import $a; r=$?; echo IMPORT_DIAG_EXIT=$r; echo CACHE_AFTER_DIAG:; find $d/db-cache -maxdepth 2 -mindepth 1 -exec ls -ld {} \; | head -n 10"
+```
+If `IMPORT_DIAG_EXIT=124`, analyze latest INFO stage. `IMPORT_DIAG_EXIT=0` is not independent DB validity proof; follow once with `db status`, checksum & freshness, never automatic G2 PASS. Any `STOP`, temp files/dirs, unexpected result: no blind cleanup/second attempt. `timeout` sends TERM, may leave partially extracted temp content; guard future actions. This small diagnostic is a conscious new measurement, NOT redoing completed downloads/CI. Source-only logging, no production, Firebase, registry, Cloud Run, Google APIs, IAM, billing, or paid services.
+
+**Project status:** Step04 G2 remains HOLD for five HIGH CVEs and missing genuine OCI/Grype source-to-image evidence; G4 effective IAM UNKNOWN, G8 all-service budget STOP blocked, B1/R1/R2 unapproved, staging/production NO-GO.

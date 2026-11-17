@@ -44,11 +44,29 @@ def json_bytes(payload, label):
 
 def canonical_tar_members(tar):
     members = {}
+    directories = set()
     for member in tar:
-        name = member.name
-        # No extraction. Fail closed on unusual layout / traversal / duplicates.
-        need(member.isfile() and name and not name.startswith(('/', './')) and
-             '\\' not in name and all(x not in ('', '.', '..') for x in name.split('/')),
+        raw = member.name
+        # OCI exporters often include the harmless ./, blobs/ and
+        # blobs/sha256/ directory headers, and may prefix paths with ./.
+        # Accept ONLY these three directories; never extract anything.
+        need(isinstance(raw, str) and raw and not raw.startswith('/') and
+             "\\" not in raw, 'UNEXPECTED_ARCHIVE_ENTRY')
+        name = raw[2:] if raw.startswith('./') else raw
+        if member.isdir():
+            directory = name.rstrip('/')
+            need(directory in ('', '.', 'blobs', 'blobs/sha256') and
+                 member.size == 0, 'UNEXPECTED_ARCHIVE_ENTRY')
+            # Treat . and ./ as the same single root directory.
+            directory = '.' if directory == '' else directory
+            need(directory not in directories, 'DUPLICATE_ARCHIVE_ENTRY')
+            directories.add(directory)
+            continue
+        # Only normal files in the OCI layout, no links, devices, extra data,
+        # traversal, or duplicate names after optional ./ normalization.
+        need(member.isfile() and
+             (name in ('oci-layout', 'index.json') or BLOB.fullmatch(name)) and
+             all(part not in ('', '.', '..') for part in name.split('/')),
              'UNEXPECTED_ARCHIVE_ENTRY')
         need(name not in members, 'DUPLICATE_ARCHIVE_ENTRY')
         members[name] = member

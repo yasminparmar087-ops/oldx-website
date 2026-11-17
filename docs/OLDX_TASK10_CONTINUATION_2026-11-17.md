@@ -1116,3 +1116,27 @@ powershell -NoProfile -Command "$p='D:\OLDX\G2\step04-g2-resume-loaded-runtime.s
 This continuation is **within the previously explicit approval of one local build/runtime/scan scope, where runtime has never started**. It does not authorize a second Docker load, image build, new full scan, private registry, hosted rollout, V2 B1/R1/R2, IAM/API/Billing change, tokens, synthetic fixtures or any production operation. No changes to old `runtime-retained-a1` history or prior stop log.
 
 **Remaining security reality:** G2 exact-image Grype report remains 57 matches / 0 CRITICAL / 15 HIGH package matches / 9 distinct HIGH IDs (five old, four OpenSSL), unsigned trusted builder/source provenance still not fully proven; G2 HOLD_NOT_DEPLOYABLE. Effective IAM G4 unverified, whole-cloud cost G8 STOP, B1/R1/R2 unapproved, Step05 not started, staging-hosted and production NO-GO. Report the first real runtime output without rerunning on any STOP.
+
+## 18 Nov 2026 01:33 IST — G2 retained OCI runtime PASS; nine HIGH CVEs still HOLD
+
+**Owner Windows CMD screenshot after running the previously SHA-guarded `step04-g2-resume-loaded-runtime.sh`:** the same previously imported `oldx-g2-evidence:d13818-a1` candidate image (no rebuild, Docker re-load or Grype re-scan) passed its exact OCI/containerd identity and no-network runtime checks:
+```text
+DOCKER_CONTAINERD_TARGET_INDEX_MATCH=sha256:93b70b8b09255194974bc46c7e5942c81531261b81224bd80fa575330f7572e4
+AMD64_MANIFEST_MATCH=sha256:fde6b74beb8a62678fdc9df4598e5ef1affc2c8be0d89d3502938d4daac4fd68
+OCI_CONFIG_CONTENT_SHA_MATCH=sha256:a1564f402a24e80b42df6a7c2b6fbfa8e9938b1ea1619771532d578d19c01fa2
+LOADED_ROOTFS_DIFFIDS_MATCH=30
+LOADED_PLATFORM_USER_CMD_PORT_PASS
+G2_IMPORTED_IMAGE_IDENTITY_PASS_NOT_SECURITY_GO
+STAGE=OFFLINE_DEFAULT_OFF_RUNTIME_START
+NODE24_SHARP_UID65532_HEALTH200_DEFAULT_OFF503_PASS
+G2_RETAINED_OCI_OFFLINE_RUNTIME_PASS__G2_STILL_HOLD_9_HIGH_CVES
+PRIVATE_RUNTIME_RECEIPT_DIR=/mnt/d/OLDX/G2/g2-image-proof-d13818-a1/runtime-retained-a1/runtime-resume-a1
+```
+
+The exact pinned runtime script (sha256 `fe8c4791e9ee671fb2101eb50d9bb5437b0c139518da8c1d24dfe8b86e617a8f`) does a single `docker run --network none --read-only --pull never --user 65532:65532 --cap-drop ALL --security-opt no-new-privileges`, no host-port mapping or credentials, `docker exec` checks Node 24 / Sharp SVG→PNG / UID 65532 / `GET /health` 200 / default-OFF owner POST 503, then executes `docker stop --signal SIGTERM` and requires the container's actual `State.ExitCode==0` before printing final PASS. Thus the actual successful script supports the SIGTERM zero-exit as well as the visible marker; screenshot does not print raw details/elapsed stop time, so do not invent timings. Container and private receipts remain for audit, not automatically removed.
+
+**Step04 G2 private evidence collected on the SAME existing image:** clean source SHA `d13818...`, pinned 30-file context, single 88,515,072B OCI build/export, nested 2-level OCI index, 37 blob hashes/sizes verified, 30 layers, bound SLSA-v1/SPDX attestations (signature/trusted custody still *not* independently proven), single unfiltered Grype image scan with 57 matches / 0 CRITICAL / 15 HIGH matches / **9 distinct HIGH CVEs** (five historic + four OpenSSL), and **offline runtime PASS**. No repeat of any of these tasks is permitted for paperwork.
+
+**Meaning of this PASS:** The offline runtime *behavior* is verified for this image, not launch suitability. Grype high findings remain; scanner `wont-fix` and `not-fixed` are not waiver or security GO. Current staging/production remain NO-GO, source execution gates still default-OFF, no B1/R1/R2 deployment/rollback or IAM/G8 spend controls approved. Step04 **ACTIVE / G2 HOLD_NOT_DEPLOYABLE**, effective Cloud IAM G4 UNKNOWN, whole-service budget G8 BLOCKED, Step05 not started, 03/15 DONE decision-only.
+
+**Next most useful step without owner-machine repetition:** source-only security applicability assessment for the nine *exact* installed-package vulnerabilities, referencing vendor advisories and actual OLDX code paths (especially OpenSSL-specific CMS encrypt/explicit-EC, AES-GCM-SIV AAD/IV, QUIC *client* requirements), distinguishing documented vulnerability from proven reachability; preserve all nine reported HIGH findings even where code paths appear absent, and do not issue unapproved waiver. Independently check private SHA receipt custody only if needed for a future approval decision; do not expose private raw logs/images to GitHub. No new Docker/Grype/VM/Cloud commands as the next default action.

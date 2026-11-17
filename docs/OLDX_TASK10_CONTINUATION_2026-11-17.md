@@ -495,3 +495,9 @@ D:\ 93G 6.7G 87G 8% /mnt/d
 wsl -d OLDX-Ubuntu-24.04 --exec /bin/sh -c "curl -4 -fsSL --connect-timeout 8 --max-time 20 --max-filesize 1048576 -o /dev/null -w 'DB_LISTING_HTTP=%{http_code} SECONDS=%{time_total}\n' https://grype.anchore.io/databases/v6/latest.json; echo CURL_EXIT=$?"
 ```
 It downloads a small JSON listing **to /dev/null only**, no DB payload or local file changes; forces IPv4 to distinguish WSL IPv6 TLS issues, is capped at 20s and 1MiB, always prints exit code. If `HTTP=200` and curl exit 0, listing endpoint works but the *large signed DB archive transfer* is still unproven and a later separately bounded download plan is required. If `HTTP=000` or curl error, inspect TLS/DNS/proxy/route, do not retry Grype DB update or broaden OS settings. Avoid publishing signed DB URLs/credentials, keep raw private DB/report local. No Grype DB validated, no image scan/build; Grype v0.121.3 pinned binary and BuildKit v0.34.2 OCI builder remain confirmed. Step04 G2 HOLD (five HIGH CVEs), G4 IAM effective unknown, G8 all-service spend STOP blocked, B1/R1/R2 unapproved, staging/production NO-GO.
+
+**Windows CMD compatibility correction (same diagnosis; no new test):** The prior network-probe example used curl `-w` `%{...}` tokens, which can be confusing across Windows CMD's percent-expansion rules. **Use this simpler command instead**—same 20-second HTTPS request, no DB payload retained and no filesystem change:
+```bat
+wsl -d OLDX-Ubuntu-24.04 --exec /bin/sh -c "if curl -4 -fsSL --connect-timeout 8 --max-time 20 --max-filesize 1048576 -o /dev/null https://grype.anchore.io/databases/v6/latest.json; then echo DB_LISTING_HTTPS_PASS; else echo DB_LISTING_HTTPS_STOP_EXIT=$?; fi"
+```
+Interpret only `DB_LISTING_HTTPS_PASS` as success for THIS listing HTTPS check, not for downloading the large DB archive; otherwise capture the exit code and curl's error. The old example is superseded, do not run both.

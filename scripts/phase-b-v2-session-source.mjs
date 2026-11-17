@@ -36,7 +36,10 @@ export function reviewV2Candidate(candidate) {
   // Candidate review cannot prove that the tag is unused or that Cloud IAM,
   // revision resource limits, original traffic, or spend have not drifted.
   const keys = ['project', 'region', 'service', 'tag', 'image', 'runtime', 'invoker'];
-  // Old registry image is historical, NOT the locally rescanned V2 source.\n  // A new image digest is only a source shape until remote custody is proven.\n  const imageDigest = typeof candidate?.image === 'string' && V2_IMAGE.exec(candidate.image)?.[1];\n  const valid = exactKeys(candidate, keys) &&
+  // Old registry image is historical, NOT the locally rescanned V2 source.
+  // A new image digest is only a source shape until remote custody is proven.
+  const imageDigest = typeof candidate?.image === 'string' && V2_IMAGE.exec(candidate.image)?.[1];
+  const valid = exactKeys(candidate, keys) &&
     candidate.project === PROJECT && candidate.region === REGION &&
     candidate.service === SERVICE && Boolean(imageDigest) && !HISTORICAL_DIGESTS.has(imageDigest) &&
     candidate.runtime === RUNTIME && candidate.invoker === INVOKER &&

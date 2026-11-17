@@ -141,7 +141,7 @@ def main():
         print(f'STOP_REGISTRY_LOCAL_PREFLIGHT: {code}')
         return 2
     print('PASS_LOCAL_OCI_LAYOUT_AND_BLOB_SHA256')
-    print('SOURCE_SHA=' + SOURCE_SHA)
+    print('PINNED_SOURCE_SHA_PRIOR_RECEIPT_ONLY=' + SOURCE_SHA)
     print('IMAGE_INDEX=' + INDEX)
     print('AMD64_MANIFEST=' + AMD64)
     print('IMAGE_CONFIG=' + CONFIG)

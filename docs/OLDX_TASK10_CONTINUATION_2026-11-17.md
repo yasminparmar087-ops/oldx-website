@@ -398,3 +398,27 @@ wsl -d OLDX-Ubuntu-24.04 --exec /bin/sh -c "set -eu; printf 'DOCKER_ROOT='; dock
 This captures actual Docker data root, supported local Buildx driver(s), WSL root/tmp and **real Windows D:** host free, and initial local Docker image/cache consumption without building/pulling/bootstrapping/pruning or installing anything. Shell is root within this private imported distro; Docker daemon socket remains privileged and must never be exposed to TCP/public ports. `df -h /` reported a 1007GB *virtual* WSL ext4 limit, not physically available disk on D:. For OCI exporter Docker official docs say default `docker` builder driver does **not** support `type=oci` or `type=tar`; a distinct pinned `docker-container` builder is required for the later separate explicitly approved run, not merely a newer Buildx version. https://docs.docker.com/build/exporters/oci-docker/ . We must retain actual D: host headroom and conservative **14GiB shared scratch** from past hard STOP, and 3.8GiB RAM/4GiB swap/2CPU may still constrain build. No OCI image or CVE G2 PASS exists.
 
 Status still Step04 G2 five HIGH HOLD, G4 effective Firebase IAM UNKNOWN, G8 full all-services budget STOP BLOCKED, B1/R1/R2 unapproved, staging/production NO-GO. No other Cloud or repo application changes from checkpoint.
+
+## 17 Nov 2026 20:25 IST — Local WSL Docker root, builder and physical scratch observation
+
+Owner screenshot of one and only **read-only** local WSL Docker observation (Windows CMD shell running in `OLDX-Ubuntu-24.04` imported to D:):
+```
+DOCKER_ROOT=/var/lib/docker
+BUILDERS:
+default* docker running BuildKit v0.35.0 linux/amd64 (+3)
+FILESYSTEMS:
+  /dev/sdd 1007G size 1.9G used 954G reported avail /var/lib/docker
+  /dev/sdd 1007G size 1.9G used 954G reported avail /tmp
+  D:\ 93G size 6.2G used 87G avail /mnt/d
+DOCKER_DISK_USAGE:
+  Images 0, Containers 0, Local Volumes 0, Build Cache 0
+```
+Docker engine was verified active at the previous checkpoint, **v29.10.0**, Buildx **v0.39.0**, local BuildKit v0.35.0. This evidence confirms **no existing local images/cache** and Docker root and /tmp share the **same WSL ext4 virtual disk**. The 954G Linux `df` value is **NOT physically available**; use 87G physical Windows D: free. With this currently observed physical budget, the conservative **14GiB G2 scratch reservation is not blocked by overall storage** as in Cloud Shell, subject to fresh safety preflight before an actual pull/build (the RAM limit is unproven under load). Keep separate capacity for Windows/WSL disk expansion, 4GiB D-backed swap, rootfs, single OCI archive and headroom. No image is built and no OCI G2 proof yet.
+
+**One narrow new setup task:** create one **unbootstrapped** local-only Buildx `docker-container` builder with SAME *historically independently checked* immutable BuildKit linux/amd64 digest as the Cloud Shell experiment to maximize verifier compatibility:
+```bat
+wsl -d OLDX-Ubuntu-24.04 --exec /bin/sh -c "set -eu; if docker buildx inspect oldx-g2-oci >/dev/null 2>&1; then echo STOP_BUILDER_ALREADY_EXISTS; exit 1; fi; docker buildx create --name oldx-g2-oci --driver docker-container --driver-opt image=moby/buildkit@sha256:97719ccb2ac86fb44fd36f330a6d302f63dddd5326f3ada24f9c05ccac0d9098 --platform linux/amd64; docker buildx ls"
+```
+This is separate WSL local Docker host and does **not** touch Cloud Shell's builder of same name. Docker docs confirm `docker-container` driver and explicit `--bootstrap` are separate actions: https://docs.docker.com/build/builders/drivers/docker-container/ ; https://docs.docker.com/reference/cli/docker/buildx/create/ . **Do not add `--use` or `--bootstrap`**, which would change defaults or pull/start a BuildKit container. Expect an inactive builder with driver docker-container and default still selected; no image pull, build, runtime, Grype, registry publish, pruning or Cloud changes. If anything differs, STOP. This exact BuildKit digest was recorded in GitHub Issue #17 comments 6947353812 and 6947424150; do not rebootstrap/pull/redo the Cloud Shell instance. Later one-shot scope remains gated on source-pinned image provenance, Grype scanner+fresh DB, memory-pressure STOP, windows D: archive custody, exact finite resources and independent security disposition of five HIGH CVEs.
+
+This checkpoint did NOT execute any local command on owner machine; it records user-provided screenshot and an optional owner-side next command. OLDX Step04 G2 HOLD, G4 effective IAM UNKNOWN, G8 all-cloud financial STOP BLOCKED, B1/R1/R2 unapproved, staging/production NO-GO.

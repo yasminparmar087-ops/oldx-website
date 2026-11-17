@@ -851,3 +851,19 @@ Owner Windows CMD screenshot around 23:11 IST shows execution of previously prop
 **Security nuance**: a correct Dockerfile modification and hash of the single file do not yet prove full image/provenance; G2 is HOLD for five HIGH findings. The source-only `scripts/step04-distroless-evidence.mjs` remains `G2_IMAGE_EXECUTION_ENABLED=false`; no execution/approval bypass.
 
 **Unchanged gates:** G4 effective IAM UNKNOWN; G8 all-service cost hard STOP blocked; B1/R1/R2 unapproved, staging/production NO-GO.
+
+## 17 Nov 2026 23:23 IST — corrected in-place Dockerfile pin PASS; next is resource-only preflight
+
+**New user Windows 10 CMD screenshot, in continuation of OLDX Task 11:** The first guarded PowerShell attempt printed `STOP_DOCKERFILE_UNEXPECTED`, preserved the already-extracted 30-file `D:\OLDX\G2\context-pinned-d13818acc66e` directory and made no Dockerfile write. The **second**, explicitly in-place guard/resume command completed at the Windows prompt and reported:
+
+- `ORIGINAL_FROM_COUNT=2`
+- `ORIGINAL_FROM=FROM node:24-bookworm-slim AS dependencies`
+- `ORIGINAL_FROM=FROM gcr.io/distroless/nodejs24-debian13@sha256:6abfcb367ebc291572c774c1592a986be2ab26a2486f73093401327495a5962a`
+- `PINNED_DOCKERFILE_SHA256=3D62677E14E62C5DCCF17A74950A87CE6C6526DC38310167BD8191EF41171AF5`
+- `G2_PINNED_RECIPE_CONTEXT_PASS_NO_BUILD`
+
+This **closes only the local derived-Dockerfile pinning gate**. It does not establish new OCI image build, provenance/SBOM, Linux runtime check, signed custody, unfiltered Grype image scan, or CVE remediation. The original 30-file context tar and clean Git source are preserved; do **not** reclone, re-extract, overwrite, rerun pinning, re-download DB, reinstall WSL/Docker/BuildKit/Grype, or invoke old GitHub Actions runner. This single screenshot is not independent validation of every original context file and should not be described as full G2 PASS.
+
+**One immediate safe next task (owner machine, read-only):** report current physical D: free space plus WSL shared Docker/root and /tmp free space (not additive), RAM/swap, and current Buildx builder/status without pulling/bootstrapping/building/pruning. Expected local WSL distro from prior verified setup: `OLDX-Ubuntu-24.04`; Grype v0.121.3 with imported DB v6.1.10 remains historically valid, no need to rerun it just for this gate. The 14 GiB free scratch reservation applies to the actual execution environment and physical D: backing. If any command or capacity output is unclear, STOP and inspect only that failure; don't run an OCI build on guessed free space. After resource PASS, independently define one bounded operator-controlled OCI build/export/runtime/full scan/private receipt with direct source/manifest pins, no network runtime, no publish, finite time/bytes, no hidden retries or cleanup of user data. Separate fresh consent is still required for actual image build/scan/runtime mutation and any sensitive cloud action.
+
+**State:** 03/15 DONE decision-only; Step04 ACTIVE/HOLD, G2 prior five HIGH CVE IDs unremediated pending new scan and risk decision, G4 effective IAM UNKNOWN, G8 all-service cost safeguard BLOCKED; B1/R1/R2 unapproved; Step05 not started; staging hosted NO-GO and production HOLD/NO-GO. This GitHub update is documentation only; it did not execute any command on Windows, WSL, Docker, Firebase or Google Cloud.

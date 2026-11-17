@@ -226,3 +226,22 @@ Owner offered to remove genuinely unnecessary C: files to make space for a possi
 **New owner Windows CMD screenshot:** after manual personal-file cleanup, `Get-PSDrive C,D` read-only output confirmed **C: 25.3 GB free**, **D: 88.9 GB free** (earlier C: 12.2 GB). Thus owner freed **13.1 GB on C:**. Owner initiated personal-file cleanup themselves; reviewer did not delete any files or inspect personal contents. This satisfies the optional 20–25GB C: *planning target*, not yet the G2 Linux scratch 14GiB criterion. Do not recommend further deletion merely for a target; preserve private/OLDX data. The current laptop remains Windows10 Pro build 19045, i5-7300U, virtualization and SLAT true, RAM 7.8GiB, WSL and VirtualMachinePlatform both disabled, Docker not installed.
 
 **Practical choice now:** local WSL2 proof is more feasible on storage than before, but RAM remains tight and a complete trusted Buildx+Grype+OCI source-to-Windows one-run is NOT proven. If operator chooses to modify local OS, first enable only WSL+VirtualMachinePlatform using official `wsl --install --no-distribution` in an **elevated** Windows CMD/PowerShell (may download Windows components and require restart), with Windows files/work saved first. That command's purpose is feature enablement without installing the default Ubuntu distribution on C; inspect results before any Linux distro/engine install. A future distro/OCI scratch must be explicitly placed on D: or limited otherwise, and at least 14GiB free on the *actual Linux filesystem* before one scan. Do NOT install Docker Desktop/Ubuntu and do NOT run build/scan in the same step. Sources: https://learn.microsoft.com/en-us/windows/wsl/install and https://learn.microsoft.com/en-us/windows/wsl/basic-commands ; Docker minimum 8GB and Windows10 Pro22H2: https://docs.docker.com/desktop/setup/install/windows-install/ . No OS changes or cloud actions have been executed by ChatGPT as of checkpoint. Step04 G2 HOLD; staging/production NO-GO.
+
+## 17 Nov 2026 19:26 IST — WSL feature install partial success followed by catastrophic failure
+
+Owner ran the previously suggested **elevated Windows CMD** command `wsl --install --no-distribution` on Windows 10 Pro build 19045 after verified C: free 25.3GiB / D: free 88.9GiB. Owner screenshot explicitly shows:
+```
+Installing: Virtual Machine Platform
+Virtual Machine Platform has been installed.
+Installing: Windows Subsystem for Linux
+Windows Subsystem for Linux has been installed.
+Installing: Windows Subsystem for Linux
+Catastrophic failure
+```
+This is **PARTIAL success / incomplete WSL installation**, not completed WSL2, not installed Ubuntu, Docker, or a Linux build. The final failure may concern the WSL package/download/registration, but **its cause/error code is not shown**; do not invent `0x8000FFFF` or claim features are active before reboot. Microsoft official docs require a restart after enabling WSL/VirtualMachinePlatform: https://learn.microsoft.com/en-us/windows/wsl/install-manual and https://learn.microsoft.com/en-us/windows/wsl/troubleshooting .
+
+**One next action** (no retry, no feature disable, no Windows repair yet): owner saves any unsaved files and performs one normal Windows **Restart** (not an abrupt power off); after reboot run a single read-only check in Windows CMD:
+```bat
+powershell -NoProfile -Command "Get-CimInstance Win32_OptionalFeature | Where-Object {$_.Name -in @('Microsoft-Windows-Subsystem-Linux','VirtualMachinePlatform')} | ForEach-Object {$_.Name+': InstallState='+$_.InstallState}; wsl --status"
+```
+For `InstallState`, 1 means enabled, 2 disabled, 3 absent, 4 unknown, additional pending states may apply. If `wsl --status` fails or prints usage, capture exact text; don't automatically `wsl --install` again. Based on verified post-restart output decide whether inbox-vs-Store WSL package remediation is necessary, or stop local route. Preserve Windows/D: files, cloud GitHub/OLDX evidence; no distro/image build/scan, Compute API, IAM, staging/prod changes authorized. G2 five HIGH HOLD, G4 runtime unknown, G8 blocked, B1/R1/R2 unapproved, staging/production NO-GO.

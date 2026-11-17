@@ -157,7 +157,7 @@ function probeDraft(targetChanges = {}, reviewChanges = {}) {
   const sessionId = '00000000-0000-4000-8000-000000000004';
   const issuedAt = Date.now() - 1_000;
   const evidence = Object.fromEntries(['tagAvailability', 'sourceImageProvenance', 'identity',
-    'effectiveIam', 'financeStop', 'fiveCveDisposition', 'b1', 'r1', 'r2', 'cleanup']
+    'effectiveIam', 'financeStop', 'nineCveDisposition', 'b1', 'r1', 'r2', 'cleanup']
     .map((key, i) => [key, String(i + 1).padStart(64, '0')]));
   const review = {issuedAt, expiresAt: issuedAt + 180_000, maxGrossPaise: 100,
     evidence, ...reviewChanges};
@@ -186,6 +186,9 @@ test('V2 offline probe binds exact scope and accepts only a denial shape with ex
 });
 
 test('V2 offline probe rejects retired targets, fixture replay and unsupported review evidence', () => {
+  // Regression: even a freshly recomputed fingerprint must reject the old five-CVE field.
+  const legacyEvidence = Object.fromEntries(Object.entries(probeDraft().review.evidence)
+    .map(([key, value]) => [key === 'nineCveDisposition' ? 'fiveCveDisposition' : key, value]));
   for (const draft of [
     probeDraft({tag: 'ownerbuyertrial'}),
     probeDraft({revision: 'oldx-owner-read-00003-nus'}),
@@ -193,7 +196,8 @@ test('V2 offline probe rejects retired targets, fixture replay and unsupported r
     probeDraft({image}),
     probeDraft({sourceSha: '2eebfa7a0c1a66d6c8563162aa5e612570f7a1e1'}),
     probeDraft({invoker: 'unapproved'}),
-    probeDraft({}, {evidence: {...probeDraft().review.evidence, fiveCveDisposition: true}}),
+    probeDraft({}, {evidence: legacyEvidence}),
+    probeDraft({}, {evidence: {...probeDraft().review.evidence, nineCveDisposition: true}}),
     probeDraft({}, {evidence: {...probeDraft().review.evidence, r1: probeDraft().review.evidence.r2}}),
     {...probeDraft(), manifest: {...manifest, authUids: ['synthetic-seller-a', manifest.authUids[1]]}},
   ]) assert.equal(reviewV2OfflineProbe(draft).decision, 'BLOCKED');

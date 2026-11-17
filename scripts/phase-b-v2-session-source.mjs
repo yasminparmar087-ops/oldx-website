@@ -18,6 +18,10 @@ const PROJECT = 'oldx-staging';
 const DOCUMENT_ROOT = `projects/${PROJECT}/databases/(default)/documents/`;
 const REGION = 'asia-south1';
 const SERVICE = 'oldx-owner-read';
+// Exact locally proven artifact identity; these are NOT registry-publication receipts.
+const V2_LOCAL_INDEX = 'sha256:93b70b8b09255194974bc46c7e5942c81531261b81224bd80fa575330f7572e4';
+const V2_LOCAL_AMD64 = 'sha256:fde6b74beb8a62678fdc9df4598e5ef1affc2c8be0d89d3502938d4daac4fd68';
+const V2_LOCAL_SOURCE = 'd13818acc66e1ffcca5e72209658e24129a1061d';
 const IMAGE = 'asia-south1-docker.pkg.dev/oldx-staging/oldx-staging-images/oldx-owner-read-step3-rc@sha256:c5fc856b45b19ec995167753d0ab7449fea9550f7e06b1b75da025fe179928dc';
 const RUNTIME = 'oldx-product-read-staging@oldx-staging.iam.gserviceaccount.com';
 const INVOKER = 'oldx-phase-b-invoker@oldx-staging.iam.gserviceaccount.com';
@@ -41,7 +45,8 @@ export function reviewV2Candidate(candidate) {
   const imageDigest = typeof candidate?.image === 'string' && V2_IMAGE.exec(candidate.image)?.[1];
   const valid = exactKeys(candidate, keys) &&
     candidate.project === PROJECT && candidate.region === REGION &&
-    candidate.service === SERVICE && Boolean(imageDigest) && !HISTORICAL_DIGESTS.has(imageDigest) &&
+    candidate.service === SERVICE && imageDigest === V2_LOCAL_INDEX &&
+    !HISTORICAL_DIGESTS.has(imageDigest) &&
     candidate.runtime === RUNTIME && candidate.invoker === INVOKER &&
     typeof candidate.tag === 'string' && /^[a-z][a-z0-9-]{0,30}$/.test(candidate.tag) &&
     !RETIRED_TAGS.has(candidate.tag);
@@ -231,10 +236,12 @@ export function reviewV2OfflineProbe(input) {
       RETIRED_TAGS.has(target.tag) ||
       typeof target.revision !== 'string' || !/^oldx-owner-read-[a-z0-9-]{1,47}$/.test(target.revision) ||
       HISTORICAL_REVISIONS.has(target.revision) ||
-      !index || HISTORICAL_DIGESTS.has(index) || typeof target.amd64Digest !== 'string' ||
+      !index || index !== V2_LOCAL_INDEX || HISTORICAL_DIGESTS.has(index) ||
+      typeof target.amd64Digest !== 'string' || target.amd64Digest !== V2_LOCAL_AMD64 ||
       !/^sha256:[a-f0-9]{64}$/.test(target.amd64Digest) || index === target.amd64Digest ||
       HISTORICAL_DIGESTS.has(target.amd64Digest) ||
-      typeof target.sourceSha !== 'string' || !/^[a-f0-9]{40}$/.test(target.sourceSha) ||
+      typeof target.sourceSha !== 'string' || target.sourceSha !== V2_LOCAL_SOURCE ||
+      !/^[a-f0-9]{40}$/.test(target.sourceSha) ||
       target.sourceSha === '2eebfa7a0c1a66d6c8563162aa5e612570f7a1e1') return blocked();
 
   const {issuedAt, expiresAt, maxGrossPaise, evidence, scopeSha256} = review;

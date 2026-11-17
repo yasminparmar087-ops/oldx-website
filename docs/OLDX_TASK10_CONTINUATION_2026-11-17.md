@@ -345,3 +345,19 @@ wsl -d OLDX-Ubuntu-24.04 --exec /bin/sh -c "printf 'INIT='; ps -p 1 -o comm=; pr
 If PID1 is WSL init not systemd, Microsoft recommends distribution-scoped `/etc/wsl.conf` `[boot]\nsystemd=true`, and checking installed `systemd-sysv` before changing; do NOT overwrite an existing `/etc/wsl.conf`. If overlay/cgroups/DNS absent, STOP and diagnose before Docker installation; no container pull or public upload. Sources: https://learn.microsoft.com/en-us/windows/wsl/systemd and https://docs.docker.com/engine/install/ubuntu/ . Protect rootfs, user files, old Docker builders and OLDX project. Existing `id -u=0` means imported WSL runs as root by default; do not configure public network-accessible Docker daemon or blindly grant docker socket access.
 
 Step04 G2 five-HIGH HOLD, G4 effective IAM UNKNOWN, G8 all-cloud costs blocked, B1/R1/R2 unapproved; staging and production NO-GO. No cloud operation/new service, paid VM, scan or image build from this checkpoint.
+
+## 17 Nov 2026 20:08 IST — WSL Docker compatibility preflight PASS
+
+Owner Windows CMD screenshot from **previously requested read-only command** for the imported `OLDX-Ubuntu-24.04` WSL2 distro:
+```
+INIT=systemd
+CGROUP=cgroup2fs
+OVERLAY=nodev  overlay
+UBUNTU_APT=PRESENT
+DOCKER_DNS=2600:9000:21b4:ac00:3:db06:4200:93a1 d2h67oheeujgaw.cloudfront.net download.docker.com
+```
+**CONFIRMED:** systemd is already PID1 (no /etc/wsl.conf change); cgroup v2 available; overlay filesystem supported; Ubuntu Noble apt sources exist; public Docker hostname resolves in WSL (shown IPv6). **Important limitation:** DNS only proves name resolution, NOT full HTTPS download connectivity or amd64 package availability; if apt/network stalls stop and inspect exact error rather than blindly resetting DNS. No Docker Engine, Docker CLI, containerd, Buildx, Grype or OLDX image is installed/executed by this check.
+
+**Current next objective:** conservative Docker Engine installation *inside the D:-backed WSL Ubuntu*, not Windows Docker Desktop, from official Docker signed APT repository; Docker explicitly supports Ubuntu 24.04 LTS x86_64. Source https://docs.docker.com/engine/install/ubuntu/ . Before installation, avoid uninstalling conflicting packages without observing whether present, and keep only UNIX Docker socket (NO TCP listener, Docker group membership, or exposed ports); Docker daemon requires privileged root and socket access is effectively root per https://docs.docker.com/engine/security/ . The imported distro defaults to root UID0 and is for private, local G2 evidence only; future long-lived hardened user/account not yet configured. No Docker package install / external network mutation performed by GitHub checkpoint. WSL has 3.8Gi RAM, 4Gi swap on D:, 2 CPU, approx 87.4 GiB D: free before swap; 14GiB conservative actual scratch requirement remains unproven until Docker setup.
+
+**Next minimal owner-side command to prepare trusted official repository prerequisites, not Docker installation itself**: `wsl -d OLDX-Ubuntu-24.04 --exec /bin/sh -c "apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y ca-certificates curl"`. This updates Ubuntu package-index cache and installs only TLS/download prerequisites. If error, STOP, don't loop/retry; official Docker GPG key, Signed-By repo and package-install stage only after observing this result and checking no conflicting packages. No Cloud API, VM, cost, Firebase IAM, staging/production changes. Step04 G2 5-HIGH HOLD, G4/G8 open, B1/R1/R2 unapproved; NO-GO persists.

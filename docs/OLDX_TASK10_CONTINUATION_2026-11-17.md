@@ -100,3 +100,17 @@ No Cloud access, build, paid VM, scan, deploy, auth/token, rollback or productio
 **Remaining exact account-specific blocker before paid action:** the already known owner Windows gcloud account can perform **one non-mutating** `gcloud services list --enabled --project=oldx-staging --filter="config.name=compute.googleapis.com" --format="value(config.name)"`; if Compute API is enabled, separately read `gcloud compute regions describe asia-south1 --project=oldx-staging` quotas and exact network/OS Login/IAP access. Existing Cloud Run/Billing service-policy checks are completed and must NOT be repeated. Do not automatically enable API or request broad IAM; STOP on disabled API or missing read permissions. A full VM create command is intentionally withheld until these plus exact zone/price/cleanup permissions are known. Read-only checks had prior explicit owner approval, but require the owner-side logged-in Windows CLI; no autonomous Google API execution is claimed.
 
 **Decision:** This narrows the network/security/lifecycle plan but **VM creation remains NOT APPROVED/NOT EXECUTED**; the VM only closes capacity/evidence capture, not five HIGH CVEs, effective Firestore IAM (G4), complete spend controls (G8), or V2 B1/R1/R2. Step04 G2 HOLD, hosted staging NO-GO, production HOLD/NO-GO.
+
+## 17 Nov 2026 18:33 IST — Owner Windows Compute API enabled-list result
+
+Owner supplied Windows 10 CMD screenshot (Yasmin Windows profile), showing the exact READ-ONLY command:
+
+```
+gcloud services list --enabled --project=oldx-staging --filter="config.name=compute.googleapis.com" --format="value(config.name)"
+```
+
+**Observed result:** zero output rows, shell returned to `C:\Users\Yasmin Parmar>`, with no visible error. Therefore **`compute.googleapis.com` was NOT RETURNED by this enabled-services filtered list** at ~18:33 IST. This is **strong evidence it is not enabled in `oldx-staging`**, but do not overstate an empty filtered result as an independently retrieved API state or infer the operator's `serviceusage.services.enable` authority. Official `gcloud services list` help confirms `--enabled` lists enabled services: https://docs.cloud.google.com/sdk/gcloud/reference/services/list .
+
+**Decision/STOP:** VM path is now additionally gated on a NEW `compute.googleapis.com` API enablement approval and confirmation of actual project permission/quotas; the read-only approval DID NOT authorize API enabling, VM creation, network, disk, external IP, cost, Docker/Grype or any G2 paid action. Do not enable any API, run `gcloud compute ...`, trigger provider mutation or repeat existing staging Billing/Cloud Run/IAM checks by default. The full new VM budget/transfer/network/closure envelope remains preflight only. Await explicit owner action-scoped API consent after identifying whether VM path is still justified, and independently verify enabled state once only after any separately approved enablement.
+
+Previous G2 14GiB shared scratch STOP, five HIGH CVEs, G4 effective IAM unknown, G8 all-service cost STOP blocked, G1 default-OFF, B1/R1/R2 unapproved, staging/production NO-GO unchanged. No new VM or Cloud mutation observed.

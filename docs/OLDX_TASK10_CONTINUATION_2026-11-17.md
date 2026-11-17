@@ -652,3 +652,25 @@ wsl -d OLDX-Ubuntu-24.04 --exec /bin/sh -c "d=/root/.oldx-g2-tools/native-db-v6.
 The metadata command uses only existing sqlite CLI and reads SQLite metadata. If `SQLITE_METADATA_EXIT=0`, DB opens, but still not scan-ready; if nonzero, capture exact stderr. No packages installed, caches/DB written, download, cleanup, image build/scan or cloud service usage.
 
 **Next strategy after metadata:** Given slow Go hydration and SQLite on 2.6GB/4GiB RAM laptop, do not repeat a fresh full `.tar.zst` import with short timeouts. Evaluate one separately bounded raw `.db` Grype import into NEW isolated cache with realistic memory/time measurements only if safe, or use an offline DB alternative via an explicitly verified release option. Preserve remaining Step04 G2 gates and evidence. G2 five HIGH HOLD; G4 IAM effective UNKNOWN, G8 full hard cost STOP blocked, B1/R1/R2 unapproved, staging/production NO-GO.
+
+## 17 Nov 2026 22:18 IST — native SQLite metadata PASS; full quick_check still unresolved
+
+**Owner screenshot of one previously approved nonmutating metadata-only SQLite check** of independently GNU-tar-extracted `/root/.oldx-g2-tools/native-db-v6.1.10/vulnerability.db` (~2.64GB) showed:
+```
+QUICKCHECK_RECEIPT: 0 /root/.oldx-g2-tools/native-db-v6.1.10/sqlite-quickcheck.txt
+SQLITE_METADATA:
+79
+644055
+4096
+30
+SQLITE_METADATA_EXIT=0
+NATIVE_DB_BYTES: 2638049280
+D_FREE: D:\ 93G total 13G used 81G available
+```
+Meta values are schema_version=79, page_count=644055, page_size=4096, count(sqlite_master)=30. `644055*4096 = 2638049280`, matching both the tar archive expected entry and extracted DB size exactly. Native SQLite header/metadata are **readable**; this does NOT establish full integrity, complete row checks or Grype DB `Status: valid`. The previous 180s `PRAGMA quick_check` generated an empty 0-byte stdout receipt and returned `STOP_SQLITE_QUICKCHECK_COMMAND`, but underlying exit (timeout 124 vs other) was masked; do not claim corruption or PASS. The occasional WSL root systemd user-session warning does not prevent WSL commands, and is not the demonstrated DB failure cause.
+
+**Exact source grounding via connected GitHub, Grype v0.121.3:** `grype/db/v6/installation/curator.go` handles a local reference ending `.db` by `file.CopyFile()` directly to a temp directory instead of calling unarchive; then `activate()` hydrates/migrates/indexes and writes import metadata, moving the finished database into active cache. Thus one **new isolated raw DB import** avoids redoing the verified tar download/extraction but still incurs the costly hydrate/index/checksum on low-RAM hardware. Sources https://github.com/anchore/grype/blob/v0.121.3/grype/db/v6/installation/curator.go and https://github.com/anchore/grype/blob/v0.121.3/grype/db/v6/db.go . Exact sha256 of the raw DB was printed in prior native extraction screenshot, and archive SHA256 checked before extraction; do not rescan 2.6GB unnecessarily.
+
+**NEXT local-only action**: one guarded Grype raw `.db` import into a **brand-new** private `/root/.oldx-g2-tools/db-cache-raw` (NOT the old `/db-cache` with failed temporary data). Preconditions: exact raw database size=2638049280, pinned scanner present, at least 30 GiB REAL D: free, target cache absent. `GRYPE_DB_AUTO_UPDATE=false`, `GRYPE_CHECK_FOR_APP_UPDATE=false`, `GRYPE_LOG_LEVEL=info`, a **single 1200-second hard timeout** with TERM + 5s kill-after. Print progress heartbeat every 45s while import runs, including temp DB apparent file size and actual D: free, to prevent silent uncertainty; STOP on nonzero/timeout and do not auto retry/overwrite. This is not a previously completed import: earlier `.tar.zst` import timeouts were a distinct method. If Grype import returns 0, mark `RAW_DB_IMPORT_COMPLETED_VERIFY_PENDING` **not** G2 PASS, then run a separate targeted `grype db status` for built/status/schema and capture hash after reviewing imported DB. No image build, scan, source checkout, cloud expense, IAM/rules/deployment or public release in this step. Keep original input, failed temp, receipts intact until independently reviewed.
+
+**Gates unchanged:** G2 five HIGH CVEs HOLD / no full OCI and unfiltered scanner report yet; G4 effective IAM unknown; G8 all-provider spend hard STOP blocked; B1/R1/R2 unapproved; staging/production NO-GO.

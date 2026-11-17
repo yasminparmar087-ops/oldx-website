@@ -323,3 +323,25 @@ swapFile=D:\\OLDX\\WSL\\swap.vhdx
 Microsoft WSL official docs document `memory`, `swap`, `swapFile`, `processors`; quote the swapFile Windows path using double backslashes in actual INI; changes require `wsl --shutdown` then subsequent start. Sources: https://learn.microsoft.com/en-us/windows/wsl/wsl-config and https://learn.microsoft.com/en-us/windows/wsl/basic-commands . This is a conservative 4GB WSL RAM max (near measured default), 2 vCPU and 4GB D-backed swap; a *configuration ceiling*, NOT proof that image build/Grype scan will complete, nor a minimum hardware requirement. It leaves Windows RAM headroom but paging to D: can slow scans. This is a global WSL2 setting; if any previously absent config appears or other WSL installations start in future, STOP and review before overwriting. Do not touch the imported rootfs, the archive or existing Windows/cloud assets. Use a single Powershell command to generate 5 lines and print them, avoiding the owner's previous multiline CMD echo paste error; do not install Docker/Grype or run G2 yet. After successful write owner can shut down/relaunch WSL and inspect `free -h`; the future actual Docker engine choice must be capacity/scope approved and source pinned.
 
 **Status:** Step04 G2 five HIGH HOLD; G4 effective Firebase IAM unknown, G8 full-services spending hard STOP blocked, B1/R1/R2 not authorized; staging and production NO-GO. No cloud/VM, Docker/Grype/install, image scan or OCI artifact created by this checkpoint.
+
+## 17 Nov 2026 20:04 IST — bounded WSL RAM and D swap confirmed
+
+Owner screenshot shows the previously approved **Windows global `%USERPROFILE%\.wslconfig` file created** via single PowerShell command that refused overwriting existing file. Its printed contents are:
+```ini
+[wsl2]
+memory=4GB
+processors=2
+swap=4GB
+swapFile=D:\\OLDX\\WSL\\swap.vhdx
+```
+After owner ran `wsl --shutdown && wsl -d OLDX-Ubuntu-24.04 --exec /bin/sh -c "free -h; nproc"`, Linux reported **Mem total=3.8Gi, available=3.4Gi**, **Swap total=4.0Gi unused**, **nproc=2**. **PASS: WSL RAM/Swap/CPU configuration applied**; never repeat configuration or WSL kernel/Ubuntu install/import, and do not change global settings again without material evidence. The swap is configured for D: but a separate real host D: free-space check may be needed after packages are installed; do not infer that virtual `df -h /` represents physical free.
+
+Current target: G2 derived private OCI audit with 14GiB conservative shared scratch budget; local D: had 87.4GiB free before this swap config; host physical RAM ~7.8GiB, Windows10 Pro. The 4GiB WSL memory ceiling is a deliberate compromise; even with 4GiB swap, Docker+BuildKit+Grype can OOM or swap heavily; do not promise completion. Existing scanned five HIGH vulnerabilities still unresolved. Avoid Docker Desktop overhead and risk of conflicting engines; official Ubuntu Noble Docker Engine apt repository is the planned route (https://docs.docker.com/engine/install/ubuntu/), but no Engine, Docker image, container, BuildKit or Grype is installed by this screenshot.
+
+**Next necessary read-only Linux Engine-compatibility preflight, not installation:**
+```bat
+wsl -d OLDX-Ubuntu-24.04 --exec /bin/sh -c "printf 'INIT='; ps -p 1 -o comm=; printf 'CGROUP='; stat -fc %T /sys/fs/cgroup; printf 'OVERLAY='; grep -w overlay /proc/filesystems; printf 'UBUNTU_APT='; test -f /etc/apt/sources.list.d/ubuntu.sources && echo PRESENT; printf 'DOCKER_DNS='; getent hosts download.docker.com | head -n 1"
+```
+If PID1 is WSL init not systemd, Microsoft recommends distribution-scoped `/etc/wsl.conf` `[boot]\nsystemd=true`, and checking installed `systemd-sysv` before changing; do NOT overwrite an existing `/etc/wsl.conf`. If overlay/cgroups/DNS absent, STOP and diagnose before Docker installation; no container pull or public upload. Sources: https://learn.microsoft.com/en-us/windows/wsl/systemd and https://docs.docker.com/engine/install/ubuntu/ . Protect rootfs, user files, old Docker builders and OLDX project. Existing `id -u=0` means imported WSL runs as root by default; do not configure public network-accessible Docker daemon or blindly grant docker socket access.
+
+Step04 G2 five-HIGH HOLD, G4 effective IAM UNKNOWN, G8 all-cloud costs blocked, B1/R1/R2 unapproved; staging and production NO-GO. No cloud operation/new service, paid VM, scan or image build from this checkpoint.

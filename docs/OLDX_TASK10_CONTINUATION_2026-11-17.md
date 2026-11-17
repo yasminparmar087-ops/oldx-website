@@ -709,3 +709,27 @@ wsl -d OLDX-Ubuntu-24.04 --exec /bin/sh -c "set -eu; d=/root/.oldx-g2-tools; c=$
 This does not create local receipt files, change the DB, run import, scan, image build, cleanup, install packages or download any bytes; capture output screenshot in handoff afterward. A valid status plus hash is an independent proof piece, still not a full G2 unfiltered scan/waiver. An offline readable DB status may be from current cache; ensure `GRYPE_DB_CACHE_DIR` points explicitly to `db-cache-raw`. If STOP/error/timeout, do not repeat or mutate. Protect old temporary and clean caches without pruning.
 
 Still G2 five HIGH CVEs HOLD, G4 effective IAM unknown, G8 whole-services cost STOP blocked, B1/R1/R2 unapproved, staging/production NO-GO. Source-only update `security-hardening-review`; no Windows command run by assistant.
+
+## 17 Nov 2026 22:33 IST — imported Grype v6.1.10 DB independent status SHA PASS
+
+**Owner actual Windows CMD screenshot ~22:33 IST.** Distinct **read-only** status/hash command against the successfully imported private cache `/root/.oldx-g2-tools/db-cache-raw/6/vulnerability.db` (NOT a repeated import) printed:
+```
+IMPORTED_DB_STATUS:
+Path: /root/.oldx-g2-tools/db-cache-raw/6/vulnerability.db
+Schema: v6.1.10
+Built: 2026-11-17T06:20:58Z
+From: manual import
+Status: valid
+IMPORTED_DB_SHA256:
+303ba44739343769e0e15bd0d50af62e142491b256bb533a8cfaf13ab00ca1b7 /root/.oldx-g2-tools/db-cache-raw/6/vulnerability.db
+D_FREE:
+D:\ 93G total 16G used 78G available (17% used)
+STATUS_AND_SHA_REVIEW_PENDING
+```
+**PASS**: independently observed Grype db status `valid` and SHA-256 recorded; this DB is fresh for **17 November 2026** by reported Built timestamp, with 78G physical D: free at the time. Do NOT redo any Grype download, raw SQLite extraction, import, `db status`, hashing or previous WSL/Docker/BuildKit bootstrap. `STATUS_AND_SHA_REVIEW_PENDING` is the user command's evidence-marker name, NOT an indication that Grype still regards the DB invalid. Signature/provenance assessment of the upstream database remains separate; successful status+hash are not proof the full future image scan is trustworthy/clean or five HIGH CVEs resolved.
+
+**Next task:** exact GitHub `security-hardening-review` source SHA pin + clean **allowlisted Docker context** and G2 one-shot execution feasibility check, without turning on `scripts/step04-distroless-evidence.mjs`: `G2_IMAGE_EXECUTION_ENABLED = false`, and no current execution path. Source verifier currently pins `Dockerfile.product-read.distroless`, Node 24 builder digest `sha256:dc26ae92c9fb15cf6b1d63e20f0944b2efe0f115b20e00be48fb23fceb061c54`, BuildKit `sha256:97719ccb2ac86fb44fd36f330a6d302f63dddd5326f3ada24f9c05ccac0d9098`, Grype scanner `v0.121.3` archive SHA256 `e9da18cc1429e786722e32161288103600efffd8e483c90761f90485bd1bec85`, distroless base `gcr.io/distroless/nodejs24-debian13@sha256:6abfcb367ebc291572c774c1592a986be2ab26a2486f73093401327495a5962a`, 14GiB conservative scratch and <=20min run window. These are verifier constants, NOT proven source checkout/manifest/pull or image release evidence. Local `oldx-g2-oci` docker-container BuildKit pinned/running; default builder unchanged. Do not use public `docker push`, local TCP daemon, billing, IAM, Cloud Shell or deploy.
+
+**Important build-context risk:** repo `Dockerfile.product-read.distroless` exists (build stage copies `package.json`, `package-lock.json`, explicit functions/features/scripts paths); `.dockerignore` not found at repository root. Before build or OCI export **must** assemble an independently hashable allowlisted clean tar/context containing only Dockerfile plus exactly referenced files and pinned lockfile. Do not forward full Git checkout including `.git`, `.env`, private files, emulator configs or other secrets to the daemon; no build authorized from this checkpoint. Verify pristine source commit/context including no data mutations and Node amd64 base manifest, finite resource/retention preflight before one G2 run. Need not repeat already-completed JS tests or Step03 stages. No alternate working-tree code changes were made by this checkpoint.
+
+**Gates:** G2 HOLD (five HIGH CVEs and no new private OCI/Grype scan report yet); G4 effective IAM UNKNOWN; G8 all-providers hard spending STOP blocked; B1/R1/R2 not approved; Staging and production NO-GO.

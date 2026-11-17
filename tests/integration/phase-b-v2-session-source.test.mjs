@@ -12,8 +12,9 @@ import {reviewV2Candidate, reviewV2Manifest, requireV2LiveExecution,
 const moduleUrl = new URL('../../scripts/phase-b-v2-session-source.mjs', import.meta.url);
 const source = readFileSync(moduleUrl, 'utf8');
 const historicalImage = 'asia-south1-docker.pkg.dev/oldx-staging/oldx-staging-images/oldx-owner-read-step3-rc@sha256:c5fc856b45b19ec995167753d0ab7449fea9550f7e06b1b75da025fe179928dc';
-// Synthetic only: never claim the review-only new digest exists in Artifact Registry.
-const image = 'asia-south1-docker.pkg.dev/oldx-staging/oldx-staging-images/oldx-v2-source-only@sha256:' + 'a'.repeat(64);
+// SOURCE-ONLY placeholder: only the inner OCI index digest was locally verified.
+// This repository path is NOT claimed to exist in Artifact Registry.
+const image = 'asia-south1-docker.pkg.dev/oldx-staging/oldx-staging-images/oldx-v2-source-only@sha256:93b70b8b09255194974bc46c7e5942c81531261b81224bd80fa575330f7572e4';
 const candidate = {
   project: 'oldx-staging', region: 'asia-south1', service: 'oldx-owner-read',
   tag: 'ownerreadv2', image,
@@ -35,7 +36,8 @@ test('V2 candidate is inert; retired targets, wrong project and invented approva
     {...candidate, tag: 'healthcheck'}, {...candidate, project: 'oldx-1c983'},
     {...candidate, image: historicalImage},
     {...candidate, image: image.replace('asia-south1-docker', 'us-central1-docker')},
-    {...candidate, image: image.replace('a'.repeat(64), 'malformed-digest')},
+    {...candidate, image: image.replace('93b70b8b09255194974bc46c7e5942c81531261b81224bd80fa575330f7572e4', 'bad-digest')},
+    {...candidate, image: image.replace('93b70b8b09255194974bc46c7e5942c81531261b81224bd80fa575330f7572e4', 'a'.repeat(64))},
     {...candidate, ownerApproved: true},
   ]) assert.equal(reviewV2Candidate(bad).decision, 'BLOCKED');
   assert.throws(() => requireV2LiveExecution(), /V2_LIVE_EXECUTION_DISABLED/);
@@ -156,8 +158,8 @@ test('V2 offline adapter reuses V1 attempted-request budget, records only UNKNOW
 
 function probeDraft(targetChanges = {}, reviewChanges = {}) {
   const target = {...candidate, tag: 'v2-source-probe', revision: 'oldx-owner-read-v2probe',
-    image: image.replace(/sha256:.+/, 'sha256:' + 'a'.repeat(64)),
-    amd64Digest: 'sha256:' + 'b'.repeat(64), sourceSha: 'c'.repeat(40), ...targetChanges};
+    image, amd64Digest: 'sha256:fde6b74beb8a62678fdc9df4598e5ef1affc2c8be0d89d3502938d4daac4fd68',
+    sourceSha: 'd13818acc66e1ffcca5e72209658e24129a1061d', ...targetChanges};
   const sessionId = '00000000-0000-4000-8000-000000000004';
   const issuedAt = Date.now() - 1_000;
   const evidence = Object.fromEntries(['tagAvailability', 'sourceImageProvenance', 'identity',
@@ -198,6 +200,9 @@ test('V2 offline probe rejects retired targets, fixture replay and unsupported r
     probeDraft({revision: 'oldx-owner-read-00003-nus'}),
     probeDraft({revision: 'oldx-owner-read-00004-jus'}),
     probeDraft({image: historicalImage}),
+    probeDraft({image: image.replace('93b70b8b09255194974bc46c7e5942c81531261b81224bd80fa575330f7572e4', 'a'.repeat(64))}),
+    probeDraft({amd64Digest: 'sha256:' + 'b'.repeat(64)}),
+    probeDraft({sourceSha: 'c'.repeat(40)}),
     probeDraft({sourceSha: '2eebfa7a0c1a66d6c8563162aa5e612570f7a1e1'}),
     probeDraft({invoker: 'unapproved'}),
     probeDraft({}, {evidence: legacyEvidence}),

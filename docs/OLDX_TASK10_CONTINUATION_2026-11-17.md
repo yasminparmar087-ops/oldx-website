@@ -1035,3 +1035,31 @@ Screenshot is authoritative for these literal lines only. The **9 distinct HIGH 
 **NEXT single source-backed offline decision:** Review only the **15 HIGH package-match rows** in the existing private `grype-full.json`: exact vulnerability ID, affected artifact name/version, `fix.state`, and any `fix.versions`, optionally source `namespace`/dataSource if needed, without uploading the entire sensitive report or re-running Grype. Summarize nine distinct HIGH IDs, highlight the **four additional IDs** beyond historical five, and distinguish fixed/unfixed/vendor-specific status. Use one read-only Windows WSL Python print command; require zero new source artifacts and preserve private raw data. Do not declare vendor support or exploitability from count alone. After targeted review, consider owner-approved LOCAL OFFLINE runtime smoke on the **same retained image only** (Node/Sharp/nonroot, health 200/disabled 503/SIGTERM); no new build. The image is already HOLD_NOT_DEPLOYABLE and no risk exception has been accepted, so do not deploy or toggle source default OFF.
 
 **Remaining Step04 gates:** G2 nine HIGH IDs in this exact-image Grype report pending itemized review and any accepted staging-only risk rationale; G4 actual effective Cloud Run/Firestore IAM unknown; G8 whole-project gross financial STOP blocked; G1 source path default-OFF; B1/R1/R2 individually unapproved; Step05 not started, staging-hosted NO-GO and production HOLD/NO-GO.
+
+## 18 Nov 2026 01:14 IST — existing Grype HIGH rows itemized: five old plus four new OpenSSL CVEs
+
+**Actual owner Windows CMD screenshot of the prior one-time offline read-only `grype-full.json` HIGH-row extraction** (no new Grype scan/build) recorded `HIGH_UNIQUE=9 HIGH_MATCHES=15`. Exactly these HIGH IDs/packages/fix states appeared:
+
+| CVE | Image artifact(s) and versions | Scanner fix state | Package-match count |
+| --- | --- | --- | ---: |
+| CVE-2026-102010 | gcc-14-base, libgcc-s1, libgomp1, libstdc++6 @ 14.2.0-19 | wont-fix | 4 |
+| CVE-2026-107496 | libssl3t64 @ 3.5.7-1~deb13u3 | not-fixed | 1 |
+| CVE-2026-19499 | libc6 @ 2.41-12+deb13u4 | wont-fix | 1 |
+| CVE-2026-5435 | libc6 @ 2.41-12+deb13u4 | wont-fix | 1 |
+| CVE-2026-84243 | libc6 @ 2.41-12+deb13u4 | wont-fix | 1 |
+| CVE-2026-88823 | libssl3t64 @ 3.5.7-1~deb13u3 | not-fixed | 1 |
+| CVE-2026-95619 | gcc-14-base, libgcc-s1, libgomp1, libstdc++6 @ 14.2.0-19 | wont-fix | 4 |
+| CVE-2026-95691 | libssl3t64 @ 3.5.7-1~deb13u3 | not-fixed | 1 |
+| CVE-2026-95692 | libssl3t64 @ 3.5.7-1~deb13u3 | not-fixed | 1 |
+
+**Delta from 17 Nov prior 5-ID Distroless candidate:** four newly surfaced HIGH IDs on the current actually retained OCI archive: **CVE-2026-107496, CVE-2026-88823, CVE-2026-95691, CVE-2026-95692**, all associated with OpenSSL Debian13 `libssl3t64`. The five older IDs remain. Grype `wont-fix` and `not-fixed` **must not be interpreted as harmless/accepted waiver**. The exact full 57-match report stays on owner's private D:, no raw report/secret pasted to GitHub.
+
+**Fresh public Debian tracker verification, 18 Nov 2026:** For all four new OpenSSL IDs, Debian's `trixie (security)` `3.5.7-1~deb13u3` was marked **vulnerable**, with no Debian source fixed version in the tracker at that check:
+- https://security-tracker.debian.org/tracker/CVE-2026-107496
+- https://security-tracker.debian.org/tracker/CVE-2026-88823
+- https://security-tracker.debian.org/tracker/CVE-2026-95691
+- https://security-tracker.debian.org/tracker/CVE-2026-95692
+
+This independently backs the **package-version vulnerability**, but does not prove all four are remotely reachable from OLDX. Some OpenSSL advisories require special CMS explicit-EC, AES-GCM-SIV or QUIC-client call patterns, whose native Node/Sharp/libvips code reachability is not established by the CLI report; avoid unsupported exploitability assertions. A hypothetical future staging-only residual-risk exception would require actual applicability and compensating-control proof and **separate explicit owner risk acceptance**. None has been approved. Do not downgrade scanner HIGH on intuition.
+
+**State / no-repeat:** Same original `candidate.oci.tar` (88,515,072 bytes), 37 content-verified blobs, 30 layers, SLSA/SPDX subject links PASS, Grype scan completed 57 matches/0 CRITICAL/15 HIGH matches/9 HIGH unique. All prior build, scan, DB import, setup and descriptor reports DONE. **Do not rebuild/rescan/reinstall or fabricate G2 PASS**. The only still useful local evidence path before risk decision is the **not-yet-run** single offline runtime smoke on this retained OCI image: Docker import if genuinely compatible, Node/Sharp/nonroot, private loopback health 200/default-OFF owner path 503, SIGTERM exit 0, no host publishing, network `none`, no cloud calls, no repeated import/build/scan or cleanup of existing evidence. Stage04 G2 HOLD_NOT_DEPLOYABLE; G4 effective IAM UNKNOWN, G8 full-provider hard STOP blocked, B1/R1/R2 unapproved, staging hosted and production NO-GO.

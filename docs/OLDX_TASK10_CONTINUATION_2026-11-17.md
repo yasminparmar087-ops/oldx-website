@@ -1007,3 +1007,31 @@ powershell -NoProfile -Command "$p='D:\OLDX\G2\step04-g2-scan-retained-oci.sh'; 
 If Grype exits nonzero/timeout/incompatible OCI, STOP and review exact log privately; no retry, no fallback scan of different image, no database download. If scan report returns, independently review report source identity/DB metadata, all unfiltered findings, and original five HIGH IDs before any staged risk consideration. Runtime offline Node/Sharp/200/503/SIGTERM tests remain **NOT DONE** until separately safe preimage-preserving continuation is reviewed; do not assume `docker load` supports nested attested OCI with existing classic image store.
 
 **Security status unchanged:** Step04 ACTIVE/HOLD; historical G2 five HIGH unresolved (real new scan awaited), G4 effective IAM unverified, G8 whole-provider budget hard STOP, B1/R1/R2 unapproved, staging hosted and production NO-GO. Do not repeat Task10/11 environment checks or any previous GitHub runner.
+
+## 18 Nov 2026 01:09 IST — owner image-specific Grype scan PASS with 9 distinct HIGH IDs, G2 HOLD
+
+**Actual owner Windows CMD screenshot after the one-shot retained-archive Grype scan:** the SHA-guarded local script `D:\OLDX\G2\step04-g2-scan-retained-oci.sh` used the same previously content-digest-verified `D:\OLDX\G2\g2-image-proof-d13818-a1\candidate.oci.tar`. Output recorded:
+```text
+RETAINED_OCI_IDENTITY_GUARD_PASS
+STAGE=ONE_RETAINED_OCI_GRYPE_SCAN_START
+GRYPE_SCAN_EXIT=0
+GRYPE_SCAN_SECONDS=39
+GRYPE_VERSION=0.121.3
+SCANNED_SOURCE_TYPE=image
+MATCHES=57
+CRITICAL=0
+HIGH_MATCHES=15
+HIGH_UNIQUE=9
+HISTORICAL_FIVE_PRESENT=CVE-2026-102010,CVE-2026-19499,CVE-2026-5435,CVE-2026-84243,CVE-2026-95619
+DECISION=HOLD_FINDINGS
+G2_RELEASE_STATUS=HOLD_NOT_DEPLOYABLE
+G2_RETAINED_OCI_GRYPE_SCAN_COMPLETE_REVIEW_REQUIRED
+PRIVATE_RESULT_DIR=/mnt/d/OLDX/G2/g2-image-proof-d13818-a1
+```
+Screenshot is authoritative for these literal lines only. The **9 distinct HIGH identifiers** are not necessarily all CVE-format until read from the private report; historical five remain present. 57 total matches and 15 HIGH package matches do not imply 57 unique vulnerabilities. Exit 0 means scan execution/report generation succeeded, **not** G2/security PASS. Raw `grype-full.json`, `grype.log`, `grype-summary.txt`, `grype-unfiltered.yaml` and `grype-sha256.txt` live locally at the above private run directory as planned; exact presence/content/independent Windows checksum remains to be inspected if required, never infer successful publication or signed custody. Grype source report `type=image` on the explicitly scanned OCI archive, but independent identity reconciliation of report descriptor/DB fields and provenance trust remain separate reviews.
+
+**NO-REPEAT CLOSE:** Existing single local OCI build/export (88,515,072 B), corrected two-level nested OCI root/child/attestation traversal, all 37 raw blob digest/size checks, 30 layers, SPDX+SLSA subject link count 2, and **first retained-OCI full Grype scan** are all completed. **Do not rebuild/re-export/rescan**, rerun old WSL/Docker/BuildKit/Grype installation/DB import or delete existing archive, logs, receipt, old scripts or prior journals. No staging/production change or extra paid provider action was observed.
+
+**NEXT single source-backed offline decision:** Review only the **15 HIGH package-match rows** in the existing private `grype-full.json`: exact vulnerability ID, affected artifact name/version, `fix.state`, and any `fix.versions`, optionally source `namespace`/dataSource if needed, without uploading the entire sensitive report or re-running Grype. Summarize nine distinct HIGH IDs, highlight the **four additional IDs** beyond historical five, and distinguish fixed/unfixed/vendor-specific status. Use one read-only Windows WSL Python print command; require zero new source artifacts and preserve private raw data. Do not declare vendor support or exploitability from count alone. After targeted review, consider owner-approved LOCAL OFFLINE runtime smoke on the **same retained image only** (Node/Sharp/nonroot, health 200/disabled 503/SIGTERM); no new build. The image is already HOLD_NOT_DEPLOYABLE and no risk exception has been accepted, so do not deploy or toggle source default OFF.
+
+**Remaining Step04 gates:** G2 nine HIGH IDs in this exact-image Grype report pending itemized review and any accepted staging-only risk rationale; G4 actual effective Cloud Run/Firestore IAM unknown; G8 whole-project gross financial STOP blocked; G1 source path default-OFF; B1/R1/R2 individually unapproved; Step05 not started, staging-hosted NO-GO and production HOLD/NO-GO.

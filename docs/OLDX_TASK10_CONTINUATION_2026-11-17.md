@@ -379,3 +379,22 @@ wsl -d OLDX-Ubuntu-24.04 --exec /bin/sh -c "set -eu; if command -v docker >/dev/
 These are official apt packages (omit unneeded Compose plugin for this G2 evidence-only task). The daemon may auto-start from package scripts and create local Docker networks, but **no container/image pull, public publishing, TCP Docker daemon socket, docker-group permission, Grype scan or Cloud action is included**. If apt, systemctl or Docker errors occur STOP, don't blindly reinstall/retry; use exact output for a targeted resolution. Installed package versions/daemon state are UNKNOWN until owner runs and returns output. Docker root socket remains privileged in the imported root-user WSL distro; keep it local and private. Host 7.8GiB RAM, WSL memory ~3.8Gi, swap 4Gi, CPUs 2; Linux physical storage under D: ~87.4GiB before swap and packages. After install still require real Docker-root/shared scratch >=14GiB free on D:, reliable source and scanner pins, bounded single OLDX build and signed OCI/Grype custody.
 
 **Gate labels:** G2 five HIGH CVEs HOLD, G4 effective IAM UNKNOWN, G8 all-services STOP BLOCKED, B1/R1/R2 UNAPPROVED; staging/production NO-GO. No new Cloud API/VM, provider spending, IAM change or production operation authorized.
+
+## 17 Nov 2026 20:22 IST — local WSL Docker Engine and Buildx installed/active
+
+Owner Windows CMD screenshot shows one-time previously planned D:-backed `OLDX-Ubuntu-24.04` install:
+```
+DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends docker-ce docker-ce-cli containerd.io docker-buildx-plugin
+docker --version
+docker buildx version
+systemctl is-active docker
+```
+Completed successfully (packages configured incl `containerd.io`, `docker-ce-cli`, `docker-ce`, `docker-buildx-plugin`, no visible error), output **`Docker version 29.10.0, build fdd4b8e`**, **`github.com/docker/buildx v0.39.0 360040a78d6113dc84e5d4dcdf0f438e1be7a41f`**, and **`active`**. Hence **local Docker Engine/Buildx installed, Docker system service active**. No image build, BuildKit OCI `docker-container` builder, Grype download/scan, publish, cloud call or Firebase operation executed. This new WSL docker is distinct from the previously STOPped Cloud Shell builders; do not repeat installer, change WSL settings, or recreate past Cloud Shell resources.
+
+**Next single non-mutating Linux/Docker reality check** from Windows CMD:
+```bat
+wsl -d OLDX-Ubuntu-24.04 --exec /bin/sh -c "set -eu; printf 'DOCKER_ROOT='; docker info --format '{{.DockerRootDir}}'; printf 'BUILDERS:\n'; docker buildx ls; printf 'FILESYSTEMS:\n'; df -h /var/lib/docker /tmp /mnt/d; printf 'DOCKER_DISK_USAGE:\n'; docker system df"
+```
+This captures actual Docker data root, supported local Buildx driver(s), WSL root/tmp and **real Windows D:** host free, and initial local Docker image/cache consumption without building/pulling/bootstrapping/pruning or installing anything. Shell is root within this private imported distro; Docker daemon socket remains privileged and must never be exposed to TCP/public ports. `df -h /` reported a 1007GB *virtual* WSL ext4 limit, not physically available disk on D:. For OCI exporter Docker official docs say default `docker` builder driver does **not** support `type=oci` or `type=tar`; a distinct pinned `docker-container` builder is required for the later separate explicitly approved run, not merely a newer Buildx version. https://docs.docker.com/build/exporters/oci-docker/ . We must retain actual D: host headroom and conservative **14GiB shared scratch** from past hard STOP, and 3.8GiB RAM/4GiB swap/2CPU may still constrain build. No OCI image or CVE G2 PASS exists.
+
+Status still Step04 G2 five HIGH HOLD, G4 effective Firebase IAM UNKNOWN, G8 full all-services budget STOP BLOCKED, B1/R1/R2 unapproved, staging/production NO-GO. No other Cloud or repo application changes from checkpoint.

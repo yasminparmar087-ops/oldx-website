@@ -470,3 +470,28 @@ wsl -d OLDX-Ubuntu-24.04 --exec /bin/sh -c "d=/root/.oldx-g2-tools; printf 'DB_C
 Only checks file existence/sizes and previously captured status/hash, process list and D: free. It does not start the Grype tool, network connection, database update/scan or delete files. Bounded list output avoids exposing raw vulnerability DB. If vulnerability.db exists but status hash missing, **do not claim validity**, instead use a separate bounded read-only metadata check once with Grype auto-update forcibly disabled after user output. If cache incomplete/empty then investigate exact transfer/network failure with a *new distinct* fail-closed recovery plan; don't overwrite existing partial evidence. Official Anchore database docs https://oss.anchore.com/docs/guides/vulnerability/database/ and Grype CLI https://oss.anchore.com/docs/reference/grype/cli/ . Neither cache existence nor schema version is final verified G2 provenance.
 
 **No repeated installer/build/checks:** pinned Grype 0.121.3 archive SHA PASS, Docker Engine v29.10.0, Buildx 0.39.0, pinned BuildKit v0.34.2 docker-container builder running, Ubuntu 24.04/D-backed WSL, 2 CPU, 3.8Gi RAM/4Gi swap, ~87G D: physical free before DB attempt; all previously evidenced. G2 five HIGH IDs HOLD, G4 effective IAM unknown, G8 all-cloud hard spend STOP blocked, B1/R1/R2 unapproved, staging/production NO-GO.
+
+## 17 Nov 2026 21:16 IST — Grype DB cache physically EMPTY; HTTPS-only listing probe next
+
+**Owner screenshot from Windows CMD** of the exact previously prescribed read-only offline cache inspection shows:
+```
+DB_CACHE:
+EXISTS
+DB_FILES:
+[no files]
+STATUS_FILE:
+ABSENT
+SHA_FILE:
+ABSENT
+UPDATE_PROCESS:
+[no running Grype updater]
+HOST_D_FREE:
+D:\ 93G 6.7G 87G 8% /mnt/d
+```
+**Finding:** The first Grype DB update did not produce a usable cache, status or SHA evidence; it is no longer running. The cache is presently **empty**, no need to delete or recreate it. Command may have been Ctrl+C interrupted, timeout, TLS/network failure or another error; screenshot provides NO cause or exit code. **DO NOT** assert it was the environment variable `GRYPE_DB_AUTO_UPDATE=false`, which controls automatic scan-triggered DB updates while explicit `grype db update` is documented separately. Do not retry the 360s update, reinstall scanner/BuildKit, run OLDX OCI build/scan, prune Docker, or relax DB freshness. Physical D: free 87G confirms no detected host-space bottleneck during this attempt; memory remains 3.8Gi WSL +4Gi swap.
+
+**New verified official Grype DB URL/network premise:** Current Grype config defaults `db.update-url=https://grype.anchore.io/databases`; Grype v6's DB listing URL resolves `https://grype.anchore.io/databases/v6/latest.json`. Official/config evidence https://oss.anchore.com/docs/reference/grype/configuration/ and upstream issue https://github.com/anchore/grype/issues/2507 . One fast non-mutating owner-side HTTPS check (NOT another DB update or scanner invocation):
+```bat
+wsl -d OLDX-Ubuntu-24.04 --exec /bin/sh -c "curl -4 -fsSL --connect-timeout 8 --max-time 20 --max-filesize 1048576 -o /dev/null -w 'DB_LISTING_HTTP=%{http_code} SECONDS=%{time_total}\n' https://grype.anchore.io/databases/v6/latest.json; echo CURL_EXIT=$?"
+```
+It downloads a small JSON listing **to /dev/null only**, no DB payload or local file changes; forces IPv4 to distinguish WSL IPv6 TLS issues, is capped at 20s and 1MiB, always prints exit code. If `HTTP=200` and curl exit 0, listing endpoint works but the *large signed DB archive transfer* is still unproven and a later separately bounded download plan is required. If `HTTP=000` or curl error, inspect TLS/DNS/proxy/route, do not retry Grype DB update or broaden OS settings. Avoid publishing signed DB URLs/credentials, keep raw private DB/report local. No Grype DB validated, no image scan/build; Grype v0.121.3 pinned binary and BuildKit v0.34.2 OCI builder remain confirmed. Step04 G2 HOLD (five HIGH CVEs), G4 IAM effective unknown, G8 all-service spend STOP blocked, B1/R1/R2 unapproved, staging/production NO-GO.

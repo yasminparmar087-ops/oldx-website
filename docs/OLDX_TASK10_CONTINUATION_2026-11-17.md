@@ -143,3 +143,16 @@ Owner expressly approved the sensitive, **project-only** change of legacy org-po
 **Safe source-backed execution guard:** First run (Windows owner account, no prompt enabling) `gcloud org-policies describe iam.automaticIamGrantsForDefaultServiceAccounts --project=oldx-staging --account=yasminparmar087@gmail.com --format=yaml --quiet` WITHOUT `--effective`. This is a DIFFERENT required local-policy/ETag check, not repeating the 18:39 effective-state inspection. If NOT_FOUND, propose a minimal new *project-only* policy YAML `name: projects/oldx-staging/policies/iam.automaticIamGrantsForDefaultServiceAccounts; spec.rules: [{enforce: true}]`. If an existing project policy is returned, preserve its `spec.etag` and examine any existing rules/dry-run before a replacement (no blind overwrite). If permission is denied or any prompt suggests enabling another API, STOP; no changes/role grants. Official source: https://docs.cloud.google.com/organization-policy/create-organization-policies and https://docs.cloud.google.com/sdk/gcloud/reference/org-policies/set-policy . `--quiet` is deliberate to avoid the previous interactive API enable side effect.
 
 Once applied by owner (NOT assumed), verify `--effective` shows enforce:true and inspect if any old default service account already has Editor (policy is not retroactive, nor a blanket ban on manual Editor grants). Policy may take up to 15 minutes to propagate. Keep Step04 G2 HOLD, G4 runtime effective unknown, G8 blocked, staging/production NO-GO. No GCP execution occurred in this GitHub checkpoint.
+
+## 17 Nov 2026 18:43 IST — project-local org-policy NOT_FOUND
+
+Owner Windows CMD screenshot of the **local/non-effective** read `gcloud org-policies describe iam.automaticIamGrantsForDefaultServiceAccounts --project=oldx-staging --account=yasminparmar087@gmail.com --format=yaml --quiet` shows authenticated account Yasmin, explicit `NOT_FOUND`, `reason: POLICY_NOT_FOUND` for resource `projects/38472235077`. No existing **project-local override** to overwrite; earlier effective-state `enforce: false` still applies. This is not an IAM permission denial. Owner's project-only change consent is already given; do not re-ask.
+
+Official current Google CLI `gcloud org-policies set-policy POLICY_FILE` creates a policy when absent and takes name from YAML. Scoped policy:
+```yaml
+name: projects/oldx-staging/policies/iam.automaticIamGrantsForDefaultServiceAccounts
+spec:
+  rules:
+  - enforce: true
+```
+Do not include parent organization path, grant Editor, or expand any other policy. Owner Windows execution is required because no authorized Cloud connection is available here; **not yet executed or verified**. After a single change, verify local AND effective `enforce: true`, allow propagation (official docs say up to 15 min) before separately approved Compute API enable; STOP on IAM/API/constraint error. References: https://docs.cloud.google.com/sdk/gcloud/reference/org-policies/set-policy and https://docs.cloud.google.com/organization-policy/create-organization-policies and https://docs.cloud.google.com/organization-policy/restrict-service-accounts . The policy prevents *automatic* Editor grant to future default service accounts, not historic or manual grants. G2/VM/staging/production HOLD unchanged.

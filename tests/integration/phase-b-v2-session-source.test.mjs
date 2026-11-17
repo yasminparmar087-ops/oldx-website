@@ -11,7 +11,9 @@ import {reviewV2Candidate, reviewV2Manifest, requireV2LiveExecution,
 
 const moduleUrl = new URL('../../scripts/phase-b-v2-session-source.mjs', import.meta.url);
 const source = readFileSync(moduleUrl, 'utf8');
-const image = 'asia-south1-docker.pkg.dev/oldx-staging/oldx-staging-images/oldx-owner-read-step3-rc@sha256:c5fc856b45b19ec995167753d0ab7449fea9550f7e06b1b75da025fe179928dc';
+const historicalImage = 'asia-south1-docker.pkg.dev/oldx-staging/oldx-staging-images/oldx-owner-read-step3-rc@sha256:c5fc856b45b19ec995167753d0ab7449fea9550f7e06b1b75da025fe179928dc';
+// Synthetic only: never claim the review-only new digest exists in Artifact Registry.
+const image = 'asia-south1-docker.pkg.dev/oldx-staging/oldx-staging-images/oldx-v2-source-only@sha256:' + 'a'.repeat(64);
 const candidate = {
   project: 'oldx-staging', region: 'asia-south1', service: 'oldx-owner-read',
   tag: 'ownerreadv2', image,
@@ -31,7 +33,9 @@ test('V2 candidate is inert; retired targets, wrong project and invented approva
   for (const bad of [
     {...candidate, tag: 'ownerbuyertrial'}, {...candidate, tag: 'step3rc14'},
     {...candidate, tag: 'healthcheck'}, {...candidate, project: 'oldx-1c983'},
-    {...candidate, image: image.replace('c5fc', 'ffff')},
+    {...candidate, image: historicalImage},
+    {...candidate, image: image.replace('asia-south1-docker', 'us-central1-docker')},
+    {...candidate, image: image.replace('a'.repeat(64), 'malformed-digest')},
     {...candidate, ownerApproved: true},
   ]) assert.equal(reviewV2Candidate(bad).decision, 'BLOCKED');
   assert.throws(() => requireV2LiveExecution(), /V2_LIVE_EXECUTION_DISABLED/);
@@ -193,7 +197,7 @@ test('V2 offline probe rejects retired targets, fixture replay and unsupported r
     probeDraft({tag: 'ownerbuyertrial'}),
     probeDraft({revision: 'oldx-owner-read-00003-nus'}),
     probeDraft({revision: 'oldx-owner-read-00004-jus'}),
-    probeDraft({image}),
+    probeDraft({image: historicalImage}),
     probeDraft({sourceSha: '2eebfa7a0c1a66d6c8563162aa5e612570f7a1e1'}),
     probeDraft({invoker: 'unapproved'}),
     probeDraft({}, {evidence: legacyEvidence}),

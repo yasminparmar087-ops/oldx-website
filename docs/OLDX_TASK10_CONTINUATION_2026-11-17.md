@@ -587,3 +587,28 @@ wsl -d OLDX-Ubuntu-24.04 --exec /bin/sh -c "d=/root/.oldx-g2-tools; a=$d/vulnera
 If `IMPORT_DIAG_EXIT=124`, analyze latest INFO stage. `IMPORT_DIAG_EXIT=0` is not independent DB validity proof; follow once with `db status`, checksum & freshness, never automatic G2 PASS. Any `STOP`, temp files/dirs, unexpected result: no blind cleanup/second attempt. `timeout` sends TERM, may leave partially extracted temp content; guard future actions. This small diagnostic is a conscious new measurement, NOT redoing completed downloads/CI. Source-only logging, no production, Firebase, registry, Cloud Run, Google APIs, IAM, billing, or paid services.
 
 **Project status:** Step04 G2 remains HOLD for five HIGH CVEs and missing genuine OCI/Grype source-to-image evidence; G4 effective IAM UNKNOWN, G8 all-service budget STOP blocked, B1/R1/R2 unapproved, staging/production NO-GO.
+
+## 17 Nov 2026 21:49 IST — Grype INFO diagnostic isolated unarchiving; 2.875GB temporary DB
+
+**Owner CMD screenshot, one 45s INFO-limited Grype local import diagnostic:**
+```
+IMPORT_DIAG_START
+[0000] INFO grype version: 0.121.3
+[0000] INFO importing vulnerability database archive reference=/root/.oldx-g2-tools/vulnerability-db_v6.1.10_2026-11-17.tar.zst
+[0000] INFO unarchiving DB
+IMPORT_DIAG_EXIT=124
+CACHE_AFTER_DIAG:
+/root/.oldx-g2-tools/db-cache/tmp-v6-import1222679924/
+/root/.oldx-g2-tools/db-cache/tmp-v6-import1222679924/vulnerability.db 2875367424 bytes
+```
+The 2,875,367,424 bytes (~2.68GiB) are a TEMPORARY, UNVERIFIED, POSSIBLY INCOMPLETE SQLite DB output; 45s timeout stopped at last visible unarchiving stage. No evidence of hydration/hashing/activation or a valid DB. Original 194MB archive was independently SHA-256 PASS and has NOT been changed. Do not treat raw output file as a complete DB, do not delete/overwrite cache or repeat long import blindly.
+
+**Exact source review:** Grype v0.121.3 grype/db/v6/installation/curator.go Import(reference) makes tmp-v6-import... dir, logs unarchiving DB, then unarchive uses mholt archives Extractor and io.Copy to stream large DB; only afterward activate, hydrate, hash and replace occur. https://github.com/anchore/grype/blob/v0.121.3/grype/db/v6/installation/curator.go . Therefore source confirms stage order, not final cause of 300s earlier timeout.
+
+**Next smallest diagnosis:** inspect uncompressed tar entry size with Linux tar/zstd without extracting new data; install only Ubuntu-signed zstd if CLI absent, then compare expected size to 2,875,367,424-byte temporary file and check current real D: free. Owner command:
+```bat
+wsl -d OLDX-Ubuntu-24.04 --exec /bin/sh -c "set -eu; d=/root/.oldx-g2-tools; a=$d/vulnerability-db_v6.1.10_2026-11-17.tar.zst; test -f $a || { echo STOP_ARCHIVE_MISSING; exit 1; }; if ! command -v zstd >/dev/null 2>&1; then DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends zstd || { echo STOP_ZSTD_INSTALL; exit 1; }; fi; echo ARCHIVE_CONTENT_SIZES:; timeout 60s tar -I zstd -tvf $a | head -n 8; echo TEMP_DB_SIZE:; find $d/db-cache -type f -name vulnerability.db -exec ls -lh {} \; ; echo HOST_D_FREE:; df -h /mnt/d"
+```
+This only adds the small signed zstd package if missing; tar -t lists archive headers and does not extract files; tar/zstd may show broken-pipe output if head stops stream, which is expected. It is not an integrity proof. Stop if mismatch/surprise/error; do not scan/build/cleanup. Source-only GitHub documentation, no Windows machine command executed by ChatGPT.
+
+G2 five-HIGH HOLD, G4 effective IAM UNKNOWN, G8 full budget STOP blocked, B1/R1/R2 unapproved, staging/production NO-GO.

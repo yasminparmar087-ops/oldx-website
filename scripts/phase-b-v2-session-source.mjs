@@ -194,7 +194,7 @@ const V2_TARGET_KEYS = ['project', 'region', 'service', 'tag', 'revision', 'imag
   'sourceSha', 'runtime', 'invoker'];
 const V2_REVIEW_KEYS = ['scopeSha256', 'issuedAt', 'expiresAt', 'maxGrossPaise', 'evidence'];
 const V2_EVIDENCE = ['tagAvailability', 'sourceImageProvenance', 'identity', 'effectiveIam',
-  'financeStop', 'fiveCveDisposition', 'b1', 'r1', 'r2', 'cleanup'];
+  'financeStop', 'nineCveDisposition', 'b1', 'r1', 'r2', 'cleanup'];
 const SHA256 = /^[a-f0-9]{64}$/;
 const HISTORICAL_DIGESTS = new Set([
   IMAGE.split('@')[1],

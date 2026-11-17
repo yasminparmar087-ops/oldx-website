@@ -745,3 +745,23 @@ powershell -NoProfile -Command "$p=Join-Path $env:USERPROFILE 'Desktop\OLDX-Webs
 This only lists path/status and branch tracking state, not contents, makes no network request and doesn't repeat tests. If dirty paths include private files, redact personal information before posting screenshot. After inspection choose **create-once separate clean source at a pinned remote commit** in D:-backed workspace or a separate isolated worktree, preserving original Desktop files intact and not sending `.git`, `.env`, keys, local logs or any broad checkout to Docker. Verify exact SHA/source allowlist and build recipe before any image pull/build. Do not assume the local repo is up to date.
 
 **Previously passed and DO NOT redo:** Pinned Grype v0.121.3 release SHA, isolated Grype DB cache `db-cache-raw/6/vulnerability.db` `Status: valid`, schema `v6.1.10`, Built `2026-11-17T06:20:58Z`, imported DB SHA256 `303ba44739343769e0e15bd0d50af62e142491b256bb533a8cfaf13ab00ca1b7`; local D: 78G free at that observation; existing pinned OCI Buildx `oldx-g2-oci` running; source-only Step04 verifier remains hard-OFF. No Grype image scan, no final OCI image build and no G2 acceptance yet. G2 five HIGH CVEs HOLD, G4 effective IAM UNKNOWN, G8 aggregate hard cost STOP blocked, B1/R1/R2 unapproved, Staging/Production NO-GO. GitHub record only, no local machine commands run by assistant.
+
+## 17 Nov 2026 22:42 IST — Desktop worktree dirty and tracking behind 358, separate pinned-source acquisition
+
+**Owner Windows CMD screenshot 22:42 IST, actual read-only local Git checks of `%USERPROFILE%\Desktop\OLDX-Website`:**
+```
+LOCAL_CHANGES:
+ M docs/OLDX_CURRENT_HANDOFF.md
+?? .firebaserc
+LOCAL_TRACKING:
+## security-hardening-review...origin/security-hardening-review [behind 358]
+ M docs/OLDX_CURRENT_HANDOFF.md
+?? .firebaserc
+LOCAL_HEAD:
+2d25a5273fd9b4579b76ec3de2e4b7e405bf04e3
+```
+`behind 358` is a reading of this LOCAL `origin/security-hardening-review` tracking reference, possibly stale; it is NOT guaranteed equal to CURRENT remote behind count without fetching. Separately GitHub app checked CURRENT remote branch SHA at checkpoint `399c522ef392be6a4af633308491008998650c62` (updated by this documentation write itself). The modified tracked handoff is OWNER LOCAL WORK, not to overwrite, stash, commit, reset, or include in G2. Untracked `.firebaserc` may contain project identifiers: leave private/unchanged and **never forward to Docker build context or copy its contents into chat**. Existing Desktop working directory must not be used as G2 source input and `git pull/clean/reset` is prohibited.
+
+**Next one safe isolated non-cloud source checkout**, do not alter Desktop checkout: owner can make a create-once clean immutable clone of precisely pinned NEW GitHub `security-hardening-review` commit under private `D:\OLDX\G2\source-<SHA-prefix>`. Prefer separate `git init` + `git fetch --no-tags --depth 1 origin <EXACT_SHA>` + `git checkout --detach FETCH_HEAD`, with strict HEAD equality and clean worktree checks and no fallback to mutable `origin/main`. This may download GitHub repo contents but not Docker images, has no additional cloud provider spend or credentials displayed, and never touches local `docs/OLDX_CURRENT_HANDOFF.md` or `.firebaserc`. If path already exists, auth/fetch fails, checkout returns dirty, or HEAD mismatch: STOP; never delete existing path or use a different account/token without review. This is **clean source preparation only**, not a Docker build/scan, and does not turn on `G2_IMAGE_EXECUTION_ENABLED=false`.
+ 
+**Source/build facts already verified on GitHub branch**: `Dockerfile.product-read.distroless` present with pinned distroless base, `node:24-bookworm-slim` dependency stage; `.dockerignore` at repo root NOT FOUND, hence DO NOT send entire cloned folder (especially `.git`) to docker or run `docker build .`. Next prepare separate `allowlisted` build context with only explicit files copied by Dockerfile and hash each from pinned source, preserve Dockerfile recipe SHA and lockfile; verify remote commit and node base manifest provenance separately. Grype DB setup/scan DB hash, Docker/BuildKit bootstrap, SQLite inspection all DONE, don't repeat. 14 GiB physical scratch and other G2 guard remains; no OCI yet. G2 five HIGH HOLD; G4 effective IAM UNKNOWN; G8 full hard cost STOP blocked; B1/R1/R2 unapproved; staging/prod NO-GO.

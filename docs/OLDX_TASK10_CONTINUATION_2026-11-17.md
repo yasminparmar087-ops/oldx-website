@@ -978,3 +978,32 @@ powershell -NoProfile -Command "$p='D:\OLDX\G2\step04-g2-verify-existing-oci.py'
 Capture the short output. If STOP, preserve the OCI archive and report the exact error without retrying the old build. If structure PASS, decide whether a **separately authorized existing-archive-only** local import/runtime smoke and one exact Grype scan continuation is viable. Do not automatically run Docker load or grype, use alternate archive conversion, delete images/DB or conclude G2/security PASS. GitHub Actions and Cloud Run/Firebase/production remain untouched.
 
 **State:** Step04 active G2 HOLD; the one local OCI build/export completed, but full identity/attestation integrity, runtime and Grype scan pending; older five HIGH findings unresolved; G4 IAM effective unknown, G8 complete cloud cost STOP blocked, B1/R1/R2 unapproved; staging hosted and production NO-GO.
+
+## 18 Nov 2026 00:33 IST — retained OCI complete offline structure PASS; one Grype scan continuation prepared
+
+**Owner screenshot evidence from Windows CMD:** Earlier approved local read-only verifier `D:\OLDX\G2\step04-g2-verify-existing-oci.py` succeeded on the **existing unchanged** `D:\OLDX\G2\g2-image-proof-d13818-a1\candidate.oci.tar`:
+
+```text
+OCI_NESTED_INDEX_SHA256_PASS=sha256:93b70b8b09255194974bc46c7e5942c81531261b81224bd80fa575330f7572e4
+OCI_AMD64_IMAGE_MANIFEST=sha256:fde6b74beb8a62678fdc9df4598e5ef1affc2c8be0d89d3502938d4daac4fd68
+OCI_ATTESTATION_MANIFEST=sha256:04251bbb6dc180c81d8d7d6f47c8be5bb94bc291652571ea6db12799db46fff8
+OCI_LAYER_COUNT=30
+OCI_ATTESTATION_TYPES=https://slsa.dev/provenance/v1 | https://spdx.dev/Document
+OCI_ALL_BLOB_SHA256_AND_SIZE_PASS count=37
+OCI_ATTEST_SUBJECT_LINK_PASS=2
+OCI_READ_ONLY_STRUCTURE_PASS__NOT_SIGNATURE_OR_SECURITY_GO
+```
+
+Thus the prior v2 scan/build script's earlier stop was due to **nonrecursive root index selection**, not image corruption. The real retained artifact now has content-addressed blob sizes+digests and nested image/attestation linkage verified, but this is **NOT cryptographically verified publisher/build identity, CVE clearance, signed release custody, Runtime PASS or production permission**. No build repeat, no Docker import/run and no Grype scan occurred in this read-only proof.
+
+**Next most useful unexecuted action:** One *existing-archive-only* Grype v0.121.3 `oci-archive:` scan against the pinned private 88,515,072-byte OCI tar, using already imported `db-cache-raw` v6.1.10, existing scanner SHA and DB SHA, with no DB update/network registry image retrieval, no ignore/VEX filters and `--scope squashed`. Anchore official docs confirm `oci-archive:...` and `--scope squashed`; a successful process does not mean zero vulnerabilities. Scan independent of possible Docker image-store incompatibility, which will be reviewed separately later for offline runtime.
+
+**Single-stage scan continuation script prepared and saved in owner's ChatGPT Library** `/OLDX/step04-g2-scan-retained-oci.sh` (also downloadable from this chat), SHA256 `2ab8fd5ec1d005b2eb760efec376620ecfaf146f14a9f7bf6d915413dc426063`. Offline static verification: `bash -n` and both embedded Python blocks compile PASS; no owner WSL/Grype operation executed by this preparation. The script enforces the prior run/source/OCI identity, D: >=24GiB actual physical free, WSL shared scratch >=14GiB, exact pinned Grype release archive+valid DB bytes, create-once `grype-full.json`, `grype.log`, `grype-unfiltered.yaml`, `grype-summary.txt` and SHA receipts; Grype invocation once, 230s+10s termination cap, empty config, no --fail-on, output full raw JSON, trusted no invented scan fields. Every STOP keeps prior evidence and forbids retry. **No Docker build/load/run, new OCI export, cleanup, Cloud/Firebase/IAM/Billing operation, registry push or new cost.** Original G2 full build/runtime/scan consent permits one scan that was NOT reached due to earlier verifier STOP; this is **not** permission to repeat the build or perform additional provider actions.
+
+**Operator invocation after saving unchanged file as `D:\OLDX\G2\step04-g2-scan-retained-oci.sh`**:
+```cmd
+powershell -NoProfile -Command "$p='D:\OLDX\G2\step04-g2-scan-retained-oci.sh'; if((Get-FileHash -Algorithm SHA256 -LiteralPath $p).Hash -ne '2AB8FD5EC1D005B2EB760EFEC376620ECFAF146F14A9F7BF6D915413DC426063'){throw 'STOP_SCAN_SCRIPT_HASH'}" && wsl -d OLDX-Ubuntu-24.04 --exec /bin/bash /mnt/d/OLDX/G2/step04-g2-scan-retained-oci.sh
+```
+If Grype exits nonzero/timeout/incompatible OCI, STOP and review exact log privately; no retry, no fallback scan of different image, no database download. If scan report returns, independently review report source identity/DB metadata, all unfiltered findings, and original five HIGH IDs before any staged risk consideration. Runtime offline Node/Sharp/200/503/SIGTERM tests remain **NOT DONE** until separately safe preimage-preserving continuation is reviewed; do not assume `docker load` supports nested attested OCI with existing classic image store.
+
+**Security status unchanged:** Step04 ACTIVE/HOLD; historical G2 five HIGH unresolved (real new scan awaited), G4 effective IAM unverified, G8 whole-provider budget hard STOP, B1/R1/R2 unapproved, staging hosted and production NO-GO. Do not repeat Task10/11 environment checks or any previous GitHub runner.

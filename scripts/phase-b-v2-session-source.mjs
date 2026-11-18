@@ -18,10 +18,13 @@ const PROJECT = 'oldx-staging';
 const DOCUMENT_ROOT = `projects/${PROJECT}/databases/(default)/documents/`;
 const REGION = 'asia-south1';
 const SERVICE = 'oldx-owner-read';
-// Exact locally proven artifact identity; these are NOT registry-publication receipts.
+// Exact source/index values plus a separately owner-verified private Registry URI.
+// These constants are review-only: a URI match is NOT trusted SLSA provenance or deploy permission.
 const V2_LOCAL_INDEX = 'sha256:93b70b8b09255194974bc46c7e5942c81531261b81224bd80fa575330f7572e4';
 const V2_LOCAL_AMD64 = 'sha256:fde6b74beb8a62678fdc9df4598e5ef1affc2c8be0d89d3502938d4daac4fd68';
 const V2_LOCAL_SOURCE = 'd13818acc66e1ffcca5e72209658e24129a1061d';
+// Owner's one approved Registry copy: exact package+immutable index, not an arbitrary package with same digest.
+const V2_PRIVATE_IMAGE = 'asia-south1-docker.pkg.dev/oldx-staging/oldx-staging-images/oldx-step04-g2-d13818-a1@' + V2_LOCAL_INDEX;
 const IMAGE = 'asia-south1-docker.pkg.dev/oldx-staging/oldx-staging-images/oldx-owner-read-step3-rc@sha256:c5fc856b45b19ec995167753d0ab7449fea9550f7e06b1b75da025fe179928dc';
 const RUNTIME = 'oldx-product-read-staging@oldx-staging.iam.gserviceaccount.com';
 const INVOKER = 'oldx-phase-b-invoker@oldx-staging.iam.gserviceaccount.com';
@@ -45,7 +48,8 @@ export function reviewV2Candidate(candidate) {
   const imageDigest = typeof candidate?.image === 'string' && V2_IMAGE.exec(candidate.image)?.[1];
   const valid = exactKeys(candidate, keys) &&
     candidate.project === PROJECT && candidate.region === REGION &&
-    candidate.service === SERVICE && imageDigest === V2_LOCAL_INDEX &&
+    candidate.service === SERVICE && candidate.image === V2_PRIVATE_IMAGE &&
+    imageDigest === V2_LOCAL_INDEX &&
     !HISTORICAL_DIGESTS.has(imageDigest) &&
     candidate.runtime === RUNTIME && candidate.invoker === INVOKER &&
     typeof candidate.tag === 'string' && /^[a-z][a-z0-9-]{0,30}$/.test(candidate.tag) &&
@@ -236,7 +240,8 @@ export function reviewV2OfflineProbe(input) {
       RETIRED_TAGS.has(target.tag) ||
       typeof target.revision !== 'string' || !/^oldx-owner-read-[a-z0-9-]{1,47}$/.test(target.revision) ||
       HISTORICAL_REVISIONS.has(target.revision) ||
-      !index || index !== V2_LOCAL_INDEX || HISTORICAL_DIGESTS.has(index) ||
+      !index || index !== V2_LOCAL_INDEX || target.image !== V2_PRIVATE_IMAGE ||
+      HISTORICAL_DIGESTS.has(index) ||
       typeof target.amd64Digest !== 'string' || target.amd64Digest !== V2_LOCAL_AMD64 ||
       !/^sha256:[a-f0-9]{64}$/.test(target.amd64Digest) || index === target.amd64Digest ||
       HISTORICAL_DIGESTS.has(target.amd64Digest) ||

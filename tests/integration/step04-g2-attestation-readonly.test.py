@@ -7,8 +7,8 @@ import tempfile
 import unittest
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parent.parent
-s = importlib.util.spec_from_file_location('g2_attest', ROOT/'oldx_g2_attestation_readonly.py')
+ROOT = Path(__file__).resolve().parents[2]
+s = importlib.util.spec_from_file_location('g2_attest', ROOT/'scripts'/'step04-g2-attestation-readonly.py')
 m = importlib.util.module_from_spec(s)
 s.loader.exec_module(m)
 

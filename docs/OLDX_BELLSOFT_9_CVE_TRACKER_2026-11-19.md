@@ -57,7 +57,7 @@
 
 The previously pinned local `oras discover --depth 1` command returned three OCI artifact referrer **manifest** hashes, all typed `application/vnd.dev.sigstore.bundle.v0.3+json`, with `dev.sigstore.bundle.content=dsse-envelope` and `predicateType=https://sigstore.dev/cosign/sign/v1`:
 1. `sha256:0c2d1e06e5bd73ee2165758d6c44c84685a0bf165f3a08d90fdc03d6c5b2e9f6` (annotation created `2026-11-17T13:40:46Z`)
-2. `sha256:5882d35f620d6ed1c41184be0e784eee596813e696c69665e2a2686f3b560` (annotation created `2026-11-17T13:39:47Z`)
+2. `sha256:5882d35f6620d6ed1c41184be0e784eee596813e60960c606d5e2a2686f3b560` (annotation created `2026-11-17T13:39:47Z`)
 3. `sha256:d5dc244b9100f96c2d515583fc721f00432f39b7ccc5384e0382f5e40ebddc4f` (annotation created `2026-11-17T13:40:38Z`)
 
 **Evidence grade:** referrer existence/discovery PASS; these three are **not three cryptographically verified publisher signatures** and do not prove a signed CycloneDX/SPDX SBOM. The annotations alone provide neither valid signer nor predicate contents. The actual signed subject, bundle blob, BellSoft key, signature+transparency verification and SBOM contents have **NOT** been independently evaluated. A signature bundle is **not an installed package listing**. No original HIGH CVE changed status. No image layers pulled, no OCI build/scan/deploy/provider IAM/billing change.

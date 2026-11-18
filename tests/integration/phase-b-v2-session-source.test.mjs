@@ -170,8 +170,8 @@ function probeDraft(targetChanges = {}, reviewChanges = {}) {
     evidence, ...reviewChanges};
   const {project, region, service, tag, revision, image: uri, amd64Digest, sourceSha, runtime, invoker, b1Mode} = target;
   review.scopeSha256 = createHash('sha256').update(JSON.stringify(['OLDX_V2_OFFLINE_PROBE',
-    [project, region, service, tag, revision, uri, amd64Digest, sourceSha, runtime, invoker],
-    b1Mode, sessionId, manifest.authUids, manifest.firestoreDocs, review.issuedAt, review.expiresAt,
+    [project, region, service, tag, revision, uri, amd64Digest, sourceSha, runtime, invoker, b1Mode],
+    sessionId, manifest.authUids, manifest.firestoreDocs, review.issuedAt, review.expiresAt,
     review.maxGrossPaise, Object.values(review.evidence)])).digest('hex');
   return {target, manifest, sessionId, review, journalState: 'UNUSED',
     probe: {scopeSha256: review.scopeSha256, status: 403, redirected: false, body: ''}};

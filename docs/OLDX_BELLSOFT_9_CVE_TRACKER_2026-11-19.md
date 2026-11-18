@@ -78,6 +78,23 @@ Existing pinned `oras v1.3.6 manifest fetch --pretty docker.io/bellsoft/hardened
 
 **Next narrow read-only proof:** fetch ONLY the 1,029,297-byte *Sigstore evidence blob* at `sha256:572d9efed5d0f39056f65075839a6718bae7284af2df07c532249919343e213b` from public Docker Hub (not runtime image layers), parse the nested DSSE in-toto statement `subject` + `predicateType` without exposing 1MB raw JSON to owner, and only then use official BellSoft Cosign key for actual independent signature verification. Search SBOM separately if this referrer is only a signature. Do not create cloud resources, do not pull/build/scan or deploy images.
 
+### C3. 2026-11-19 00:41 IST — Sigstore evidence blob downloaded & digest checked; CycloneDX SBOM predicate actually observed
+
+Owner executed a public read-only Python wrapper using existing ORAS `blob fetch --output -` for exact evidence blob `sha256:572d9efed5d0f39056f65075839a6718bae7284af2df07c532249919343e213b` from `docker.io/bellsoft/hardened-nodejs`. It ran `hashlib.sha256(data).hexdigest()==h` before JSON/DSSE parsing. Actual screenshot output:
+
+```text
+BUNDLE_DIGEST=PASS
+PREDICATE_TYPE= https://cyclonedx.org/bom
+SUBJECT= [{'name': 'index.docker.io/bellsoft/hardened-nodejs', 'digest': {'sha256': 'fd67bdfa683df22bca1b149ae1ee1933e662831b895ff4c29ba98217b29c0769'}}]
+PREDICATE_KEYS= ['$schema', 'bomFormat', 'components', 'dependencies', 'metadata', 'serialNumber', 'specVersion', 'version']
+```
+
+**Evidence grade:** `F3 = PARTIAL`: the actual blob is checksum-verified and decodes to a DSSE in-toto statement whose `subject` hash matches the known BellSoft Node24 image INDEX and whose `predicateType` equals CycloneDX BOM. **This is a bona fide *embedded CycloneDX BOM statement***. Its actual top-level `components` package names/versions and independently validated publisher's signature have NOT been read/verified yet. Metadata alone cannot establish seven installed fixes. `F2 = UNVERIFIED`: a digest/subject/JSON assertion is NOT cryptographic proof of BellSoft's signer; a malicious publisher could construct a matching JSON. `F4–F9` unchanged.
+
+**Critical correction to earlier guess:** the first of the three referrers DOES carry a DSSE **CycloneDX BOM predicate**, despite its generic `cosign/sign/v1` annotation; that annotation alone is not evidence of an ordinary signature or absence of an SBOM. The previous documentation must defer to these actual bytes.
+
+**Next smallest meaningful read-only item:** re-fetch only the same ~1 MB public EVIDENCE blob in memory (original command did NOT save it) and print selected `predicate.components` name/version/purl for gcc/libstdc++, glibc/libc6, openssl/libssl/crypto plus total components; do not dump full SBOM or leak secrets. Confirm separately the actual `cosign verify-attestation` trust chain and image binding to BellSoft publisher. The documented 7 vendor advisories do not automatically apply to the installed package versions. Original OLDX immutable OCI keeps its 9 historical Grype HIGH findings. No user/image-layer data, Cloud changes, deployment, scan or paid action occurred.
+
 ## D. Concrete threat analysis of the TWO unconfirmed BellSoft CVEs — preliminary, never a PASS
 
 ### D1 — CVE-2026-95619 (GCC/libstdc++ aligned new)
@@ -111,7 +128,7 @@ Existing pinned `oras v1.3.6 manifest fetch --pretty docker.io/bellsoft/hardened
 | F0 — vendor-level 7 BellSoft CVE advisories | **PASS: 7 official advisory fixed entries** | Links + fixed version in section B |
 | F1 — exact Node24 amd64 OCI digest | **PARTIAL: tag/index reference + selected AMD64 digest observed PASS; media type/manifest/independent signature UNVERIFIED** | Registry manifest response URL, fetch date, immutable index and linux/amd64 child hashes |
 | F2 — BellSoft publisher signature verified | **UNVERIFIED** | cosign verified report bound to F1 digest + official pinned key, no skip flags |
-| F3 — exact digest signed SBOM/versions | **UNVERIFIED** | SBOM signed subject matches F1, parsed gcc/libstdc++, glibc, openssl, Node and transitive packages/versions |
+| F3 — exact digest signed SBOM/versions | **PARTIAL: checksum-verified image-bound CycloneDX DSSE predicate located; signature and installed versions NOT YET VERIFIED** | SBOM signed subject matches F1, parsed gcc/libstdc++, glibc, openssl, Node and transitive packages/versions |
 | F4 — CVE-by-CVE installed package disposition (9) | **UNVERIFIED** | Per-ID FIXED/NOT_AFFECTED/PRESENT_UNPATCHED/UNRESOLVED with independent version/VEX evidence |
 | F5 — GCC 95619 reachability / controls | **UNVERIFIED** | Patched-or-absent actual binary OR linked path analysis, attacker control and accepted bounds |
 | F6 — glibc 84243 reachability / controls | **UNVERIFIED** | Patched-or-absent binary OR locale/.mo/env/native path with effective controls |
@@ -162,6 +179,8 @@ Existing pinned `oras v1.3.6 manifest fetch --pretty docker.io/bellsoft/hardened
 | 2026-11-19 00:31 IST (owner CMD screenshot) | Existing pinned ORAS 1.3.6 `oras discover --depth 1 docker.io/bellsoft/hardened-nodejs@sha256:fd67bdfa683df22bca1b149ae1ee1933e662831b895ff4c29ba98217b29c0769` | **SUCCESS: THREE OCI referrer artifact manifest digests** (see section C1), each reported `application/vnd.dev.sigstore.bundle.v0.3+json`, `dev.sigstore.bundle.content=dsse-envelope`, predicateType `https://sigstore.dev/cosign/sign/v1`. Creation annotations 17-Nov-2026. **Bundle presence only**; no verification of BellSoft signer, signed subject, full SBOM, patches or OLDX compatibility. | Referrer discovery PASS, F2/F3 still UNVERIFIED; next ONE metadata-only `oras manifest fetch --pretty docker.io/bellsoft/hardened-nodejs@sha256:0c2d1e06e5bd73ee2165758d6c44c84685a0bf165f3a08d90fdc03d6c5b2e9f6` to view subject and Sigstore bundle blob digest, then authenticated Cosign signature verification (requires separately trusted BellSoft key and tool). |
 
 | 2026-11-19 00:37 IST owner screenshot | ORAS `manifest fetch --pretty` exact first Sigstore referrer `sha256:0c2d1e06e5bd73ee2165758d6c44c84685a0bf165f3a08d90fdc03d6c5b2e9f6` | **PASS manifest subject binding:** `subject.mediaType=application/vnd.oci.image.index.v1+json` size 491, digest `sha256:fd67bdfa683df22bca1b149ae1ee1933e662831b895ff4c29ba98217b29c0769` exact; one `application/vnd.dev.sigstore.bundle.v0.3+json` evidence layer size **1,029,297 bytes**, digest `sha256:572d9efed5d0f39056f65075839a6718bae7284af2df07c532249919343e213b`. No bundle blob or signature crypto verified; cosign/sign/v1 ≠ SBOM proof. | F1 image index media type now source-backed; signature reference manifests linked PASS; F2–F4 remain UNVERIFIED. Next one read-only 1MB bundle fetch+decode statement fields, not container-layer pull or an OLDX CVE scan. |
+
+| 2026-11-19 00:41 IST owner screenshot | In-memory ORAS public `blob fetch --output -` on first Sigstore evidence layer `sha256:572d9efe...213b` plus SHA256 verification and decode of `dsseEnvelope.payload` | **PASS** exact data SHA, in-toto subject hash `sha256:fd67bdfa...` matches BellSoft Node24 image index; `predicateType=https://cyclonedx.org/bom`, CycloneDX `components` key observed, but package versions NOT YET INSPECTED, signature signer/trust NOT VERIFIED. First artifact is SBOM DSSE predicate (not merely signature metadata). | F3 PARTIAL (actual digest-bound CycloneDX BOM predicate found); F2 SIGNATURE UNVERIFIED; F4 seven fixes + two HIGH native risk UNKNOWN. Next only one ~1MB selected-component listing from same bundle, then independent signer verification. |
 
 **For EACH NEW OLDX chat, add at most one concise new row only when there is material new proof, with UTC/IST date, exact source URL or command receipt, immutable digest + versions, observed PASS/FAIL/UNKNOWN, residual risk, next SINGLE action; update F-status and the appropriate nine-ID matrix cell only if grounded. Append and commit to this SAME file; never create competing v2/v3 reports or rerun old scans. After a meaningful owner decision, add one linked Issue #17 comment. Summarize chat decisions, not full chats/credentials/screenshots. Read previously recorded entries before writing to prevent duplicates.**
 

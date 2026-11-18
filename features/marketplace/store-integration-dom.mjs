@@ -6,7 +6,7 @@ import {createStoreIntegration} from './store-integration.mjs';
 const mounts=new WeakMap();
 // Explicit existing Store-page binding. Legacy mode remains untouched by default.
 export function mountStoreIntegration({root=document,enabled=false,ports,getCategory,getCategories,readPhotoReferences,photoWorkflow:injectedWorkflow,media,share,onProduct=()=>{},translate=key=>key,managedRoutes=false,...options}={}){
- mounts.get(root)?.destroy();if(!enabled)return Object.freeze({destroy(){}});const $=id=>root.getElementById(id),view=root.defaultView,listeners=[],restore=[];let revision=0,photos=[],loadedCategories=null,photoSession=null,exiting=false;
+ mounts.get(root)?.destroy();if(!enabled)return Object.freeze({destroy(){}});const $=id=>root.getElementById(id),view=root.defaultView,listeners=[],restore=[];let revision=0,storeSaveRevision=null,photos=[],loadedCategories=null,photoSession=null,exiting=false;
  const input=$('storePhotoFile');
  const ownedWorkflow=media?.enabled===true&&!injectedWorkflow&&input
   ?mountMandatoryPhotos({root,enabled:true,kind:'store',container:input.parentElement,input,mediaClient:media.mediaClient,translate}):null;
@@ -25,7 +25,7 @@ export function mountStoreIntegration({root=document,enabled=false,ports,getCate
    marketing.hidden=!state.store;
    if(!state.store){cardButton.disabled=false;$('trustedStoreCardStatus').textContent='';}
   }
-  const status=$('trustedStoreStatus');status.hidden=false;status.style.display='block';status.textContent=translate('market.product.'+state.status);$('saveStoreBtn').disabled=!state.authenticated||state.status==='loading'||state.canRetry;for(const id of ['trustedStorePublish','trustedStoreWithdraw','trustedStoreLoad'])$(id).disabled=!state.authenticated||state.status==='loading'||state.canRetry;
+  const status=$('trustedStoreStatus');status.hidden=false;status.style.display='block';status.textContent=translate('market.product.'+state.status);const saveBusy=storeSaveRevision===revision;const disableSave=!state.authenticated||state.status==='loading'||state.canRetry||saveBusy;$('saveStoreBtn').disabled=disableSave;for(const id of ['trustedStorePublish','trustedStoreWithdraw','trustedStoreLoad'])$(id).disabled=disableSave;
   if(reload)reload.hidden=!/^#store-[A-Za-z0-9_-]{1,100}$/.test(view.location.hash)||!['unavailable','error'].includes(state.status);
   $('trustedStoreRetry').disabled=!state.canRetry;$('trustedStoreNext').hidden=!state.store;$('trustedStoreNext').disabled=!state.nextCursor;
   const grid=$('homeStoresGrid');if(grid){grid.replaceChildren();for(const item of state.directory){const button=root.createElement('button');button.type='button';button.className='oldx-public-card';button.textContent=item.name;button.addEventListener('click',()=>api.open(item.id));grid.append(button);}if($('trustedDirectoryStatus')){$('trustedDirectoryStatus').hidden=state.directoryStatus==='idle';$('trustedDirectoryStatus').textContent=translate(state.directoryStatus==='ready'&&!state.directory.length?'market.store.noStores':'market.product.'+state.directoryStatus);}
@@ -35,7 +35,26 @@ export function mountStoreIntegration({root=document,enabled=false,ports,getCate
  for(const id of ['storeOwnerName','storeAddress','storeMobile','storeWhatsapp']){const n=$(id),required=n.required;restore.push(()=>n.required=required);const disabled=n.disabled;restore.push(()=>n.disabled=disabled);n.required=false;n.disabled=true;}
  const filter=$('trustedStoreFilter');if(filter){filter.replaceChildren();for(const id of ['',...STORE_CATEGORY_IDS]){const option=root.createElement('option');option.value=id;option.textContent=translate(id?'store.category.'+id:'market.store.allCategories');filter.append(option);}filter.hidden=false;listen(filter,'change',()=>{model.changeScope();model.discover({category:filter.value});});}if($('trustedStoreBrowse')){$('trustedStoreBrowse').hidden=false;listen($('trustedStoreBrowse'),'click',()=>model.discover({category:filter?.value??''}));}
  for(const id of ['trustedStoreControls','trustedDirectoryNext'].filter(id=>$(id)))$(id).hidden=false;
- async function save(publication){const version=revision;try{const controls=Array.from(root.querySelectorAll('input[name="storeCategory"]')),checked=controls.filter(n=>n.checked).map(n=>n.value),categories=getCategories?getCategories():controls.length?(loadedCategories?.length&&checked.includes(loadedCategories[0])?[loadedCategories[0],...checked.filter(v=>v!==loadedCategories[0])]:checked):loadedCategories??[getCategory()];const selection=photoWorkflow?.model.snapshot();if(ownedWorkflow&&selection?.changed&&selection.items.some(item=>item.status!=='uploaded'))throw Error('Pending photo');const photoChanged=selection?.changed,selected=ownedWorkflow||photoChanged?photoWorkflow.references():await readPhotoReferences?.(),profile={name:$('storeShopName').value,description:$('trustedStoreDescription').value,locationLabel:$('trustedStoreLocality').value,category:categories[0],categories,photos:photoChanged?selected:selected?.length?selected:[...photos]};if(version!==revision)return;if(publication==='publish'&&!profile.photos.length)throw new Error();await model.save(profile,publication);}catch{$('storeSaveNotice').textContent=translate('market.product.photosUnavailable');}}
+ async function save(publication){
+  const version=revision;
+  // Unlike model.save(), photo references may resolve asynchronously BEFORE
+  // the request is reserved. Only one form preparation can run per UI scope.
+  if(storeSaveRevision===version)return;
+  storeSaveRevision=version;
+  const writeIds=['saveStoreBtn','trustedStorePublish','trustedStoreWithdraw','trustedStoreLoad'];
+  for(const id of writeIds)if($(id))$(id).disabled=true;
+  try{const controls=Array.from(root.querySelectorAll('input[name="storeCategory"]')),checked=controls.filter(n=>n.checked).map(n=>n.value),categories=getCategories?getCategories():controls.length?(loadedCategories?.length&&checked.includes(loadedCategories[0])?[loadedCategories[0],...checked.filter(v=>v!==loadedCategories[0])]:checked):loadedCategories??[getCategory()];const selection=photoWorkflow?.model.snapshot();if(ownedWorkflow&&selection?.changed&&selection.items.some(item=>item.status!=='uploaded'))throw Error('Pending photo');const photoChanged=selection?.changed,selected=ownedWorkflow||photoChanged?photoWorkflow.references():await readPhotoReferences?.(),profile={name:$('storeShopName').value,description:$('trustedStoreDescription').value,locationLabel:$('trustedStoreLocality').value,category:categories[0],categories,photos:photoChanged?selected:selected?.length?selected:[...photos]};if(version!==revision||exiting)return;if(publication==='publish'&&!profile.photos.length)throw new Error();await model.save(profile,publication);
+  }catch{
+   if(version===revision&&!exiting)$('storeSaveNotice').textContent=translate('market.product.photosUnavailable');
+  }finally{
+   if(storeSaveRevision===version)storeSaveRevision=null;
+   if(version===revision&&!exiting){
+    const state=model.snapshot();
+    const disabled=!state.authenticated||state.status==='loading'||state.canRetry;
+    for(const id of writeIds)if($(id))$(id).disabled=disabled;
+   }
+  }
+ }
 
  listen(cardButton,'click',async()=>{
   if(cardButton.disabled)return;

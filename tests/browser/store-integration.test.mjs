@@ -96,3 +96,49 @@ for(const locale of ['gu','hi','en'])test('Store replacement retains approved ph
   assert.equal(await page.locator('#saveStoreBtn').isDisabled(),true);
  }finally{await context.close();}
 });
+
+test('Store photo-read single-flight blocks duplicate Submit and stale account-switch completion at 375px',async()=>{
+ const context=await browser.newContext({viewport:{width:375,height:780}});
+ try{
+  await context.route('**/store-save-fixture',route=>route.fulfill({contentType:'text/html',body:'<!doctype html><html><body></body></html>'}));
+  const page=await context.newPage();
+  await page.goto(origin+'/store-save-fixture');
+  const start=source.indexOf('<section id="storePage"'),end=source.indexOf('</section>',start)+10;
+  await page.setContent('<style>[hidden]{display:none!important}</style>'+source.slice(start,end));
+  await page.evaluate(async()=>{
+   const {mountStoreIntegration}=await import('/features/marketplace/store-integration-dom.mjs');
+   window.saveCount=0;window.photoReadCount=0;window.finishPhotoRead=null;
+   window.binding=mountStoreIntegration({root:document,enabled:true,
+    ports:{
+     save:async body=>{saveCount++;return {ok:true,id:'store-single-flight',revision:body.expectedRevision+1};},
+     owner:async()=>({ok:false,code:'UNAVAILABLE'})
+    },getCategory:()=> 'cars',
+    readPhotoReferences:()=>{photoReadCount++;return new Promise(resolve=>{finishPhotoRead=resolve;});}});
+   await binding.setSession({uid:'seller',sessionId:'seller-scope'});
+   history.replaceState(null,'','#store');
+   await binding.restoreRoute();
+   document.getElementById('storeShopName').value='Seller Store';
+   document.getElementById('trustedStoreDescription').value='Seller description';
+   document.getElementById('trustedStoreLocality').value='Ahmedabad';
+  });
+  const twice=await page.evaluate(()=>{
+   const form=document.getElementById('createStoreForm');
+   for(let i=0;i<2;i++)form.dispatchEvent(new Event('submit',{bubbles:true,cancelable:true}));
+   return {photoReads:photoReadCount,disabled:document.getElementById('saveStoreBtn').disabled};
+  });
+  assert.deepEqual(twice,{photoReads:1,disabled:true});
+  await page.evaluate(()=>finishPhotoRead(['data:image/jpeg;base64,YQ==']));
+  await page.waitForFunction(()=>binding.model.snapshot().owner?.revision===1);
+  assert.equal(await page.evaluate(()=>saveCount),1);
+  await page.evaluate(()=>{
+   document.getElementById('createStoreForm').dispatchEvent(new Event('submit',{bubbles:true,cancelable:true}));
+  });
+  assert.equal(await page.evaluate(()=>photoReadCount),2);
+  await page.evaluate(()=>binding.setSession(null));
+  await page.evaluate(()=>finishPhotoRead(['data:image/jpeg;base64,YQ==']));
+  await page.waitForTimeout(20);
+  assert.equal(await page.evaluate(()=>saveCount),1,'stale photo result must not submit after logout');
+  assert.equal(await page.locator('#storeShopName').inputValue(),'');
+  assert.equal(await page.locator('#saveStoreBtn').isDisabled(),true);
+ }finally{await context.close();}
+});

@@ -16,7 +16,7 @@ const historicalImage = 'asia-south1-docker.pkg.dev/oldx-staging/oldx-staging-im
 const image = 'asia-south1-docker.pkg.dev/oldx-staging/oldx-staging-images/oldx-step04-g2-d13818-a1@sha256:93b70b8b09255194974bc46c7e5942c81531261b81224bd80fa575330f7572e4';
 const candidate = {
   project: 'oldx-staging', region: 'asia-south1', service: 'oldx-owner-read',
-  tag: 'ownerreadv2', image,
+  tag: 'ownerreadv2', image, b1Mode: 'DEFAULT_OFF_503_ONLY',
   runtime: 'oldx-product-read-staging@oldx-staging.iam.gserviceaccount.com',
   invoker: 'oldx-phase-b-invoker@oldx-staging.iam.gserviceaccount.com',
 };
@@ -33,6 +33,7 @@ test('V2 candidate is inert; retired targets, wrong project and invented approva
   for (const bad of [
     {...candidate, tag: 'ownerbuyertrial'}, {...candidate, tag: 'step3rc14'},
     {...candidate, tag: 'healthcheck'}, {...candidate, project: 'oldx-1c983'},
+    {...candidate, b1Mode: 'ENABLED'}, {...candidate, b1Mode: undefined},
     {...candidate, image: historicalImage},
     {...candidate, image: image.replace('oldx-step04-g2-d13818-a1', 'oldx-unverified-copy')},
     {...candidate, image: image.replace('asia-south1-docker', 'us-central1-docker')},
@@ -167,10 +168,10 @@ function probeDraft(targetChanges = {}, reviewChanges = {}) {
     .map((key, i) => [key, String(i + 1).padStart(64, '0')]));
   const review = {issuedAt, expiresAt: issuedAt + 180_000, maxGrossPaise: 100,
     evidence, ...reviewChanges};
-  const {project, region, service, tag, revision, image: uri, amd64Digest, sourceSha, runtime, invoker} = target;
+  const {project, region, service, tag, revision, image: uri, amd64Digest, sourceSha, runtime, invoker, b1Mode} = target;
   review.scopeSha256 = createHash('sha256').update(JSON.stringify(['OLDX_V2_OFFLINE_PROBE',
     [project, region, service, tag, revision, uri, amd64Digest, sourceSha, runtime, invoker],
-    sessionId, manifest.authUids, manifest.firestoreDocs, review.issuedAt, review.expiresAt,
+    b1Mode, sessionId, manifest.authUids, manifest.firestoreDocs, review.issuedAt, review.expiresAt,
     review.maxGrossPaise, Object.values(review.evidence)])).digest('hex');
   return {target, manifest, sessionId, review, journalState: 'UNUSED',
     probe: {scopeSha256: review.scopeSha256, status: 403, redirected: false, body: ''}};
@@ -207,6 +208,9 @@ test('V2 offline probe rejects retired targets, fixture replay and unsupported r
     probeDraft({sourceSha: 'c'.repeat(40)}),
     probeDraft({sourceSha: '2eebfa7a0c1a66d6c8563162aa5e612570f7a1e1'}),
     probeDraft({invoker: 'unapproved'}),
+    // A newly recomputed fingerprint cannot turn B1 into an enabled revision.
+    probeDraft({b1Mode: 'ENABLED'}),
+    probeDraft({b1Mode: undefined}),
     probeDraft({}, {evidence: legacyEvidence}),
     probeDraft({}, {evidence: {...probeDraft().review.evidence, nineCveDisposition: true}}),
     probeDraft({}, {evidence: {...probeDraft().review.evidence, r1: probeDraft().review.evidence.r2}}),

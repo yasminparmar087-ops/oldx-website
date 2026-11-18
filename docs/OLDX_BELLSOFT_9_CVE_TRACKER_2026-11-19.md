@@ -113,6 +113,34 @@ Owner Windows CMD shows existing pinned ORAS `blob fetch --output -` of exact ch
 
 **Next real gate:** independent BellSoft Cosign DSSE signature/publisher attestation verification for exact subject `sha256:fd67bdfa683df22bca1b149ae1ee1933e662831b895ff4c29ba98217b29c0769`, using officially trusted BellSoft key/identity. Then, if appropriate, one bounded NEW BellSoft-derived candidate local compatibility + scanner pass after separate owner permission. No extra registry upload/build/deploy/test/scan of old OCI. Original Step04 B1 already approved only old pinned OCI; do not silently replace with BellSoft. Cloud Shell R2 preimage still blocked by 50/50h quota until shown reset 20 Nov 16:11 IST.
 
+### C5. 2026-11-19 01:08 IST — BellSoft image & CycloneDX cryptographic verification PASS (actual owner screenshot)
+
+**EXACT owner-executed command** used checksum-pinned local Cosign v3.1.4 `/mnt/d/OLDX/G2/cosign-v3.1.4-pinned-a1/cosign`, fetched vendor public key via BellSoft's official https://download.bell-sw.com/pki/cosign-bellsoft.pub and verified the IMMUTABLE Node24 glibc OCI INDEX `docker.io/bellsoft/hardened-nodejs@sha256:fd67bdfa683df22bca1b149ae1ee1933e662831b895ff4c29ba98217b29c0769`:
+
+```text
+cosign verify --key https://download.bell-sw.com/pki/cosign-bellsoft.pub IMAGE@sha256:fd67... >/dev/null
+BELLSOFT_IMAGE_SIGNATURE=PASS
+cosign verify-attestation --key https://download.bell-sw.com/pki/cosign-bellsoft.pub --type cyclonedx IMAGE@sha256:fd67... >/dev/null
+BELLSOFT_CYCLONEDX_SIGNATURE=PASS
+```
+
+**Original screenshot stdout from Cosign v3.1.4 (both commands independently):**
+- `The cosign claims were validated`
+- `Existence of the claims in the transparency log was verified offline`
+- `The signatures were verified against the specified public key`
+- Both user guard echoes shown **`BELLSOFT_IMAGE_SIGNATURE=PASS`**, **`BELLSOFT_CYCLONEDX_SIGNATURE=PASS`**.
+
+This is a genuine **signature-and-transparency verification PASS for BellSoft's exact image INDEX and its CycloneDX-type attestation**. It upgrades F2 to PASS and F3 to PASS for **publisher-verified subject-linked CycloneDX attestation + previously independently blob-SHA-verified package inventory**. Slight precision limit: Cosign's terse success stdout does not print the attestations' individual evidence-blob IDs, so linking the *exact previously parsed* 1MB blob to the specific verified signature is inferred from the matching immutable image subject and type, not displayed bundle-by-bundle; future extraction can bind if required. The official vendor URL key was used directly over HTTPS; this is ordinary vendor-key trust, **not an independent out-of-band key fingerprint audit**.
+
+Previously parsed digest-checked matching CycloneDX BOM predicate contained 1,837 components and exact BellSoft Stream package versions:
+- `glibc 2.43.0-r11`; official BellSoft CVE-2026-5435 threshold `2.43.0-r1` and CVE-2026-19499 threshold `2.43.0-r6` ⇒ 2 fixed-version matches.
+- `libstdc++/libgcc 15.2.0-r11`; BellSoft CVE-2026-102010 `15.2.0-r11` ⇒ 1 fixed-version match.
+- `libcrypto3/libssl3 3.5.9-r1`; BellSoft CVE-2026-88823, CVE-2026-95691, CVE-2026-95692, CVE-2026-107496 `3.5.9-r1` ⇒ 4 fixed-version matches.
+
+**Security interpretation:** **Seven of the original nine HIGH CVE IDs have validated vendor-patched VERSION MATCHES in the real, publisher-signed BellSoft *BASE IMAGE* SBOM.** `F4=PARTIAL` until exact complete vulnerability status from one newly authorized scan and direct image/ELF native checks; **CVE-2026-95619 GCC allocator and CVE-2026-84243 glibc locale remain BellSoft-patch and native reachability UNKNOWN**. These seven ARE NOT patched in the OLDX derived/runtime image, because OLDX still has its original immutable Distroless Debian image, not BellSoft. No OLDX image build/pull/scan/deploy occurred in this verification. BellSoft signed *base* is not independent proof of reproducible/source-attested OLDX derived image, Firebase/Sharp compatibility, real app privacy or launch readiness.
+
+**NEXT actual priority is TWO remaining CVEs, not repeating seven proofs:** authoritative BellSoft Stream fixed/not-affected advisory or signed VEX for GCC CVE-2026-95619 and glibc CVE-2026-84243. If vendor statuses unavailable, next distinct owner-authorized OFFLINE one-shot image pull + native linkage/locale permissions review and change-impact compatibility of OLDX Node24/Sharp/Firebase. Do not casually remove these two from risk register. Maintain original one private staged B1/R1/R2 APPROVAL ONLY for prior pinned OCI, pending Cloud Shell R2 frozen backup; Step04 ACTIVE/HOLD, Step05 not started, production NO-GO.
+
 ## D. Concrete threat analysis of the TWO unconfirmed BellSoft CVEs — preliminary, never a PASS
 
 ### D1 — CVE-2026-95619 (GCC/libstdc++ aligned new)
@@ -145,9 +173,9 @@ Owner Windows CMD shows existing pinned ORAS `blob fetch --output -` of exact ch
 |---|---|---|
 | F0 — vendor-level 7 BellSoft CVE advisories | **PASS: 7 official advisory fixed entries** | Links + fixed version in section B |
 | F1 — exact Node24 amd64 OCI digest | **PARTIAL: tag/index reference + selected AMD64 digest observed PASS; media type/manifest/independent signature UNVERIFIED** | Registry manifest response URL, fetch date, immutable index and linux/amd64 child hashes |
-| F2 — BellSoft publisher signature verified | **UNVERIFIED** | cosign verified report bound to F1 digest + official pinned key, no skip flags |
-| F3 — exact digest signed SBOM/versions | **PARTIAL: checksum-verified image-bound CycloneDX statement 1837 components with relevant installed package versions observed; publisher signature UNVERIFIED** | SBOM signed subject matches F1, parsed gcc/libstdc++, glibc, openssl, Node and transitive packages/versions |
-| F4 — CVE-by-CVE installed package disposition (9) | **PARTIAL: 7/9 BellSoft vendor-fixed versions match package components from unverified-signer SBOM, 2/9 UNKNOWN; NO OLDX candidate** | Per-ID FIXED/NOT_AFFECTED/PRESENT_UNPATCHED/UNRESOLVED with independent version/VEX evidence |
+| F2 — BellSoft publisher signature verified | **PASS 2026-11-19 01:08 IST: cosign 3.1.4 exact image-index publisher signature + transparency proof** | cosign verified report bound to F1 digest + official pinned key, no skip flags |
+| F3 — exact digest signed SBOM/versions | **PASS for exact index CycloneDX attestation signature and previously digest-verified CycloneDX 1837-component package inventory; no derived OLDX image** | SBOM signed subject matches F1, parsed gcc/libstdc++, glibc, openssl, Node and transitive packages/versions |
+| F4 — CVE-by-CVE installed package disposition (9) | **PARTIAL: 7/9 vendor-fixed version matches in BellSoft signed base image BOM, 2/9 UNKNOWN, fresh full image scan/ELF NOT done; NO OLDX derived image** | Per-ID FIXED/NOT_AFFECTED/PRESENT_UNPATCHED/UNRESOLVED with independent version/VEX evidence |
 | F5 — GCC 95619 reachability / controls | **UNVERIFIED** | Patched-or-absent actual binary OR linked path analysis, attacker control and accepted bounds |
 | F6 — glibc 84243 reachability / controls | **UNVERIFIED** | Patched-or-absent binary OR locale/.mo/env/native path with effective controls |
 | F7 — ALL other new CVEs and base risk | **UNVERIFIED** | One fresh scan of authorized *new* pinned candidate + counts/severities/reachability, no old image rescan |
@@ -213,6 +241,8 @@ Owner Windows CMD shows existing pinned ORAS `blob fetch --output -` of exact ch
 | 2026-11-19 01:00 IST owner CMD screenshot | Read-only `ls -ld` and `find -maxdepth 1` on exact `/mnt/d/OLDX/G2/cosign-v3.1.4-pinned-a1` and `-a2` both print **`No such file or directory`**. | IMPORTANT CORRECTION: earlier `STOP_ALREADY_EXISTS` on both attempted setup commands **did not establish either directory existed**; exact later filesystem inspection shows BOTH ABSENT. Likely CMD→WSL nested shell expansion/quoting of `$d` and/or `!`, not a real filesystem conflict (root cause not independently instrumented). Previous 00:53/00:58 log rows making an asserted existence claim are superseded by this direct read-only evidence. No Cosign downloaded/installed, F2 still UNVERIFIED. | Next one owner-local direct absolute-path `mkdir` with `&&` chain, using **NO `$d` and NO `!`**, then official Sigstore v3.1.4 145,688,404-byte binary download into *a1*, exact checksum `424e2c97d0b45fd7a6b608a87f090f35633f4c23ece5f092d48bba11aaf4bbfa` via `echo 'HASH  PATH' | sha256sum -c -` and ONLY on PASS `chmod`/version. If mkdir/download/hash fails: STOP and inspect existing dir/file; never execute unverified binary or blindly create a3. No cloud/old-image actions. |
 
 | 2026-11-19 01:04 IST owner CMD screenshot | Fixed **literal absolute-path** installation: `mkdir /mnt/d/OLDX/G2/cosign-v3.1.4-pinned-a1 && curl -fL ... -o .../cosign https://github.com/sigstore/cosign/releases/download/v3.1.4/cosign-linux-amd64 && echo '424e2c97...fa  /mnt/.../cosign' \| sha256sum -c - && chmod 700 ... && .../cosign version` | **SUCCESS** 138 MiB download finished; `/mnt/d/OLDX/G2/cosign-v3.1.4-pinned-a1/cosign: OK`, `GitVersion: v3.1.4`, platform `linux/amd64`, `GitTreeState: clean`. Trusted reference to exact upstream release GitHub asset metadata checksum `424e2c97d0b45fd7a6b608a87f090f35633f4c23ece5f092d48bba11aaf4bbfa`; checksum/identification PASS, but Sigstore identity-based trust of **Cosign executable itself** not separately verified. **No BellSoft signature check yet.** No Cloud, Docker, image pull, scan or deploy. | Next use ONLY pinned local `/mnt/d/OLDX/G2/cosign-v3.1.4-pinned-a1/cosign`; official BellSoft key URL `https://download.bell-sw.com/pki/cosign-bellsoft.pub`, verify exact image INDEX digest and CycloneDX attestation separately with fail-closed exit statuses. No insecure flags and no mutable tags. F2 remains UNVERIFIED until real output. |
+
+| 2026-11-19 01:08 IST owner CMD screenshot | Local SHA256-pinned Cosign v3.1.4 `verify --key https://download.bell-sw.com/pki/cosign-bellsoft.pub` and `verify-attestation --type cyclonedx --key same` against exact index `sha256:fd67bdfa...` | **BOTH PASS**: `BELLSOFT_IMAGE_SIGNATURE=PASS`, `BELLSOFT_CYCLONEDX_SIGNATURE=PASS`; Cosign explicitly validated claims, transparency-log inclusion offline, signature against given BellSoft public key. Seven BellSoft base image fixed-version matches now publisher-authenticated at attestation/type/subject level; 2 CVE patch/reachability unknown. No original OLDX 9 HIGH remediation/derived image. | F2=PASS, F3=PASS with signed-BOM evidence, F4=PARTIAL 7 version matches/2 unknown; next research only CVE-2026-95619 and CVE-2026-84243 BellSoft-specific patch/native exploitability, do not recheck seven proofs or launch. |
 
 **For EACH NEW OLDX chat, add at most one concise new row only when there is material new proof, with UTC/IST date, exact source URL or command receipt, immutable digest + versions, observed PASS/FAIL/UNKNOWN, residual risk, next SINGLE action; update F-status and the appropriate nine-ID matrix cell only if grounded. Append and commit to this SAME file; never create competing v2/v3 reports or rerun old scans. After a meaningful owner decision, add one linked Issue #17 comment. Summarize chat decisions, not full chats/credentials/screenshots. Read previously recorded entries before writing to prevent duplicates.**
 

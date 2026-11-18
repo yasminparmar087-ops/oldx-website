@@ -1,0 +1,133 @@
+# OLDX — BellSoft Node.js 24 / Original 9 HIGH CVE Evidence & Risk Tracker
+
+**Maintained source of truth, created 2026-11-19 (IST) | Status: RESEARCH / NO NEW IMAGE VERIFIED / NO DEPLOYMENT**
+**Repository:** yasminparmar087-ops/oldx-website
+**Only authorized branch:** security-hardening-review
+**Primary decision thread:** [GitHub Issue #17](https://github.com/yasminparmar087-ops/oldx-website/issues/17)
+**Owner:** Yasmin Parmar; exact separate consent needed for paid actions, live provider changes and any release.
+**Purpose:** Preserve ALL material discussions, researched evidence, experiments, status changes, owner decisions and future-chat handoffs on the 9 CVEs in ONE continuously updated report. New chats should read this file, AGENTS.md, docs/OLDX_CURRENT_HANDOFF.md, then Issue #17 before acting; append a dated entry after materially new verified evidence. Do not rewrite old failures as PASS.
+
+> **Critical distinction:** “BellSoft vendor advisory FIXED” != “fixed in a specific BellSoft Node.js image” != “fixed in the derived OLDX image” != “risk mitigated and accepted for production.” The source-pinned existing OLDX OCI STILL has 9 DISTINCT HIGH CVE IDs/15 HIGH package matches per the previously completed Grype scan (0 CRITICAL). No changed BellSoft image has been downloaded, built, scanned, published or deployed during this investigation. Do not present 7/9 as an achieved OLDX security improvement.
+
+## A. Owner direction and authoritative boundaries
+
+- Continue fast completion of OLDX Website on the existing 15-step master plan; do not wait indefinitely for all nine Debian/other vendor patches. Public launch still requires real staging/launch P0 acceptance, current residual-risk review and separate exact owner GO. Monitoring alone is not a security mitigation.
+- PRIMARY execution lane remains Step04: original R2 preimage in owner's Cloud Shell Home was SHA256+JSON/YAML parity PASS earlier, but Cloud Shell 50/50 weekly-hour quota prevented further access; UI shows reset **20 Nov 2026 ~4:11 pm IST**. Probe of same path in WSL default HOME returned LOCAL_R2_BACKUP=NOT_AVAILABLE (not proof of loss in Cloud Shell). NO B1, R1, R2, R2 dry-run executed.
+- Existing BellSoft investigation is INDEPENDENT read-only G2 research only. It does not alter original *already-owner-consented, one-time* B1 scope: private staging oldx-staging, asia-south1, oldx-owner-read, original OCI at asia-south1-docker.pkg.dev/oldx-staging/oldx-staging-images/oldx-step04-g2-d13818-a1@sha256:93b70b8b09255194974bc46c7e5942c81531261b81224bd80fa575330f7572e4, tag ownerreadv2, zero percent main traffic, OFF/503, named invoker, bounded 20-min supervision and distinct R1/R2. **BellSoft image substitution is NOT approved within that consent.**
+- Existing G4 default-database single-document CREATE/UPDATE/DELETE403/cleanup/absence PASS, consumed: NEVER rerun; effective cross-database and inherited Invoker still UNVERIFIED. G8 complete all-provider gross hard STOP remains BLOCKED; existing Cloud Run ₹100 configured cap does not cap every Google product. V2 live app OFF. No IAM, Rules, Billing, Firebase, Cloud Run, production or DNS changes in this BellSoft effort.
+- **No-repeat:** do not redo original Docker build, old OCI hash, Grype scan, registry copy, old G4 document, CI or Billing reports simply to demonstrate activity. NEW exact BellSoft candidate permits one focused NEW-image test only after separate owner approval.
+- **Zero new spend** approved for this research. No paid subscription, new hosted environment, registry upload, deployment, downloaded image or heavy scan is authorized by “continue” alone.
+
+## B. Original nine: baseline -> BellSoft advisory -> exact-image proof
+
+**Historical ORIGINAL OLDX Debian13 scan:** GCC14 package version 14.2.0-19; glibc 2.41-12+deb13u4; OpenSSL 3.5.7-1~deb13u3. The original image is an immutable, separately stored derived OCI; this baseline does not change when a vendor publishes a patch.
+
+| CVE | Affected family / exploit prerequisite | BellSoft vendor-level evidence (Stream/Hardened Containers) as of research | In EXACT BellSoft Node24 image? | In NEW OLDX candidate? | Responsible next proof |
+|---|---|---|---|---|---|
+| CVE-2026-102010 | GCC/libstdc++ special pb_ds binary-heap erase_if() use-after-free | FIXED at Stream gcc 15.2.0-r11 [official](https://docs.bell-sw.com/security/cves/CVE-2026-102010) | UNKNOWN | NOT BUILT | Signed SBOM installed libstdc++/gcc family + version; inspect native reachable code |
+| CVE-2026-95619 | GCC/libstdc++ oversized aligned operator new rounding overflow in affected allocator path | **BELLSoft FIX STATUS UNVERIFIED**, no matching official BellSoft fixed advisory located; upstream GCC patch [details](https://www.mail-archive.com/gcc-cvs@gcc.gnu.org/msg57770.html); Root/Aikido Debian13 alternative [record](https://osv.dev/vulnerability/ROOT-OS-DEBIAN-13-CVE-2026-95619) | UNKNOWN | NOT BUILT | Exact libstdc++ version/symbol path/allocator strategy; native dependency reachability, then vendor response or patched base |
+| CVE-2026-5435 | glibc obsolete DNS TSIG printing functions | FIXED at Stream glibc 2.43.0-r1 [official](https://docs.bell-sw.com/security/cves/CVE-2026-5435); Debian source proposed update [separate distro](https://tracker.debian.org/news/1823487/accepted-glibc-241-12deb13u5-source-into-proposed-updates/) | UNKNOWN | NOT BUILT | Signed SBOM and actual libc runtime binary |
+| CVE-2026-19499 | glibc strfmon[l] right-padding buffer overflow | FIXED at Stream glibc 2.43.0-r6 [official](https://docs.bell-sw.com/security/cves/CVE-2026-19499); Debian source proposed update [separate distro](https://tracker.debian.org/news/1823487/accepted-glibc-241-12deb13u5-source-into-proposed-updates/) | UNKNOWN | NOT BUILT | Signed SBOM and actual libc binary |
+| CVE-2026-84243 | glibc attacker-controlled LANGUAGE/locale + crafted readable gettext .mo catalog | **BellSoft FIX STATUS UNVERIFIED**; Ubuntu vendor [USN-9065-1](https://ubuntu.com/security/notices/USN-9065-1) patched Ubuntu, NOT BellSoft; Root/Aikido Debian13 alternative [record](https://osv.dev/vulnerability/ROOT-OS-DEBIAN-13-CVE-2026-84243) | UNKNOWN | NOT BUILT | Binary patch status plus hardened rootfs, writable locations, runtime environment/locale & native gettext reachability |
+| CVE-2026-88823 | OpenSSL AES-GCM-SIV fragmented zero-length AAD / reinit | FIXED at BellSoft Stream openssl 3.5.9-r1 [official](https://docs.bell-sw.com/security/cves/CVE-2026-88823) | UNKNOWN | NOT BUILT | Signed package inventory; compare upstream vs vendor-specific backport |
+| CVE-2026-95691 | OpenSSL QUIC **client** receiving retransmitted CRYPTO | FIXED at BellSoft Stream openssl 3.5.9-r1 [official](https://docs.bell-sw.com/security/cves/CVE-2026-95691) | UNKNOWN | NOT BUILT | Signed package inventory; determine compiled QUIC client use, not just first-party JS |
+| CVE-2026-95692 | OpenSSL AES-GCM-SIV nonstandard IV length | FIXED at BellSoft Stream openssl 3.5.9-r1 [official](https://docs.bell-sw.com/security/cves/CVE-2026-95692) | UNKNOWN | NOT BUILT | Signed inventory and native linked crypto APIs |
+| CVE-2026-107496 | OpenSSL CMS_encrypt on malicious explicit EC group-order-1 certificate can hang CPU | FIXED at BellSoft Stream openssl 3.5.9-r1 [official](https://docs.bell-sw.com/security/cves/CVE-2026-107496) | UNKNOWN | NOT BUILT | Signed inventory and linked CMS path |
+
+**Counts:** 7/9 official **BellSoft vendor-advisory** fixed statuses; 2/9 BellSoft-specific status UNKNOWN (95619, 84243); **0/9 verified patched in an exact BellSoft Node.js 24 image** and **0/9 verified patched in an OLDX derived BellSoft image**. This does not mean every BellSoft image is vulnerable to all nine: package absence, vendor VEX and fixed-image inventory remain UNKNOWN.
+
+**Other patch routes, NOT to be transplanted between distributions:** Debian GCC newer Forky/Sid fixed for both GCC IDs but Trixie baseline vulnerable; Ubuntu USN for glibc 84243; Root/Aikido and Echo vendor backports to some Debian13-compatible packages. An advisory for another distro is neither BellSoft patched status nor proof of runtime compatibility. Original OpenSSL upstream 3.5-branch fixes public, supported release planned 1 Dec 2026; BellSoft's patched 3.5.9-r1 is a vendor backport and NOT proof arbitrary 3.5.9/deb13u3 is fixed. See [OpenSSL official 10 Nov advisory](https://openssl-library.org/news/secadv/20261110.txt).
+
+## C. Exact BellSoft Node 24 image / trust / SBOM investigation
+
+**Preferred public candidate:** docker.io/bellsoft/hardened-nodejs:24-distroless-glibc
+**Fallback for diagnostics only:** docker.io/bellsoft/hardened-nodejs:24-nonroot-glibc
+- Naming and glibc flavor documented in [BellSoft getting-started images](https://docs.bell-sw.com/alpaquita-linux/latest/how-to/images-getting-started-guide/) and [BellSoft Docker Hub](https://hub.docker.com/r/bellsoft/hardened-nodejs/tags). Avoid :latest (currently may be Node26), and do not infer manifest from a 26-tag or generic distroless-glibc.
+- **Exact OCI index digest:** UNVERIFIED / NOT CAPTURED. The public Docker Hub tag JSON endpoint https://hub.docker.com/v2/repositories/bellsoft/hardened-nodejs/tags/24-distroless-glibc was attempted **read-only** in public research but unavailable to the browsing tool; container runtime network DNS unavailable. No digest was invented; no image pulled.
+- **Exact amd64 child manifest digest and media type:** UNVERIFIED.
+- **Tag availability/current timestamp:** BellSoft naming scheme documented; exact current tag digest and presence not independently verified by registry response.
+- **BellSoft signature:** vendor supports signing hardened images. Official how-to [verify image/SBOM with cosign](https://docs.bell-sw.com/alpaquita-linux/latest/how-to/cosign-guide/) and publisher public key at https://download.bell-sw.com/pki/cosign-bellsoft.pub. **No actual cosign verify performed for exact Node24 digest; SIGNATURE=UNKNOWN.** Obtain key through official domain, pin/check its fingerprint from independent trust context; reject unexpected signer/missing signatures.
+- **Signed SBOM:** vendor supports SPDX/CycloneDX image attestations. **No exact-Node24 signed SBOM obtained/verified.** Generic Image Hub SBOM viewer showing zero/loading is not evidence of zero OS packages or CVEs. Future extraction must bind attestation subject to exact digest + architecture and verify signature. Catalog source: https://images.bell-sw.com/hardened-nodejs/dockerhub/sbom .
+- **Community vs paid:** BellSoft advertises free Community Node.js image tier; enterprise patched SLA/long-term product support are distinct paid offers. Source: https://bell-sw.com/bellsoft-hardened-images/ . Free base images do not make cloud build/registry/scanning/egress free. Check image EULA/redistribution, tag, support coverage as relevant.
+- **OTHER NEW vulnerabilities introduced by BellSoft:** UNKNOWN. Never claim total risk reduced solely because seven old CVEs have BellSoft advisory fixes. Check fresh scanner result for ALL findings plus provenance and library compatibility.
+
+## D. Concrete threat analysis of the TWO unconfirmed BellSoft CVEs — preliminary, never a PASS
+
+### D1 — CVE-2026-95619 (GCC/libstdc++ aligned new)
+- Technical prerequisite: target libstdc++ native aligned allocation must use the vulnerable overflow-prone rounding path, typically with huge attacker-controlled size/alignment; GCC upstream developer notes many modern targets use posix_memalign instead of that special rounding path: https://www.mail-archive.com/gcc-cvs@gcc.gnu.org/msg57770.html . This is a *conditional technical clue*, not general non-exploitability proof.
+- OLDX first-party shipped Product Read service is ESM JavaScript/Node24; HTTP adapter enforces maxBytes=32768 for the owner route, maxHeaderSize=16384, requestTimeout=10000, default owner handler OFF/503. Source: functions/staging-marketplace/product-read-server.mjs. This may restrict that HTTP path only; does NOT prove every Node native allocation or future enabled route harmless.
+- Node binary/native modules may use C++; existing npm packages include Sharp 0.35.5 and platform libvips. No reviewed first-party direct special C++ aligned allocator call, but **native dependency/compiled symbol/ELF linkage and attacker control unverified**.
+- Actual proof required: candidate SBOM and native libstdc++ version; check BellSoft official patch statement or evidence that affected allocator is absent; compile/linkage and dynamic native-module load analysis, constrained test inputs, focused replay only if real entrypoint exists. Do not exploit-test live Cloud Run.
+- Practical risk controls: nonroot/read-only image where actually true, bound request sizes, input validation, instance max1, deadline; these limit blast radius but are **not a patch**. Formal disposition remains **UNKNOWN / NOT ACCEPTED FOR PUBLIC RELEASE**.
+
+### D2 — CVE-2026-84243 (glibc gettext locale)
+- Technical prerequisite: glibc translation mechanism must read an attacker-controlled crafted .mo catalog, combined with relevant LANGUAGE/locale manipulation and filesystem accessibility. Requires checking exact patch and actual native gettext call path.
+- OLDX first-party Product Read Node server uses node:http, no direct gettext catalog loader in reviewed JS. Staging app is default-OFF. But native Node runtime/Sharp/libvips/Firebase Admin dependencies may use linked libc/Gettext; absence of a first-party JS call is **NOT** exclusion of compiled paths.
+- Attacker controlling URL/body does not automatically control the *process* LANGUAGE variable or an OS-level .mo catalog. Still, env injections, writable filesystem paths, user uploads, locale handling, /tmp and transitive dependencies must be independently examined. Do NOT assume rootfs read-only unless measured in an exact runtime/image; /tmp may be writable.
+- Actual proof required: BellSoft exact glibc binary patched status/version, candidate catalog paths+permissions, /tmp symlink and path-mapping threats, container process env and locale, all native gettext linkage and whether any untrusted data reaches locales/catalogs. Source-only observation is NOT dynamic exploitability proof.
+- Practical controls: fixed/inherited deterministic locale, prohibit writable locales/catlogs and environment injection, nonroot and least-privilege FS, isolate untrusted files, quotas and denial protections; verify **actual environment** before claiming. Formal disposition **UNKNOWN / NOT ACCEPTED FOR PUBLIC RELEASE**.
+
+**Ranking:** Do not falsely rank a HIGH CVE as harmless merely because it needs an unusual C++/locale trigger. Both merit a real patched-package or defensible mitigated risk assessment before launch. Debian originals remain HIGH per scanner; upstream low/medium disagreements do not automatically downgrade the original scan.
+
+## E. Compatibility with OLDX — no change committed to runtime
+
+- Current staging Dockerfile source: [Dockerfile.product-read.distroless](../Dockerfile.product-read.distroless). Current pinned runtime: Google Distroless Node24 **Debian13** SHA256 6abfcb..., production Node24 Bookworm dependencies builder and npm ci --omit=dev --ignore-scripts.
+- BellSoft Alpaquita is a different distribution (APK, different library layout). GLIBC variant is preferable to musl for Node native Sharp/libvips compatibility, **not a guarantee**. Do NOT mix Ubuntu/Debian .deb files or third-party vendor patches into BellSoft APK runtime.
+- OLDX original Google distroless Node runtime starts with inherited entrypoint and CMD ["functions/staging-marketplace/product-read-server.mjs"]; BellSoft's container may use tini/node argv. A new Dockerfile needs **explicit ENTRYPOINT and CMD correctness**. Do not assume a FROM-only edit.
+- Require exact Node24 executable ABI and NODE_ENV; uid/nonroot FS ownership/write paths; CA certificates and HTTPS outbound; Firebase Admin/ADC metadata identity and no file-backed credentials; node:http 0.0.0.0 PORT 8080 health 200 and owner route 503 disabled; SIGTERM graceful exit; Sharp import + real tiny image transform; request size/rate; scope/role privacy and Cloud Run CPU/memory platform architecture.
+- Old Step04 approved B1 digest & rollback remain unaffected. Changing to new BellSoft candidate requires **new separate scoped image build/registry/deployment authorization and fresh rollback evidence**, never silently swap image during existing B1.
+
+## F. Strict stage/gate ledger — update statuses in future chats, don't invent PASS
+
+| Gate / evidence | At tracker creation (2026-11-19) | Exact exit evidence |
+|---|---|---|
+| F0 — vendor-level 7 BellSoft CVE advisories | **PASS: 7 official advisory fixed entries** | Links + fixed version in section B |
+| F1 — exact Node24 amd64 OCI digest | **BLOCKED / UNVERIFIED** | Registry manifest response URL, fetch date, immutable index and linux/amd64 child hashes |
+| F2 — BellSoft publisher signature verified | **UNVERIFIED** | cosign verified report bound to F1 digest + official pinned key, no skip flags |
+| F3 — exact digest signed SBOM/versions | **UNVERIFIED** | SBOM signed subject matches F1, parsed gcc/libstdc++, glibc, openssl, Node and transitive packages/versions |
+| F4 — CVE-by-CVE installed package disposition (9) | **UNVERIFIED** | Per-ID FIXED/NOT_AFFECTED/PRESENT_UNPATCHED/UNRESOLVED with independent version/VEX evidence |
+| F5 — GCC 95619 reachability / controls | **UNVERIFIED** | Patched-or-absent actual binary OR linked path analysis, attacker control and accepted bounds |
+| F6 — glibc 84243 reachability / controls | **UNVERIFIED** | Patched-or-absent binary OR locale/.mo/env/native path with effective controls |
+| F7 — ALL other new CVEs and base risk | **UNVERIFIED** | One fresh scan of authorized *new* pinned candidate + counts/severities/reachability, no old image rescan |
+| F8 — OLDX Node24/Sharp/Firebase/HTTP compatibility | **UNVERIFIED** | Single bounded newly approved local-only test; no live tokens/secrets/Firestore |
+| F9 — OLDX source/build signing + ancestry | **UNVERIFIED** | verified base + reproducible pinned exact source/recipe/build custody and signed derived image, not merely BellSoft base signer |
+| F10 — cost/legal/vendor viability | **PARTIAL** | confirmed exact free tag usage/license/limits, expected CI/registry/storage and ongoing patch maintenance |
+| F11 — private staged candidate/rollback | **NOT AUTHORIZED/NOT RUN** | Separate owner authorization, exact immutable digest + recovery and no-drift, hosted stage evidence |
+| F12 — public launch security | **NO-GO** | Original Steps 05–13 real authenticated/permission/privacy/media/admin/device/cost/rollback PASS, then fresh owner GO |
+
+### Next smallest actions, only once
+1. **Read-only public registry manifest:** fetch exact 24-distroless-glibc digest, linux/amd64 child; if tag inaccessible, preserve BLOCKED and try ONLY a trusted BellSoft official alternative registry for same product. Never invent hashes or use 26-tag digest.
+2. **Read-only official signatures/SBOM:** verify F1 exact digest cosign publisher key + signed SBOM and read exact installed versions against all nine, plus total new CVEs if provider publishes signed scan/VEX. This step needs command/tool when available; if tool not installed, do not claim verification.
+3. **Resolve both uncertainties:** ask BellSoft for exact patch status of 95619 and 84243 in the specific F1 digest if inventory alone insufficient; prefer official published erratum. Do NOT buy support or assume vendor reply.
+4. If F1–F6 promising, present owner an **one-shot bounded LOCAL ONLY** test: one new BellSoft image pull to Windows D:/WSL, no original OCI changes; pinned SBOM and minimal Node/Sharp test, one fresh **new-image** Grype scan + native checks; no Google Cloud, registry write or paid services, and stop on unknown costs.
+5. **Decision**: ADOPT only if material net risk reduction, real compatibility, signer/derived build trust and budget constraints pass. Otherwise retain pinned Debian route and official security patch watch. Either way leave Website feature development proceeding under its independent actual launch gates.
+
+### Stop rules
+- Missing actual tag/digest, signature mismatch, unsigned/incorrect subject, SBOM absent/mismatch, unknown library lineage, discovered CRITICAL/high exploitability, native compatibility broken, unauthorized paid service, credentials needed, user account data access, Cloud Shell quota/rollback unavailable -> STOP that lane; no silent substitution. Public research can continue without inventing a PASS.
+- No new local image pull, Google Cloud deployed image, Cloud Run revision, billing, Rules, IAM, API activation, auth token, synthetic Firestore user/document or production change from this report.
+
+## G. Immutable evidence pointers / historical conversation decisions
+
+- [Issue #17 owner Website work vs 9-fixes timing decision](https://github.com/yasminparmar087-ops/oldx-website/issues/17#issuecomment-6985967932) — owner wants ongoing website development, and future evaluation of launch if patches not all available; NOT unconditional release GO.
+- [Task15 deep patch alternatives for seven CVEs](https://github.com/yasminparmar087-ops/oldx-website/issues/17#issuecomment-6986934753) — upstream/Vendor A, Echo and Root, and potential BellSoft.
+- [Task15 prior BellSoft source assessment](https://github.com/yasminparmar087-ops/oldx-website/issues/17#issuecomment-6987271260) — BellSoft packages 7/9 advisories, Node24 glibc, missing image digest, signed SBOM and native compatibility.
+- [Task15 2 Debian glibc proposed source fixes](https://github.com/yasminparmar087-ops/oldx-website/issues/17#issuecomment-6986683069) — not stable or current OLDX image.
+- [Task15 50/50 Cloud Shell hours, Windows WSL path NOT_AVAILABLE](https://github.com/yasminparmar087-ops/oldx-website/issues/17#issuecomment-6986114981).
+- [B1/R1/R2 exact consent](https://github.com/yasminparmar087-ops/oldx-website/issues/17#issuecomment-6983188440); [one private G2 risk consent](https://github.com/yasminparmar087-ops/oldx-website/issues/17#issuecomment-6980414274); [G4 single-doc consumed PASS](https://github.com/yasminparmar087-ops/oldx-website/issues/17#issuecomment-6980232981).
+- Canonical [15-step execution plan](OLDX_SINGLE_EXECUTION_PLAN_2026-11-13.md); [living handoff](OLDX_CURRENT_HANDOFF.md); [agent instructions](../AGENTS.md); [hosted gate details](STEP3_HOSTED_ACCEPTANCE_V2_REVIEW_GATES_2026-11-15.md).
+- Official signed artifacts: [BellSoft cosign guide](https://docs.bell-sw.com/alpaquita-linux/latest/how-to/cosign-guide/), [BellSoft image guide](https://docs.bell-sw.com/alpaquita-linux/latest/how-to/images-getting-started-guide/), [Community/paid features](https://bell-sw.com/bellsoft-hardened-images/).
+
+## H. APPEND-ONLY dated research and next-chat update log
+
+| IST date | Action / source | Verified result and blocker | Change to F gates / next action |
+|---|---|---|---|
+| 2026-11-18 | Prior user conversations + Github Issue #17 | Original Grype 9 HIGH; upstream Debian patches for 2 glibc proposed only; 7 BellSoft vendor advisories fixed; no exact image verification | F0 PASS, F1–F9 unknown, Step04 original unchanged |
+| 2026-11-19 | GitHub source review of existing Dockerfile and Product Read server; official BellSoft 7 CVE advisory pages reopened | Original Debian13+Node24/Sharp runtime path confirmed. BellSoft fixed package versions for GCC 102010; glibc 5435/19499; OpenSSL 88823/95691/95692/107496. Two additional BellSoft statuses unverified; original OLDX unaffected | F0 PASS, F1–F9 UNVERIFIED; protect original OCI and B1 scope |
+| 2026-11-19 | Read-only exact Docker Hub tag API attempt using browsing tool, container URL resolution attempt | API did not return a trusted exact tag digest (web access error; isolated container DNS failure); no authenticated registry/image command run. No digest/SBOM/signature invented | F1 BLOCKED; F2/F3 remain UNVERIFIED; identify better trusted read-only registry access in next session |
+| 2026-11-19 | BellSoft official image/cosign documentation | Public key/signed SBOM verification approach is documented, but NOT performed for Node24 digest | F2/F3 still UNVERIFIED |
+
+**For EACH NEW OLDX chat, add at most one concise new row only when there is material new proof, with UTC/IST date, exact source URL or command receipt, immutable digest + versions, observed PASS/FAIL/UNKNOWN, residual risk, next SINGLE action; update F-status and the appropriate nine-ID matrix cell only if grounded. Append and commit to this SAME file; never create competing v2/v3 reports or rerun old scans. After a meaningful owner decision, add one linked Issue #17 comment. Summarize chat decisions, not full chats/credentials/screenshots. Read previously recorded entries before writing to prevent duplicates.**
+
+## I. Current handoff instruction for next chat (copy verbatim as needed)
+
+“OLDX Task15 BellSoft CVE lane: Read AGENTS.md, docs/OLDX_CURRENT_HANDOFF.md and docs/OLDX_BELLSOFT_9_CVE_TRACKER_2026-11-19.md FIRST; use Issue #17 and 15-Step plan. BellSoft official advisories have SEVEN package-level FIXED entries, TWO BellSoft statuses UNKNOWN (CVE-2026-95619 GCC and CVE-2026-84243 glibc); the exact 24-distroless-glibc digest, signature and signed SBOM are still NOT VERIFIED, so ZERO OLDX vulnerabilities can be marked remediated by BellSoft. Next smallest meaningful item is ONE read-only exact Node24 digest+signed SBOM/versions check, not a new Docker build/scan, and no 26-tag substitution. Source-only Github report updates on review branch are authorized. No paid/cloud/live/provider changes without action-specific Yasmin approval. Original existing B1/R1/R2 scopes remain pinned to the old OCI, Cloud Shell R2 preimage inaccessible until quota reset, Step04 ACTIVE/HOLD, Step05 NOT STARTED and production NO-GO. Continue Website feature development independent of patch availability, but never waive real launch P0 checks.”

@@ -92,6 +92,59 @@ class ProofTests(unittest.TestCase):
             (Path(temp)/p.JOURNAL_DIRNAME).mkdir()
             with self.assertRaises(p.Stop) as e:p.run_once()
             self.assertEqual(e.exception.code,'EXISTING_JOURNAL_REQUIRES_REVIEW')
+
+    def test_resume_after_initialized_cli_timeout_reuses_exact_document(self):
+        import json
+        api = FakeAPI()
+        with tempfile.TemporaryDirectory() as temp, patch.object(p.Path, 'home', return_value=Path(temp)):
+            with patch.object(p, 'guard_operator', side_effect=p.Stop('GCLOUD_UNAVAILABLE')):
+                with self.assertRaises(p.Stop) as caught:
+                    p.run_once()
+                self.assertEqual(caught.exception.code, 'GCLOUD_UNAVAILABLE')
+            journal = Path(temp) / p.JOURNAL_DIRNAME / 'journal.json'
+            before = json.loads(journal.read_text())
+            self.assertEqual(before['state'], 'INITIALIZED')
+            self.assertEqual(api.calls, [])
+            with patch.object(p, 'guard_operator', return_value='b'*42), \
+                 patch.object(p, 'runtime_credential', return_value='a'*42), \
+                 patch.object(p, 'request', side_effect=api):
+                p.run_once(resume_initialized=True)
+            after = json.loads(journal.read_text())
+            self.assertEqual(after['document'], before['document'])
+            self.assertEqual(after['marker'], before['marker'])
+            self.assertEqual(after['state'], 'CLEANUP_VERIFIED')
+            self.assertIsNone(api.doc)
+            self.assertEqual([x[0] for x in api.calls],
+                ['GET','GET','POST','PATCH','DELETE','GET','DELETE','GET'])
+            with self.assertRaises(p.Stop) as again:
+                p.run_once(resume_initialized=True)
+            self.assertEqual(again.exception.code, 'JOURNAL_NOT_EXACT_PRIVATE_INITIALIZED')
+
+    def test_resume_rejects_drifted_initial_state_without_cloud(self):
+        import json
+        with tempfile.TemporaryDirectory() as temp, patch.object(p.Path,'home',return_value=Path(temp)):
+            with patch.object(p, 'guard_operator', side_effect=p.Stop('GCLOUD_UNAVAILABLE')):
+                with self.assertRaises(p.Stop): p.run_once()
+            directory = Path(temp) / p.JOURNAL_DIRNAME
+            journal = directory / 'journal.json'
+            original = json.loads(journal.read_text())
+            for change in [
+                {'state':'CREATE_UNKNOWN'}, {'marker':'ff'},
+                {'document':p.COLLECTION+'/another-document'},
+                {'project':'oldx-1c983'}, {'createTime':'2026-11-18T12:00:00Z'}
+            ]:
+                obj = {**original, **change}
+                p.durable_record(directory, obj)
+                with patch.object(p, 'guard_operator', side_effect=AssertionError('should not call gcloud')):
+                    with self.assertRaises(p.Stop) as denied:
+                        p.run_once(resume_initialized=True)
+                    self.assertEqual(denied.exception.code,'JOURNAL_NOT_EXACT_PRIVATE_INITIALIZED')
+            p.durable_record(directory, original)
+            journal.chmod(0o644)
+            with self.assertRaises(p.Stop) as denied:
+                p.run_once(resume_initialized=True)
+            self.assertEqual(denied.exception.code,'JOURNAL_NOT_EXACT_PRIVATE_INITIALIZED')
+
     def test_bad_scope_and_marker_rejected(self):
         with self.assertRaises(p.Stop):
             p.valid_document({'name':'wrong','fields':p.fields('abc',1),'createTime':'2026-11-18T13:00:00Z','updateTime':'2026-11-18T13:00:00Z'},'right','abc',1)

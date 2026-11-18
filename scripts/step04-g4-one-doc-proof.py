@@ -29,6 +29,8 @@ JOURNAL_DIRNAME = '.oldx-g4-one-document-v1'
 TOKEN_PATTERN = re.compile(r'^[A-Za-z0-9._~+/\-]{20,8192}={0,2}$')
 TIME_PATTERN = re.compile(r'^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d(?:\.\d{1,9})?Z$')
 PERFORM_WORD = 'YASMIN_APPROVED_ONE_SYNTHETIC_G4_DOC_20261118'
+# Fresh separate user consent is mandatory to resume an already-spent one-shot journal.
+RESUME_WORD = 'YASMIN_APPROVED_G4_RESUME_INITIALIZED_20261118'
 REQUEST_CAP = 12
 
 class Stop(Exception):
@@ -87,7 +89,7 @@ def _json(data):
 def _cli(*args):
     try:
         result = subprocess.run(['gcloud', *args], capture_output=True, text=True,
-                                check=False, timeout=15)
+                                check=False, timeout=90)
     except (OSError, subprocess.TimeoutExpired):
         raise Stop('GCLOUD_UNAVAILABLE') from None
     if result.returncode != 0:
@@ -202,29 +204,68 @@ def report_status():
     print('G4_DOCUMENT_PATH=' + str(obj.get('document', 'UNKNOWN')))
     print('G4_CLOUD_ACTION=NONE_IN_STATUS')
 
-def run_once():
+def read_only_initialized_journal(directory):
+    """Fail-closed: accept exactly the previously created, never-mutated INITIALIZED journal."""
+    j = directory / 'journal.json'
+    try:
+        if (directory.is_symlink() or not directory.is_dir() or
+            directory.stat().st_uid != os.geteuid() or
+            (directory.stat().st_mode & 0o777) != 0o700 or
+            sorted(p.name for p in directory.iterdir()) != ['journal.json'] or
+            j.is_symlink() or not j.is_file() or
+            j.stat().st_uid != os.geteuid() or
+            (j.stat().st_mode & 0o777) != 0o600):
+            raise Stop('JOURNAL_NOT_EXACT_PRIVATE_INITIALIZED')
+        obj = json.loads(j.read_text('utf-8'))
+    except (ValueError, OSError):
+        raise Stop('JOURNAL_READ_UNVERIFIED') from None
+    if not isinstance(obj, dict) or set(obj) != {
+        'project', 'database', 'document', 'marker', 'state', 'createTime',
+        'updateTime', 'runtimeDeleteStatus', 'operatorCleanupStatus'
+    } or obj.get('project') != PROJECT or obj.get('database') != '(default)' or (
+        re.fullmatch(COLLECTION + r'/g4-proof-[a-f0-9]{24}',
+                     str(obj.get('document', ''))) is None
+    ) or re.fullmatch(r'[a-f0-9]{40}', str(obj.get('marker', ''))) is None or (
+        obj.get('state') != 'INITIALIZED' or
+        obj.get('createTime') is not None or obj.get('updateTime') is not None or
+        obj.get('runtimeDeleteStatus') != 'UNVERIFIED' or
+        obj.get('operatorCleanupStatus') != 'NOT_ATTEMPTED'
+    ):
+        raise Stop('JOURNAL_NOT_EXACT_PRIVATE_INITIALIZED')
+    return obj
+
+def run_once(*, resume_initialized=False):
     if os.name != 'posix':
         raise Stop('LINUX_WSL_REQUIRED')
     directory = journal_path()
-    if directory.exists() or directory.is_symlink():
-        raise Stop('EXISTING_JOURNAL_REQUIRES_REVIEW')
-    oldmask = os.umask(0o077)
-    try:
-        directory.mkdir(mode=0o700)
-    finally:
-        os.umask(oldmask)
-    marker = secrets.token_hex(20)
-    docid = 'g4-proof-' + secrets.token_hex(12)
-    document = COLLECTION + '/' + docid
+    if resume_initialized:
+        record = read_only_initialized_journal(directory)
+        marker, document = record['marker'], record['document']
+        docid = document.split('/')[1]
+        # Consume the reviewed resume before ANY gcloud or Firestore operation.
+        # A failed resume is locked again; never issue an automatic second attempt.
+        update(directory, record, 'RESUME_INITIALIZED_CONSUMED')
+        print('G4_INITIALIZED_JOURNAL_REUSED=YES', flush=True)
+    else:
+        if directory.exists() or directory.is_symlink():
+            raise Stop('EXISTING_JOURNAL_REQUIRES_REVIEW')
+        oldmask = os.umask(0o077)
+        try:
+            directory.mkdir(mode=0o700)
+        finally:
+            os.umask(oldmask)
+        marker = secrets.token_hex(20)
+        docid = 'g4-proof-' + secrets.token_hex(12)
+        document = COLLECTION + '/' + docid
+        record = {'project': PROJECT, 'database': '(default)', 'document': document,
+                  'marker': marker, 'state': 'INITIALIZED', 'createTime': None,
+                  'updateTime': None, 'runtimeDeleteStatus': 'UNVERIFIED',
+                  'operatorCleanupStatus': 'NOT_ATTEMPTED'}
+        durable_record(directory, record, first=True)
+        print('G4_JOURNAL=PRIVATE_LOCAL_PERSISTED', flush=True)
     name = DB_ROOT + '/documents/' + document
     url = BASE + document
-    record = {'project': PROJECT, 'database': '(default)', 'document': document,
-              'marker': marker, 'state': 'INITIALIZED', 'createTime': None,
-              'updateTime': None, 'runtimeDeleteStatus': 'UNVERIFIED',
-              'operatorCleanupStatus': 'NOT_ATTEMPTED'}
-    durable_record(directory, record, first=True)
     print('G4_SCOPE=oldx-staging/(default)/' + document, flush=True)
-    print('G4_JOURNAL=PRIVATE_LOCAL_PERSISTED', flush=True)
     operator_token = None
     runtime_token = None
     calls = 0
@@ -302,7 +343,8 @@ def run_once():
         print('G4_STOP=' + ex.code)
         print('G4_FINAL_STATE=' + record['state'])
         print('G4_PRIVATE_JOURNAL=' + str(directory))
-        if record['state'] in ('INITIALIZED', 'OPERATOR_ROLE_CONFIGURED_NOT_EFFECTIVE',
+        if record['state'] in ('INITIALIZED', 'RESUME_INITIALIZED_CONSUMED',
+                                'OPERATOR_ROLE_CONFIGURED_NOT_EFFECTIVE',
                                'RUNTIME_TOKEN_READY', 'EXACT_ABSENCE_VERIFIED'):
             print('G4_NEW_DOCUMENT=NOT_YET_ATTEMPTED')
         else:
@@ -314,12 +356,15 @@ def main():
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument('--status', action='store_true')
     p.add_argument('--execute', action='store_true')
+    p.add_argument('--resume-initialized', action='store_true')
     p.add_argument('--approved-once', default='')
     args = p.parse_args()
-    if args.status and not args.execute and args.approved_once == '':
+    if args.status and not args.execute and not args.resume_initialized and args.approved_once == '':
         report_status(); return 0
-    if args.execute and not args.status and args.approved_once == PERFORM_WORD:
+    if args.execute and not args.status and not args.resume_initialized and args.approved_once == PERFORM_WORD:
         run_once(); return 0
+    if args.resume_initialized and not args.status and not args.execute and args.approved_once == RESUME_WORD:
+        run_once(resume_initialized=True); return 0
     raise Stop('EXACT_ONE_SHOT_APPROVAL_ARGUMENT_REQUIRED')
 
 if __name__ == '__main__':

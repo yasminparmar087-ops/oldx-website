@@ -1872,3 +1872,28 @@ wsl -d OLDX-Ubuntu-24.04 --exec bash -lc "echo '145a7799df408bd932a6736df899217a
 Only the sanitized output markers should be shared; raw attestation, OCI tar, full SBOM/provenance, OAuth code, access tokens or private file contents are not needed. On any `STOP`, do not rebuild/rescan/copy; investigate that exact failure in source review. `ATTESTATION_INDEX_AND_MANIFEST_SHA256=PASS` and in-toto counts will establish **structure/claims only**; an independent trusted signature verification remains a **separate unresolved gate**.
 
 **Persistent release state:** one private staging Registry OCI copy already consumed, provider digest & attestation-shaped record verified, no further copy; original 9 unique Grype HIGH still `G2=HOLD_NOT_DEPLOYABLE`, 4 new advisory LOW monitored separately, `G4=UNVERIFIED` effective Firestore IAM, `G8=BLOCKED` full-provider hard spend stop, `V2_LIVE=OFF`, `B1/R1/R2=NOT_APPROVED`, Step04 ACTIVE/HOLD, Step05 NOT STARTED, hosted staging and production NO-GO. No Cloud Run/Firestore/Rules/IAM/Billing/Production mutations occurred during this source-only work.
+
+## 18 Nov 2026 ~15:30 IST — TASK13 owner D: offline G2 attestation inspector ACTUALLY PASS (Task14 continuation)
+
+**New owner screenshot from Windows CMD, ONE read-only WSL execution:** previously source-pinned `scripts/step04-g2-attestation-readonly.py` saved at `D:\OLDX\G2\oldx_g2_attestation_readonly.py` returned SHA256 `145a7799df408bd932a6736df899217a97bfa03c654e3eb60a79199dd37c51f8: OK` before inspecting existing private `candidate.oci.tar`. This closes the previously PENDING operator-local attestation-content inspection; do not repeat it.
+
+```text
+ATTESTATION_INDEX_AND_MANIFEST_SHA256=PASS
+ATTESTATION_MANIFEST_SUBJECT_AMD64=PASS
+IN_TOTO_LAYERS_SHA256=PASS
+IN_TOTO_LAYER_COUNT=2
+SLSA_PREDICATE_COUNT=1
+SPDX_PREDICATE_COUNT=1
+OTHER_PREDICATE_COUNT=0
+MATCHING_STATEMENT_SUBJECT_COUNT=2
+PRIOR_SOURCE_SHA_MENTION_COUNT_UNTRUSTED=0
+SLSA_BUILDER_ID_PRESENT_COUNT_UNTRUSTED=0
+INDEPENDENT_SIGNATURE_VERIFICATION=NOT_PERFORMED
+SLSA_BUILD_LEVEL=UNKNOWN
+G2_RELEASE=HOLD_NOT_DEPLOYABLE
+REGISTRY_AND_PRODUCTION=NOT_CHANGED
+```
+
+**Interpret only this scope:** two SHA256-checked in-toto layers, one SLSA-shaped and one SPDX-shaped, both subject matching. No earlier build source commit SHA mention was found by this bounded scanner; zero populated builder IDs. It provides **NO independent build signature, trusted source→builder→image custody or certified SLSA level**. The inspector cannot prove whether other trusted evidence exists elsewhere. Existing 9 distinct Grype HIGH remain unresolved; four subsequently published upstream LOW findings are separate, not regraded as new scanner HIGH. Source/blob parity 30/30 and JS call audit 27/27 are previous completed observations, not native or cryptographic trust proof. One consented private Artifact Registry upload, metadata, 37-blob OCI, Docker/Grype/runtime checks and G4 Cloud Asset Analyzer reads were already done: **NEVER rerun** simply to make progress.
+
+**Next single Step04 bottleneck:** use the *existing* nine-CVE applicability/risk matrix, and the *existing* G4 effective runtime IAM and G8 all-provider cost/STOP evidence to decide whether a tightly bounded, separately owner-approved private/default-OFF 0%-main 20-minute staging trial is security- and cost-defensible. The owner's willingness to consider an exception is NOT blanket acceptance of nine HIGHs, nor authorization for B1/R1/R2, signed provenance waiver, Firestore/Auth/test traffic, IAM, budget/API, scan/build or Registry recopy. If proof or compensating controls remain missing, stop at HOLD; avoid new redundant planning. Current `G2=HOLD_NOT_DEPLOYABLE`, `G4=UNVERIFIED`, `G8=BLOCKED`, `V2=OFF`, `B1/R1/R2=NOT_APPROVED`, Step04 ACTIVE/HOLD, Step05 NOT STARTED, hosted staging NO-GO, production HOLD/NO-GO. Evidence: [Issue #17 operator checkpoint](https://github.com/yasminparmar087-ops/oldx-website/issues/17#issuecomment-6975448660). No cloud/provider change from offline script.

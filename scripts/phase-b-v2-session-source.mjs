@@ -31,6 +31,8 @@ const INVOKER = 'oldx-phase-b-invoker@oldx-staging.iam.gserviceaccount.com';
 // B1 review is intentionally disabled-only; a future enabled trial needs NEW source and owner approval.
 // This caller-supplied scope value does not verify actual deployed environment flags.
 const B1_MODE = 'DEFAULT_OFF_503_ONLY';
+// One intended private 0%-MAIN tag only; source review cannot verify provider tag availability.
+const B1_TAG = 'ownerreadv2';
 const RETIRED_TAGS = new Set(['ownerbuyertrial', 'healthcheck', 'step3rc14']);
 const UUID = /^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/i;
 const SELLER = /^synthetic-seller-v2-[a-z0-9]{12,24}$/;
@@ -55,7 +57,7 @@ export function reviewV2Candidate(candidate) {
     imageDigest === V2_LOCAL_INDEX &&
     !HISTORICAL_DIGESTS.has(imageDigest) &&
     candidate.runtime === RUNTIME && candidate.invoker === INVOKER &&
-    candidate.b1Mode === B1_MODE &&
+    candidate.b1Mode === B1_MODE && candidate.tag === B1_TAG &&
     typeof candidate.tag === 'string' && /^[a-z][a-z0-9-]{0,30}$/.test(candidate.tag) &&
     !RETIRED_TAGS.has(candidate.tag);
   return Object.freeze({
@@ -240,7 +242,7 @@ export function reviewV2OfflineProbe(input) {
   const index = typeof target.image === 'string' && V2_IMAGE.exec(target.image)?.[1];
   if (target.project !== PROJECT || target.region !== REGION || target.service !== SERVICE ||
       target.runtime !== RUNTIME || target.invoker !== INVOKER ||
-      target.b1Mode !== B1_MODE ||
+      target.b1Mode !== B1_MODE || target.tag !== B1_TAG ||
       typeof target.tag !== 'string' || !/^[a-z][a-z0-9-]{0,30}$/.test(target.tag) ||
       RETIRED_TAGS.has(target.tag) ||
       typeof target.revision !== 'string' || !/^oldx-owner-read-[a-z0-9-]{1,47}$/.test(target.revision) ||

@@ -32,7 +32,8 @@ test('V2 candidate is inert; retired targets, wrong project and invented approva
   assert.equal(reviewV2Candidate(candidate).liveExecution, 'DISABLED');
   for (const bad of [
     {...candidate, tag: 'ownerbuyertrial'}, {...candidate, tag: 'step3rc14'},
-    {...candidate, tag: 'healthcheck'}, {...candidate, project: 'oldx-1c983'},
+    {...candidate, tag: 'healthcheck'}, {...candidate, tag: 'v2-other-tag'},
+    {...candidate, project: 'oldx-1c983'},
     {...candidate, b1Mode: 'ENABLED'}, {...candidate, b1Mode: undefined},
     {...candidate, image: historicalImage},
     {...candidate, image: image.replace('oldx-step04-g2-d13818-a1', 'oldx-unverified-copy')},
@@ -158,7 +159,7 @@ test('V2 offline adapter reuses V1 attempted-request budget, records only UNKNOW
 });
 
 function probeDraft(targetChanges = {}, reviewChanges = {}) {
-  const target = {...candidate, tag: 'v2-source-probe', revision: 'oldx-owner-read-v2probe',
+  const target = {...candidate, tag: 'ownerreadv2', revision: 'oldx-owner-read-v2probe',
     image, amd64Digest: 'sha256:fde6b74beb8a62678fdc9df4598e5ef1affc2c8be0d89d3502938d4daac4fd68',
     sourceSha: 'd13818acc66e1ffcca5e72209658e24129a1061d', ...targetChanges};
   const sessionId = '00000000-0000-4000-8000-000000000004';
@@ -198,6 +199,8 @@ test('V2 offline probe rejects retired targets, fixture replay and unsupported r
     .map(([key, value]) => [key === 'nineCveDisposition' ? 'fiveCveDisposition' : key, value]));
   for (const draft of [
     probeDraft({tag: 'ownerbuyertrial'}),
+    // A changed but syntactically valid tag must fail even with a recomputed fingerprint.
+    probeDraft({tag: 'v2-unapproved-tag'}),
     probeDraft({revision: 'oldx-owner-read-00003-nus'}),
     probeDraft({revision: 'oldx-owner-read-00004-jus'}),
     probeDraft({image: historicalImage}),

@@ -16,6 +16,8 @@ test('source-only candidate has exact old COPY allowlist and execution is hard d
 });
 test('detect old image drift, extra context files, mutable base and COPY changes',()=>{
  const r=recipe();
+ assert.equal(reviewBellSoftSource({...r,dockerfile:r.dockerfile+'RUN echo unapproved\n'}).reason,'RECIPE_GUARD');
+ assert.equal(reviewBellSoftSource({...r,dockerfile:r.dockerfile.replace('CMD [','ENV OLDX_PRODUCT_READ_ACTIVATE_STAGING=true\nCMD [')}).reason,'RECIPE_GUARD');
  assert.equal(reviewBellSoftSource({...r,legacyDockerfile:r.legacyDockerfile+'changed'}).reason,'ORIGINAL_DOCKERFILE_DRIFT');
  assert.equal(reviewBellSoftSource({...r,dockerignore:r.dockerignore+'!secrets.env\n'}).reason,'CONTEXT_ALLOWLIST');
  assert.equal(reviewBellSoftSource({...r,dockerfile:r.dockerfile+'COPY secrets.env ./\n'}).reason,'SOURCE_COPY_DRIFT');
@@ -25,9 +27,10 @@ const e=()=>({imageReference:'docker.io/bellsoft/hardened-nodejs@'+hash('a'),amd
  signedImageSubjectDigest:hash('a'),signedBomSubjectDigest:hash('a'),
  imageSignatureVerified:true,bomSignatureVerified:true,platform:'linux/amd64',
  glibcVersion:'2.43.0-r14',nodeVersion:'24.12.0',effectiveUid:10001,
- gccEvidenceDigest:hash('c'),gccEvidenceKind:'VERIFIED_EXACT_COMPILED_POSIX_MEMALIGN'});
+ gccEvidenceSubjectDigest:hash('b'),gccEvidenceDigest:hash('c'),gccEvidenceKind:'VERIFIED_EXACT_COMPILED_POSIX_MEMALIGN'});
 test('old r11 base, unpatched glibc, unsigned subject and unsupported GCC stay blocked',()=>{
  const x=e();
+ assert.equal(reviewBellSoftEvidenceShape({...x,gccEvidenceSubjectDigest:hash('d')}).reason,'GCC_BINARY_UNVERIFIED');
  assert.equal(reviewBellSoftEvidenceShape({...x,imageReference:'docker.io/bellsoft/hardened-nodejs@'+OLD_SIGNED_BELLSOFT_INDEX}).reason,'UNPATCHED_OR_UNPINNED_BASE');
  assert.equal(reviewBellSoftEvidenceShape({...x,glibcVersion:'2.43.0-r11'}).reason,'GLIBC_PATCH_UNPROVEN');
  assert.equal(reviewBellSoftEvidenceShape({...x,signedBomSubjectDigest:hash('d')}).reason,'PUBLISHER_SUBJECT_UNPROVEN');

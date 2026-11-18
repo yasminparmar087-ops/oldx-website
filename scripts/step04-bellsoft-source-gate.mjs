@@ -25,19 +25,18 @@ export function reviewBellSoftSource({dockerfile,dockerignore,legacyDockerfile}=
  if(![dockerfile,dockerignore,legacyDockerfile].every(s=>typeof s==='string'))return stop('MISSING_SOURCE');
  if(blobSha(legacyDockerfile)!==ORIGINAL_GIT_BLOB||!legacyDockerfile.includes('FROM '+ORIGINAL_BASE))
   return stop('ORIGINAL_DOCKERFILE_DRIFT');
- const required=[
-  'ARG OLDX_BELLSOFT_BASE_IMAGE\n',
-  'FROM node:24-bookworm-slim@'+BUILDER+' AS dependencies\n',
-  'FROM $'+'{OLDX_BELLSOFT_BASE_IMAGE} AS runtime\n',
-  'RUN npm ci --omit=dev --ignore-scripts\n',
-  'CMD ["functions/staging-marketplace/product-read-server.mjs"]',
-  'EXPOSE 8080','STOPSIGNAL SIGTERM'];
- if(required.some(s=>!dockerfile.includes(s))||
-   (dockerfile.match(/^ARG OLDX_BELLSOFT_BASE_IMAGE.*$/gm)||[]).join('')!=='ARG OLDX_BELLSOFT_BASE_IMAGE'||
-   (dockerfile.match(/^FROM /gm)||[]).length!==2||/^(USER|ENTRYPOINT|RUN\s+apt)\s/m.test(dockerfile))
-  return stop('RECIPE_GUARD');
  if(srcLines(dockerfile).join('\n')!==srcLines(legacyDockerfile).join('\n'))
   return stop('SOURCE_COPY_DRIFT');
+ // Compare every instruction, including ENV and COPY --from. Substring
+ // checks allowed extra build steps and activation flags to pass the review.
+ const instructions=value=>value.split(/\r?\n/).map(line=>line.trim())
+  .filter(line=>line&&!line.startsWith('#')).join('\n');
+ const expectedRecipe='ARG OLDX_BELLSOFT_BASE_IMAGE\n'+legacyDockerfile
+  .replace('FROM node:24-bookworm-slim AS dependencies',
+   'FROM node:24-bookworm-slim@'+BUILDER+' AS dependencies')
+  .replace('FROM '+ORIGINAL_BASE,'FROM ${OLDX_BELLSOFT_BASE_IMAGE} AS runtime')
+  .replace(/^USER 65532:65532\r?\n/m,'');
+ if(instructions(dockerfile)!==instructions(expectedRecipe))return stop('RECIPE_GUARD');
  const expected=expectedIgnore(srcList(legacyDockerfile));
  const present=dockerignore.split(/\r?\n/).map(s=>s.trim()).filter(s=>s&&!s.startsWith('#'));
  if(present[0]!=='**'||new Set(present).size!==expected.size||
@@ -49,7 +48,7 @@ export function reviewBellSoftSource({dockerfile,dockerignore,legacyDockerfile}=
 export function reviewBellSoftEvidenceShape(e={}){
  const m=/^docker\.io\/bellsoft\/hardened-nodejs@(sha256:[a-f0-9]{64})$/.exec(e.imageReference||'');
  if(!m||m[1]===OLD_SIGNED_BELLSOFT_INDEX)return stop('UNPATCHED_OR_UNPINNED_BASE');
- if(!digest(e.amd64ChildDigest)||e.signedImageSubjectDigest!==m[1]||
+ if(!digest(e.amd64ChildDigest)||e.amd64ChildDigest===m[1]||e.signedImageSubjectDigest!==m[1]||
    e.signedBomSubjectDigest!==m[1]||e.platform!=='linux/amd64'||
    e.imageSignatureVerified!==true||e.bomSignatureVerified!==true)
   return stop('PUBLISHER_SUBJECT_UNPROVEN');
@@ -60,7 +59,8 @@ export function reviewBellSoftEvidenceShape(e={}){
  const n=/^24\.(\d+)\.(\d+)$/.exec(e.nodeVersion||'');
  if(!n||Number(n[1])<12)return stop('NODE24_UNVERIFIED');
  if(!Number.isSafeInteger(e.effectiveUid)||e.effectiveUid<=0)return stop('NONROOT_UNVERIFIED');
- if(!digest(e.gccEvidenceDigest)||
+ const gccSubject=e.gccEvidenceKind==='SIGNED_VENDOR_VEX'?m[1]:e.amd64ChildDigest;
+ if(!digest(e.gccEvidenceDigest)||e.gccEvidenceSubjectDigest!==gccSubject||
    !['SIGNED_VENDOR_VEX','VERIFIED_EXACT_COMPILED_POSIX_MEMALIGN'].includes(e.gccEvidenceKind))
   return stop('GCC_BINARY_UNVERIFIED');
  return {decision:'EVIDENCE_SHAPE_ONLY',liveExecution:'DISABLED',

@@ -157,10 +157,11 @@ test('real 320px Profile blocks stale account data and omits unverified seller r
      get:()=>new Promise(resolve=>{window.pendingProfileReads[uid]=resolve;})
     })};
    };
-   setFixtureAccount(first);
+   // Control Profile response ordering without unrelated mock Auth reads.
+   window.currentUser=first;
    products=[{docId:'first-listing',sellerUid:first.uid}];
    updateProfileDetails(first);
-   setFixtureAccount(second);
+   window.currentUser=second;
    products=[];
    updateProfileDetails(second);
    window.pendingProfileReads[second.uid]({exists:true,data:()=>({email:'second-verified@fixture.invalid'})});

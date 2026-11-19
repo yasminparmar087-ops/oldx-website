@@ -343,12 +343,47 @@ test('full homepage gives location and search controls keyboard access and mobil
   await page.locator('#oldxMobileNav [data-i18n="market.nav.search"]').click();
   await page.waitForFunction(()=>location.hash==='#search'&&document.activeElement.id==='searchInput');
   await page.locator('#oldxMobileNav [data-i18n="market.nav.sell"]').click();
+  assert.equal(await page.locator('#oldxSellChoices').evaluate(d=>d.open),true);
+  await page.locator('#oldxSellChoices [data-i18n="market.sellChoices.product"]').click();
   assert.equal(await page.locator('#authModal').isVisible(),true);
   await page.locator('#authModal').evaluate(node=>node.style.display='none');
   await page.evaluate(()=>setFixtureAccount({uid:'fixture-owner',email:'owner@example.invalid'}));
   assert.equal(await page.locator('#authContainer [data-i18n]').getAttribute('data-i18n'),'market.home.logout');
   await page.evaluate(()=>setFixtureAccount(null));
   assert.equal(await page.locator('#authContainer [data-i18n]').getAttribute('data-i18n'),'market.home.login');
+  assert.deepEqual(errors,[]);
+ }finally{await context.close();}
+});
+
+test('real Sell chooser is localized, keyboard-operable and exposes only preview Service registration',async()=>{
+ const {context,page,errors}=await fullHomepage();
+ try{
+  await page.goto(origin+'/homepage-fixture');
+  await page.locator('#appLaunchBannerModal').waitFor({state:'hidden',timeout:15000});
+  for(const width of [320,375]){
+   await page.setViewportSize({width,height:850});
+   for(const locale of ['gu','hi','en']){
+    await page.locator('#marketplaceLocale').selectOption(locale);
+    await page.waitForFunction(code=>document.documentElement.lang===code,locale);
+    const catalog=(await import('../../features/i18n/catalogs/'+locale+'.mjs')).default;
+    const sell=page.locator('#oldxMobileNav [data-i18n="market.nav.sell"]');
+    await sell.press('Enter');
+    const dialog=page.locator('#oldxSellChoices');
+    assert.equal(await dialog.evaluate(d=>d.open),true);
+    assert.equal(await dialog.locator('h2').textContent(),catalog['market.sellChoices.title']);
+    for(const key of ['product','store','servicePreview','cancel']){
+     const action=dialog.locator('[data-i18n="market.sellChoices.'+key+'"]');
+     assert.equal(await action.textContent(),catalog['market.sellChoices.'+key]);
+     assert.ok((await action.boundingBox()).height>=44);
+    }
+    assert.equal(await dialog.locator('#oldxSellServicePreviewLink').getAttribute('href'),'./service-preview.html?mode=website#my-services');
+    await page.keyboard.press('Escape');
+    assert.equal(await dialog.evaluate(d=>d.open),false);
+    await sell.press('Enter');
+    await dialog.locator('form button').press('Enter');
+    assert.equal(await dialog.evaluate(d=>d.open),false);
+   }
+  }
   assert.deepEqual(errors,[]);
  }finally{await context.close();}
 });
@@ -646,6 +681,7 @@ test('homepage mobile navigation, category keyboard focus and Product card layou
   const section=(start,end)=>source.slice(source.indexOf(start),source.indexOf(end,source.indexOf(start)));
   const style=section('<style>','</style>').slice(7);
   const nav=section('<nav id="oldxMobileNav"','</nav>')+'</nav>';
+  const chooser=section('<dialog id="oldxSellChoices"','</dialog>')+'</dialog>';
   const search=source.match(/<input[^>]+id="searchInput"[^>]+>/)[0];
   const code=[
    section('function translateHomepageLabels(','function initCustomPickers('),
@@ -655,13 +691,13 @@ test('homepage mobile navigation, category keyboard focus and Product card layou
    section('function openHomepageSearch(','// STORE FEATURE FUNCTIONS'),
    section('function createProductCard(','return card;')+'return card; }'
   ].join('\n');
-  await page.evaluate(({style,nav,search})=>{
+  await page.evaluate(({style,nav,chooser,search})=>{
    document.head.insertAdjacentHTML('beforeend','<style>'+style+'</style>');
-   document.body.insertAdjacentHTML('beforeend',nav+'<div id="homeView">'+search+'<div id="homeCatGrid"></div><div id="sampleCard" style="width:150px"></div></div>');
+   document.body.insertAdjacentHTML('beforeend',nav+chooser+'<div id="homeView">'+search+'<div id="homeCatGrid"></div><div id="sampleCard" style="width:150px"></div></div>');
    for(const id of ['storePage','sellWizardPage','profilePage','productSkeletonSlide','productDetailView','fullEditPage']){
     const element=document.createElement('div');element.id=id;document.body.append(element);
    }
-  },{style,nav,search});
+  },{style,nav,chooser,search});
   await page.addScriptTag({content:`
    let currentFilterCat='all',storePageReadGeneration=0,storeCatalogueGeneration=0,storeCatalogueState=null,productDetailRouteGeneration=0;
    function renderRecentlyViewed(){} function renderProducts(){} function getSavedAdsStorageKey(){return 'fixture-saved';}
@@ -711,6 +747,7 @@ test('homepage mobile navigation, category keyboard focus and Product card layou
   assert.equal(await page.evaluate(()=>window.navAction),'fixture-product');
   for(const name of ['sell','chat','profile']){
    await bar.locator('button').filter({has:page.locator('[data-i18n="market.nav.'+name+'"]')}).press('Enter');
+   if(name==='sell')await page.locator('#oldxSellChoices [data-i18n="market.sellChoices.product"]').press('Enter');
    assert.equal(await page.evaluate(()=>window.navAction),name);
   }
   await bar.locator('a').press('Enter');

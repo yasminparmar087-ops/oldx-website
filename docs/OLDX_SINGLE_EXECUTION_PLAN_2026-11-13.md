@@ -182,6 +182,8 @@ C. **Only after B's safe rollout:** a **separate**, supervised, exact-scope owne
 
 ## 8. Mandatory cross-chat execution instructions — owner-confirmed 15 November 2026
 
+**Owner-confirmed local execution setup — 19 Nov 2026:** Use the [Windows SDK Shell + WSL vs hosted Cloud Shell operating record](OLDX_LOCAL_EXECUTION_ENVIRONMENT_2026-11-19.md) when choosing where to run OLDX tests and Step04 tooling. Windows SDK Shell runs LOCAL Windows `gcloud`/Git/Node, WSL supplies local Linux tools; neither automatically contains the hosted Cloud Shell's frozen private R2 preimage. A clean separate Windows clone at `4c2d7e36` completed the one Store Chrome 375px regression **1 PASS/0 FAIL**, owner screenshot in Issue #22; no rerun without source change. Preserve the older modified/untracked checkout and the remote R2 backup, with full pre-B1 owner-supervised remote no-drift/consent gates. This guidance changes no step number, approval, release status or cloud cost limit.
+
 **STOP PLAN DRIFT:** This file is the SINGLE execution sequence. A new chat, Codex session or coding agent MUST NOT devise a fresh roadmap, silently reorder/delete the 15 steps, launch a separate 'Phase B' workstream, create repeated security scaffolds, or substitute a new demo for the real Website. The original Sections 1–7 and binding Architecture/UI decisions remain valid. Current progress is Section 0 and fresh evidence in docs/OLDX_CURRENT_HANDOFF.md; the older dated inventory in Section 2 is historical, not a claim about cloud state today.
 
 **Required start-of-session algorithm:**

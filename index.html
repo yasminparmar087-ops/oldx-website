@@ -1500,6 +1500,7 @@
         let storeCatalogueGeneration = 0;
         let storeCatalogueState = null;
         let productsReadGeneration = 0;
+        let productDetailRouteGeneration = 0;
 
         auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
 
@@ -4316,6 +4317,7 @@
         }
 
         function handleHashChange() {
+            const routeGeneration = ++productDetailRouteGeneration;
             storePageReadGeneration++;
             storeCatalogueGeneration++;
             storeCatalogueState = null;
@@ -4377,6 +4379,8 @@
                     document.getElementById('productSkeletonSlide').style.display = 'flex';
 
                     setTimeout(() => {
+                        // Ignore a delayed Product render after Home, Back or another route change.
+                        if (routeGeneration !== productDetailRouteGeneration || window.location.hash !== hash) return;
                         renderProductDetailView(p);
                         document.getElementById('productSkeletonSlide').style.display = 'none';
                         document.getElementById('productDetailView').style.display = 'block';

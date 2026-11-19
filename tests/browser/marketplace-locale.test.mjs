@@ -110,6 +110,33 @@ test('real buyer journey keeps Product contact unavailable without a seller numb
  }finally{await context.close();}
 });
 
+test('real 320px Gujarati Home navigation cancels a pending Product detail render',async()=>{
+ const {context,page,errors}=await fullHomepage();
+ try{
+  await page.goto(origin+'/homepage-fixture');
+  await page.locator('#marketplaceLocale').selectOption('gu');
+  await page.waitForFunction(()=>document.documentElement.lang==='gu');
+  await page.locator('#appLaunchBannerModal').waitFor({state:'hidden',timeout:15000});
+  await page.evaluate(()=>{
+   initDetailMap=()=>{throw new Error('stale Product map must not initialize');};
+   ++productsReadGeneration;
+   productFeedState=null;
+   hasMoreProducts=false;
+   products=[{docId:'nav-race',sellerUid:'fixture-seller',title:'ફોન',desc:'Fixture',location:'ગુજરાત',finalPriceStr:'₹800',images:[]}];
+   openProductDetailPage('nav-race');
+   handleHashChange(); // Start the original 400ms Product-detail render window.
+   document.querySelector('#oldxMobileNav a[href="#"]').click();
+   handleHashChange(); // Home is active before the deferred Product callback executes.
+  });
+  await page.waitForTimeout(550);
+  assert.equal(await page.evaluate(()=>location.hash),'');
+  assert.equal(await page.locator('#homeView').isVisible(),true);
+  assert.equal(await page.locator('#productDetailView').isVisible(),false);
+  assert.equal(await page.locator('#productSkeletonSlide').isVisible(),false);
+  assert.deepEqual(errors,[]);
+ }finally{await context.close();}
+});
+
 test('real mobile Search and Product cards work across narrow layouts and languages',async()=>{
  const {context,page,errors}=await fullHomepage();
  const title='મૂળ मोबाइल Phone and charger';

@@ -137,6 +137,54 @@ test('real 320px Gujarati Home navigation cancels a pending Product detail rende
  }finally{await context.close();}
 });
 
+test('real 320px Profile blocks stale account data and omits unverified seller ratings',async()=>{
+ const {context,page,errors}=await fullHomepage();
+ try{
+  await page.goto(origin+'/homepage-fixture');
+  await page.locator('#appLaunchBannerModal').waitFor({state:'hidden',timeout:15000});
+  await page.locator('#marketplaceLocale').selectOption('gu');
+  await page.waitForFunction(()=>document.documentElement.lang==='gu');
+  await page.evaluate(()=>{
+   const first={uid:'profile-first',email:'first-private@fixture.invalid',displayName:'First Seller',photoURL:'',providerData:[],emailVerified:false};
+   const second={uid:'profile-second',email:'second-public@fixture.invalid',displayName:'Second Seller',photoURL:'',providerData:[],emailVerified:false};
+   window.pendingProfileReads={};
+   const originalCollection=db.collection.bind(db);
+   db.collection=name=>{
+    const collection=originalCollection(name);
+    if(name!=='users')return collection;
+    return {...collection,doc:uid=>({
+     ...collection.doc(uid),
+     get:()=>new Promise(resolve=>{window.pendingProfileReads[uid]=resolve;})
+    })};
+   };
+   setFixtureAccount(first);
+   products=[{docId:'first-listing',sellerUid:first.uid}];
+   updateProfileDetails(first);
+   setFixtureAccount(second);
+   products=[];
+   updateProfileDetails(second);
+   window.pendingProfileReads[second.uid]({exists:true,data:()=>({email:'second-verified@fixture.invalid'})});
+   window.pendingProfileReads[first.uid]({exists:true,data:()=>({
+    email:'first-leaked@fixture.invalid',
+    photoURL:'data:image/png;base64,Zmlyc3Q='
+   })});
+  });
+  await page.waitForFunction(()=>document.getElementById('profileUserEmail').textContent==='second-verified@fixture.invalid');
+  assert.equal(await page.locator('#profileUserName').textContent(),'Second Seller');
+  assert.equal(await page.locator('#profileUserRatingBadge').count(),0);
+  assert.equal((await page.locator('#profilePage').textContent()).includes('4.9 Rating'),false);
+  assert.notEqual(await page.locator('#profileUserPhoto').getAttribute('src'),'data:image/png;base64,Zmlyc3Q=');
+  await page.evaluate(()=>{
+   window.location.hash='profile';
+   handleHashChange();
+   setFixtureAccount(null);
+  });
+  assert.equal(await page.locator('#profilePage').isVisible(),false);
+  assert.equal(await page.locator('#profileUserEmail').textContent(),'');
+  assert.deepEqual(errors,[]);
+ }finally{await context.close();}
+});
+
 test('real mobile Search and Product cards work across narrow layouts and languages',async()=>{
  const {context,page,errors}=await fullHomepage();
  const title='મૂળ मोबाइल Phone and charger';

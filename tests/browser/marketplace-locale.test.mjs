@@ -614,7 +614,7 @@ test('homepage mobile navigation, category keyboard focus and Product card layou
    }
   },{style,nav,search});
   await page.addScriptTag({content:`
-   let currentFilterCat='all',storePageReadGeneration=0,storeCatalogueGeneration=0,storeCatalogueState=null;
+   let currentFilterCat='all',storePageReadGeneration=0,storeCatalogueGeneration=0,storeCatalogueState=null,productDetailRouteGeneration=0;
    function renderRecentlyViewed(){} function renderProducts(){} function getSavedAdsStorageKey(){return 'fixture-saved';}
    function startSellWizard(){window.navAction='sell';} function openInboxModal(){window.navAction='chat';}
    function openProfilePage(){window.navAction='profile';} function openProductDetailPage(id){window.navAction=id;}

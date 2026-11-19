@@ -366,7 +366,7 @@ test('real Sell chooser is localized, keyboard-operable and exposes only preview
     await page.locator('#marketplaceLocale').selectOption(locale);
     await page.waitForFunction(code=>document.documentElement.lang===code,locale);
     const catalog=(await import('../../features/i18n/catalogs/'+locale+'.mjs')).default;
-    const sell=page.locator('#oldxMobileNav [data-i18n="market.nav.sell"]');
+    const sell=page.locator('#oldxMobileNav [data-i18n="market.nav.sell"]').locator('..');
     await sell.press('Enter');
     const dialog=page.locator('#oldxSellChoices');
     assert.equal(await dialog.evaluate(d=>d.open),true);

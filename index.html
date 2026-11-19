@@ -122,6 +122,11 @@
         #detailActions { padding-bottom: max(.75rem, env(safe-area-inset-bottom, 0px)); }
         #detailActions > div > :is(button, a) { min-width: 0; padding-inline: .25rem; text-align: center; overflow-wrap: anywhere; }
         #detailImgBadge[hidden] { display: none; }
+        #oldxSellChoices { box-sizing: border-box; width: min(30rem, calc(100vw - 1rem)); max-height: calc(100dvh - 2rem); overflow-y: auto; margin: auto; border: 0; border-radius: 1rem; padding: 1.25rem; color: var(--oldx-navy); background: #fff; }
+        #oldxSellChoices::backdrop { background: rgba(15, 23, 42, .7); }
+        #oldxSellChoices :is(button, a) { min-height: 44px; overflow-wrap: anywhere; }
+        #oldxSellChoices :is(button, a):focus-visible { outline: 3px solid var(--oldx-orange); outline-offset: 2px; }
+        .dark #oldxSellChoices { background: #1f2937; color: #f9fafb; }
         #oldxMobileNav { display: none; }
         #oldxMobileNav [aria-current="page"] { color: var(--oldx-navy); }
         .dark #oldxMobileNav [aria-current="page"] { color: #fdba74; }
@@ -621,7 +626,7 @@
             <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
             <span class="text-xs font-bold" data-i18n="market.nav.search">Search</span>
         </button>
-        <button type="button" onclick="startSellWizard()" class="text-primary dark:text-orange-300">
+        <button type="button" onclick="openSellChoices()" class="text-primary dark:text-orange-300">
             <i class="fa-solid fa-plus rounded-full bg-orange-300 p-1 text-slate-900" aria-hidden="true"></i>
             <span class="text-xs font-black" data-i18n="market.nav.sell">Sell</span>
         </button>
@@ -635,6 +640,18 @@
             <span class="text-xs font-bold" data-i18n="market.nav.profile">Profile</span>
         </button>
     </nav>
+
+    <!-- Product and Store use existing routes; Service provider remains a draft preview. -->
+    <dialog id="oldxSellChoices" aria-labelledby="oldxSellChoicesTitle" aria-describedby="oldxSellChoicesHint">
+        <h2 id="oldxSellChoicesTitle" class="text-lg font-black mb-2" data-i18n="market.sellChoices.title">What would you like to do?</h2>
+        <p id="oldxSellChoicesHint" class="text-sm mb-4 text-gray-600 dark:text-gray-300" data-i18n="market.sellChoices.hint">Choose one option to continue.</p>
+        <div class="grid gap-3">
+            <button type="button" onclick="closeSellChoices(); startSellWizard()" class="w-full rounded-xl border border-gray-200 dark:border-gray-600 px-4 py-3 text-left font-bold text-primary dark:text-white" data-i18n="market.sellChoices.product">Sell an item</button>
+            <button type="button" onclick="closeSellChoices(); handleStoreHeaderClick()" class="w-full rounded-xl border border-gray-200 dark:border-gray-600 px-4 py-3 text-left font-bold text-primary dark:text-white" data-i18n="market.sellChoices.store">Create / manage Store</button>
+            <a id="oldxSellServicePreviewLink" href="./service-preview.html?mode=website#my-services" class="block rounded-xl border border-amber-300 bg-amber-50 dark:bg-gray-700 px-4 py-3 text-left font-bold text-primary dark:text-white" data-i18n="market.sellChoices.servicePreview">Service provider draft (preview only)</a>
+        </div>
+        <form method="dialog" class="mt-4 text-right"><button type="submit" class="px-4 py-2 rounded-xl border border-gray-300 dark:border-gray-600 font-bold" data-i18n="market.sellChoices.cancel">Cancel</button></form>
+    </dialog>
 
     <!-- PRIVACY POLICY MODAL -->
     <div id="privacyModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4">
@@ -4316,7 +4333,18 @@
             }
         }
 
+        function openSellChoices() {
+            const dialog = document.getElementById('oldxSellChoices');
+            if (dialog && !dialog.open) dialog.showModal();
+        }
+
+        function closeSellChoices() {
+            const dialog = document.getElementById('oldxSellChoices');
+            if (dialog?.open) dialog.close();
+        }
+
         function handleHashChange() {
+            closeSellChoices();
             const routeGeneration = ++productDetailRouteGeneration;
             storePageReadGeneration++;
             storeCatalogueGeneration++;

@@ -1,5 +1,23 @@
 # OLDX Step 04 — C2 identity reconciliation → C3 digest-bound signed custody (NO REUPLOAD)
 
+## 21 Nov 2026 ~04:23 IST — C3 keyless owner-local Sigstore bundle CREATED, ephemeral Docker auth cleaned; verification PENDING (LATEST)
+
+**Actual owner Windows PowerShell screenshot** of *one already-approved* C3 signing attempt after the owner completed the Sigstore browser authorization in the active terminal:
+```text
+Wrote bundle to file /mnt/d/OLDX/G2/c3-cosign-v3.1.4/oldx-c3-index-20261121-a1.sigstore.json
+C3_LOCAL_BUNDLE_CREATED=YES
+C3_REGISTRY_SIGNATURE_UPLOAD=DISABLED
+C3_SIGNER_IDENTITY_VERIFICATION=PENDING
+C3_TEMP_AUTH_CLEANED=YES
+```
+**Verified from this owner terminal:** Local Cosign v3.1.4 keyless signing command exited with success according to the wrapper, generated a **nonempty local Sigstore bundle** at `D:\OLDX\G2\c3-cosign-v3.1.4\oldx-c3-index-20261121-a1.sigstore.json`; temporary Docker credentials were cleaned in `finally`; `--upload=false` was used so this run did not request a Registry signature/referrer upload. User previously approved disclosure of Yasmin Google identity to public Sigstore transparency. The exact signing command target was immutable private OCI **index** `asia-south1-docker.pkg.dev/oldx-staging/oldx-staging-images/oldx-npmfree-20261121-a1@sha256:0844b637cf1bfedef60caa6a54ad515ebf9c0a937453b409101ad0d2ff254f79`, not tag/child/V2. An **exclusive attempt journal** now exists at `D:\OLDX\G2\c3-cosign-v3.1.4\oldx-c3-sign-20261121-a1.attempt.txt` and must be preserved; NEVER rerun signing attempt or overwrite/reissue signature. The screenshot visibly included private OIDC verification URL/code **which MUST NOT be copied, quoted, logged or shared to GitHub**; omit them entirely from every persisted checkpoint. It is an already-used authentication transaction, but do not republish those details.
+
+**IMPORTANT verification limit:** `C3_LOCAL_BUNDLE_CREATED=YES` is NOT yet `C3_SIGNED_CUSTODY_VERIFIED=PASS`. Exact signer certificate identity **Yasmin's approved address**, issuer `https://accounts.google.com`, signed **subject OCI index digest**, signature verification and Sigstore log proof must be independently checked. Signing a digest cannot retroactively create trusted WSL build SLSA or fix outstanding 1 CRITICAL/5 HIGH scan. Do not assume the local bundle contains a legacy image signature: **Cosign v3 signature bundle for index digest may be an in-toto/DSSE envelope**, per current `sigstore/cosign/v3` implementation `signDigestBundle`. Therefore first **read-only inspect sanitized bundle structure** without printing full JSON, email, auth codes or signature. A separate Cryptographic verification flow must use *compatible v3 bundle/DSSE payload semantics*, not an invented `cosign verify` against Registry where no signature was uploaded. Per official Sigstore docs https://docs.sigstore.dev/cosign/signing/signing_with_containers/ , `--upload=false` saves bundle locally and requires separate attachment before Registry verification.
+
+**NEXT unique non-mutating task, NOT YET RUN:** Native PowerShell read-only `Get-Item` + `Get-FileHash` for exact bundle and exclusive journal, parse JSON and print only `BUNDLE_FORMAT`, `HAS_DSSE_ENVELOPE`, `HAS_MESSAGE_SIGNATURE`, `HAS_CERTIFICATE`, `HAS_TRANSPARENCY_PROOF`, and if DSSE payload exists, parse its decoded JSON and print **only** whether its subject digest matches expected SHA256, not email/claims/entire payload. Fail-closed if malformed. Then design signer-certificate, issuer, Rekor and digest **cryptographic** verification based on actual payload, without a new sign/upload or rerunning C1. For privacy, if taking a screenshot, redact original login URL/verification code from terminal history (e.g., clear screen before next output). No need to share bundle contents through chat.
+
+**State:** `C3_LOCAL_BUNDLE_CREATED=YES`, `C3_REGISTRY_SIGNATURE_UPLOAD=DISABLED`, `C3_TEMP_AUTH_CLEANED=YES`, `C3_CRYPTOGRAPHIC_SIGNER_AND_SUBJECT_VERIFICATION=OPEN`; C1/C2 image identity checks PASS within previously recorded limits, C1 STOP historical consumed. G2 HOLD, G4 cross-db IAM OPEN, G8 all-provider hard spend STOP OPEN; Step04 HOLD; production NO-GO.
+
 ## 21 Nov 2026 ~04:19 IST — C3 local keyless sign attempt is WAITING for private Google OIDC verification code (LATEST)
 
 **Owner actual Windows PowerShell screenshot** after the approved **one-shot local-only** `cosign sign --yes --upload=false --bundle=... EXISTING_INDEX@sha256:0844b637cf1bfedef60caa6a54ad515ebf9c0a937453b409101ad0d2ff254f79` wrapper:

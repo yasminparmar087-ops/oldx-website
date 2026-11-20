@@ -14,6 +14,8 @@ on:
       - 'tests/integration/step04-npmfree-existing-evidence.test.py'
       - 'scripts/step04-npmfree-c0-local-metadata-a1.py'
       - 'tests/integration/step04-npmfree-c0-local-metadata.test.py'
+      - 'scripts/step04-npmfree-c1-single-push-a1.py'
+      - 'tests/integration/step04-npmfree-c1-single-push.test.py'
       - 'tests/integration/step04-runtime-cli-paths.test.mjs'
       - 'functions/staging-marketplace/product-read-server.mjs'
       - 'functions/staging-marketplace/runtime.mjs'
@@ -70,6 +72,8 @@ jobs:
         run: python3 tests/integration/step04-npmfree-existing-evidence.test.py -v
       - name: Verify C0 offline metadata-only checker with synthetic local Docker fixtures
         run: python3 tests/integration/step04-npmfree-c0-local-metadata.test.py -v
+      - name: Exercise C1 no-write and no-network one-shot release guard with synthetic fixtures
+        run: python3 tests/integration/step04-npmfree-c1-single-push.test.py -v
       - name: Check one-shot script parses without executing Docker or scanning
         run: |
           python3 -m py_compile scripts/step04-npmfree-local-one-shot-a1.py

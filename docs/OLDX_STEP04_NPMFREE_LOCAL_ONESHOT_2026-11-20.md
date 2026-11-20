@@ -1,6 +1,12 @@
-# OLDX Step 04 — one NEW npm-free local image assessment (prepared, never executed)
+# OLDX Step 04 — one NEW npm-free local image assessment (EXECUTED; frozen evidence)
 
-**State:** Source-only runner prepared on 20 Nov 2026. `G2 HOLD`; existing scanned image remains CRITICAL 1/HIGH 8. This is **not** authorization or a claim that the image was rebuilt, scanned or published.
+## 21 Nov 2026 — Actual final status supersedes original instructions below
+
+**Actual owner WSL read-only checker result, 21 Nov 2026:** `OLDX_NPMFREE_LOCAL_EVIDENCE=INTEGRITY_PASS`; `SOURCE_SHA=fcc96574b6388dc441a0b5d3eade48e79c7ebb24`; `IMAGE_ID=sha256:0844b637cf1bfedef60caa6a54ad515ebf9c0a937453b409101ad0d2ff254f79`; `REPORT_SHA256=142e52449a4c610d79c2cefd8193f70c671bb58c643710a3fe64a7c85bf03a89`; `SUMMARY_SHA256=e263d56102bc0a5656a704d952eb4e35be8d7b9310ac66f8a53bd3d704125bea`. The checker reported `IMAGE_BUILD_RUNTIME_SCAN=PREVIOUSLY_COMPLETE`, `INDEPENDENT_SIGNED_BUILDER_PROVENANCE=UNVERIFIED`, `DEPLOYABLE_REGISTRY_DIGEST=UNVERIFIED`, `G2_SECURITY_CLEARANCE=HOLD`, `CLOUD_AND_LOCAL_CHANGES=NONE`. See [authenticated owner screenshot result saved in GitHub Issue #17](https://github.com/yasminparmar087-ops/oldx-website/issues/17#issuecomment-7049043872). Local report and journal bytes remain private on owner's D: drive.
+
+**IMPORTANT: The one-shot run is FINISHED. Do not re-execute the build, runtime smoke, Grype scan or this integrity checker.** Historical instructions below are preserved as audit context **only**. Focused CI PASS [44804371312](https://github.com/yasminparmar087-ops/oldx-website/actions/runs/44804371312), full Safety CI PASS [44804371370](https://github.com/yasminparmar087-ops/oldx-website/actions/runs/44804371370). Signed independent builder provenance and deployable signed Registry digest still NOT VERIFIED; Step04 G2 HOLD, production NO-GO.
+
+**Historical state recorded on 20 Nov 2026 (now superseded):** Source-only runner was then prepared and not executed. At that moment only the older scanned image (CRITICAL 1/HIGH 8) was known. The 21 Nov actual owner-local new image scan is CRITICAL 1/HIGH 5/MEDIUM 12/LOW 2. The new image has NOT been published.
 
 ## Exact boundaries
 

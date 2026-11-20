@@ -1,5 +1,20 @@
 # OLDX Step 04 — C1 ONE new private Registry copy (ATTEMPT STOPPED; REMOTE STATE UNKNOWN)
 
+## 21 Nov 2026 ~03:12 IST — C1 all TEN compressed layer blob HEADs 200 + sizes exact PASS; full blob-bytes hash not performed (LATEST)
+
+**Owner actual Windows Google Cloud SDK PowerShell screenshot:** In existing `PS D:\Temp>` with verified AMD64 child manifest `$cm.layers`, exactly **10 OCI compressed layer descriptors** were checked for SHA256-shaped digest, positive size, nonblank media type. Using a fresh short-lived Yasmin `gcloud.cmd` token kept in memory and cleared in `finally`, the owner made exactly one **read-only HEAD** request per exact private Artifact Registry `/v2/oldx-staging/oldx-staging-images/oldx-npmfree-20261121-a1/blobs/{descriptor.digest}`. Sanitized stdout:
+```text
+LAYER_DESCRIPTORS=PASS
+BLOB_HEAD_200_COUNT=10
+BLOB_SIZE_MATCH_COUNT=10
+BLOB_HEAD_CHECK=PASS
+```
+**Interpretation:** All 10 referenced compressed blobs were reachable with **HTTP 200**, and each returned Content-Length exactly matched its OCI layer descriptor size. **C1_REMOTE_LAYER_BLOB_AVAILABILITY_AND_SIZE=PASS**. HEAD **does not hash the actual compressed blob bytes**; do not label `C1_ALL_LAYER_BLOB_BYTES_SHA256=PASS`. This was performed without a full download and with no registry writes. The remote OCI index, AMD64 child manifest and config blob already passed full actual-byte SHA256/size checks; local/remote 10/10 **uncompressed** RootFS Diff IDs matched in order. All prior checks consumed: **do not repeat HEAD/GET/build/Grype/CI, nor C1 upload**.
+
+**Scope-aware next step (NOT YET EXECUTED):** From the same PowerShell session, compare the already retrieved remote config `$cfg` safe runtime metadata (`config.User`, `config.Entrypoint`, `config.Cmd`, `os`, `architecture`) against previously pinned C1 local image expected values `appuser`, `/usr/bin/node`, `functions/staging-marketplace/product-read-server.mjs`, `linux/amd64` without printing raw `config.Env` or JSON, no cloud/WSL calls. This checks key runtime metadata only, **not comprehensive full-config identity**. Thereafter evaluate a documented, owner-authorized C2 signed **digest-bound custody** option versus accepting a defined residual full-compressed-blob-byte/SLSA risk at release; avoid automatically doing a full 10-blob GET which may incur egress/download time and is not necessary merely to prove HEAD availability. Original C1 runner `STOP_C1_OUTCOME_POSSIBLY_REMOTE_CHANGED` remains historical and consumed, and its `inspect_remote` expected a single manifest/config SOURCE_ID rather than the observed OCI index/AMD64 child; do not rerun or call its original status SUCCESS.
+
+**Current bounded C1 evidence:** `INDEX_BYTES_SHA=PASS`, `AMD64_MANIFEST_BYTES_SHA_SIZE=PASS`, `AMD64_CONFIG_BYTES_SHA_SIZE=PASS`, `LOCAL_REMOTE_DIFF_IDS_10_OF_10=PASS`, `REMOTE_10_BLOB_HEAD_AND_CONTENT_LENGTH=PASS`, `COMPRESSED_LAYER_BLOB_BYTES_SHA=NOT_TESTED`, `TRUSTED_BUILDER_SLSA=UNVERIFIED`, `C1_ONE_SHOT_RUNNER=STOP_CONSUMED`. Original Grype residual 1 CRITICAL + 5 HIGH; G2 HOLD, G4 cross-database IAM OPEN, G8 all-provider cost STOP OPEN, Step04 ACTIVE/HOLD, production NO-GO. No IAM/billing/Cloud Run/Firebase/Registry write/signing/release was authorized or performed here.
+
 ## 21 Nov 2026 ~03:10 IST — C1 ordered local/remote RootFS diff-IDs MATCH, prior JSON string False was serialization only (LATEST)
 
 **Actual owner Windows PowerShell screenshot:** In existing `PS D:\Temp>`, with local WSL Docker `image inspect oldx-bellsoft-npmfree:20261120-a1 --format '{{json .RootFS.Layers}}'` output already held as parsed `$localParsed`, and earlier authenticated Registry AMD64 config blob `$cfg.rootfs.diff_ids` already held in memory, the owner compared all ten SHA-256 strings **element-by-element** using `-cne`, with an additional sorted set check. Exact observed output:

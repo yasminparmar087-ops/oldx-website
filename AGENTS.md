@@ -1,5 +1,19 @@
 # OLDX Agent Instructions
 
+## 21 Nov 2026 ~03:50 IST — C3 Cosign artifact-key OpenSSL crypto signature verification PASS; TUF trust chain still NOT done (LATEST)
+
+**Owner actual Windows PowerShell screenshot** from existing `PS D:\Temp>`, using the previously downloaded official Sigstore Cosign v3.1.4 binary, release KMS signature bundle, and `artifact.pub` fetched from **pinned official GitHub sigstore/root-signing commit** `6f637ea189df60b5ea9ed5f454b4623bd3a7b3aa`. The owner downloaded only `artifact.pub` and `cosign-linux-amd64-kms.sigstore.json` into existing `D:\OLDX\G2\c3-cosign-v3.1.4\`, checked the KMS bundle published size **4,085 bytes** and SHA256 `b1282021bf1d6f1031d5df46cba12386c9b438d56d276d72f4df184a0008512b`, base64-decoded `messageSignature.signature` to `cosign-kms.sig.bin`, then used **preinstalled WSL OpenSSL 3.0.13** `openssl dgst -sha256 -verify artifact.pub -signature cosign-kms.sig.bin cosign-linux-amd64` (via `wsl.exe`). Exact sanitized observed stdout:
+```text
+C3_ARTIFACT_KEY_CRYPTO_VERIFY=PASS
+C3_TUF_KEY_AUTHENTICATION=NOT_PERFORMED
+C3_IMAGE_SIGNING=NOT_STARTED
+```
+**Validated claim:** a real cryptographic SHA256 signature over the **local binary** verifies with the Sigstore `artifact.pub` public key as retrieved from a specific official GitHub commit; this is stronger than release hashes alone. **Important limitation:** the `artifact.pub` key was *not* independently authenticated through the Sigstore TUF trust chain. The command did **not** independently verify transparency proof/rekor inclusion or the separate non-KMS keyless signing certificate bundle. Do NOT mark `C3_TUF=PASS`, `C3_KEYLESS_BUNDLE_VERIFIED=PASS`, `C3_IMAGE_SIGNED=YES`, `C3_SIGNED_CUSTODY=PASS` or G2 complete.
+
+**Official Sigstore installation guidance** https://docs.sigstore.dev/cosign/system_config/installation/ : after verifying the artifact-key signature, use the now-verified Cosign executable to validate the release KMS bundle's cryptographic proof/log inclusion via `cosign verify-blob --bundle cosign-kms.sigstore.json --key artifact.pub cosign`; further verify keyless bundle with fixed identity `keyless@projectsigstore.iam.gserviceaccount.com` and OIDC issuer `https://accounts.google.com`. That next verification is **read-only**, has *no OLDX Registry write/Google user OIDC/signing*, but may contact public Sigstore trust infrastructure. Use a short **single-purpose** direct WSL invocation (no `sh -lc`/nested dollars) and avoid dumping certificate, env or secret data. If execution fails STOP, do not chmod/copy/overwrite without review. Either maintain `C3_TUF=NOT_PERFORMED` as a separately recognized trust-root limit or verify using a true TUF client before treating supply chain as high assurance.
+
+**NEXT (not run yet):** Owner can run `wsl.exe -- /mnt/d/OLDX/G2/c3-cosign-v3.1.4/cosign-linux-amd64 version` once as minimal binary CLI startup after the successful cryptographic check, then one separate non-mutating `verify-blob` for bundle/identity and verification policy. No C1 reupload, rebuild, Grype, old CI, Docker manifest/read rerun, IAM/billing/Cloud Run/Firebase or signing. Separate owner approval needed before Cosign `sign` due to public identity disclosure and storage/referrer charges. C1/C2 scoped checks PASS, C3 artifact-key signature PASS with TUF caveat; G2 HOLD, G4 cross-DB OPEN, G8 whole-provider financial STOP OPEN, Step04 HOLD, production NO-GO.
+
 ## 21 Nov 2026 ~03:43 IST — C3 GO unavailable, OpenSSL available; pinned Sigstore artifact-key verification fallback selected (LATEST)
 
 **Owner actual PowerShell screenshot** after direct read-only `wsl.exe -- go version` and `wsl.exe -- openssl version` returned:

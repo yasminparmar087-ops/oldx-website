@@ -6,6 +6,13 @@
 
 Image source git commit `3a4d5f0657c0d55cbedac3b6461353e4d2a69de1`, pinned BellSoft publisher-verified BASE OCI index `sha256:ef00ba8e634402e8dd3b374643fdbc178e876c7a312c9d55e4734efaa1e93d94`, Linux AMD64 child `sha256:3862d478c2737d8386911b777d713e56a26e182f7c107e702be23a7b1cfe4799`. Frozen private full Grype output `D:\OLDX\G2\oldx-bellsoft-derived-20261120-a1\grype-new-image-once-a1\grype-full.json`, its checksum-bound `summary.json`, local source-only triage/check receipts and static `review.json` remain on owner D:; **do not upload complete private scan report, local ELF, credential values, or raw logs to GitHub**. Scanner Grype 0.121.3, offline DB snapshot 2026-11-17, with no ignores/VEX/suppression, `docker:` image and squashed scope. Scan success is NOT clean-security PASS.
 
+## 20 Nov — source-only prevention of bundled-undici regression (NOT remediation)
+
+- Added a **fail-closed check** to `scripts/step04-bellsoft-source-gate.mjs` (commit `d0d5c62c678643eb50b6f0b8f4d14e20241902c7`) that rejects any proposed BellSoft AMD64 base evidence with bundled npm/undici below `6.29.1`, unknown version, missing exact base-filesystem path evidence or a mismatched AMD64 child. It continues returning only `EVIDENCE_SHAPE_ONLY` for properly shaped input and execution stays DISABLED.
+- Added six new negative/positive assertions in `tests/integration/step04-bellsoft-source-gate.test.mjs` (commit `6893b9aadc0e2f51e3ba7b2a085b01dbbcdf0d2d`). These are **new source assertions**, not a new Docker build, scan, runtime run, deployment or independently authenticated proof. Do not count an unrun test as PASS.
+- This change prevents accidentally endorsing a *future* base with the known three HIGH bundled npm advisories; **it does not remove undici from the already-built local OLDX image and does not repair the three scanner findings**. The frozen scan remains CRITICAL 1 / HIGH 8. Prefer a new BellSoft-signed image with verifiably patched bundled npm, or a separately reviewed and validated npm-free runtime. Existing base/container test/scan evidence must not be rerun merely to reproduce it.
+- CRITICAL `CVE-2019-1010022` remains an open risk-disposition question. Independent Ubuntu, Debian and Red Hat upstream remarks dispute its glibc security impact, but those are **not an exact BellSoft product VEX**. G4/G8 and trusted source/builder provenance remain independently open. No launch/deployment consent implied by this gate.
+
 ## Actual severe findings and bounded dispositions
 
 | Severity, ID(s) | Installed artifact and authoritative location | Evidence-based disposition | Next proof / remedy |

@@ -27,7 +27,9 @@ const e=()=>({imageReference:'docker.io/bellsoft/hardened-nodejs@'+hash('a'),amd
  signedImageSubjectDigest:hash('a'),signedBomSubjectDigest:hash('a'),
  imageSignatureVerified:true,bomSignatureVerified:true,platform:'linux/amd64',
  glibcVersion:'2.43.0-r14',nodeVersion:'24.12.0',effectiveUid:10001,
- gccEvidenceSubjectDigest:hash('b'),gccEvidenceDigest:hash('c'),gccEvidenceKind:'VERIFIED_EXACT_COMPILED_POSIX_MEMALIGN'});
+ gccEvidenceSubjectDigest:hash('b'),gccEvidenceDigest:hash('c'),gccEvidenceKind:'VERIFIED_EXACT_COMPILED_POSIX_MEMALIGN',
+ npmBundledUndiciEvidenceKind:'EXACT_BASE_AMD64_PACKAGE_JSON',
+ npmBundledUndiciEvidenceSubjectDigest:hash('b'),npmBundledUndiciVersion:'6.29.1'});
 test('old r11 base, unpatched glibc, unsigned subject and unsupported GCC stay blocked',()=>{
  const x=e();
  assert.equal(reviewBellSoftEvidenceShape({...x,gccEvidenceSubjectDigest:hash('d')}).reason,'GCC_BINARY_UNVERIFIED');
@@ -42,4 +44,20 @@ test('even perfect-shaped metadata never claims G2 PASS',()=>{
  const r=reviewBellSoftEvidenceShape(e());
  assert.equal(r.decision,'EVIDENCE_SHAPE_ONLY');
  assert.equal(r.liveExecution,'DISABLED');assert.equal(r.requiresIndependentPublisherAndDerivedAttestation,true);
+});
+
+test('reject the observed bundled undici 6.29.0 and unverified base paths',()=>{
+ const x=e();
+ assert.equal(reviewBellSoftEvidenceShape({...x,npmBundledUndiciVersion:'6.29.0'}).reason,
+   'BUNDLED_NPM_UNDICI_UNPATCHED');
+ assert.equal(reviewBellSoftEvidenceShape({...x,npmBundledUndiciVersion:'6.28.99'}).reason,
+   'BUNDLED_NPM_UNDICI_UNPATCHED');
+ assert.equal(reviewBellSoftEvidenceShape({...x,npmBundledUndiciVersion:undefined}).reason,
+   'BUNDLED_NPM_UNDICI_UNPATCHED');
+ assert.equal(reviewBellSoftEvidenceShape({...x,npmBundledUndiciEvidenceSubjectDigest:hash('d')}).reason,
+   'NPM_BUNDLE_LOCATION_UNVERIFIED');
+ assert.equal(reviewBellSoftEvidenceShape({...x,npmBundledUndiciEvidenceKind:'SIGNED_BASE_SBOM_ONLY'}).reason,
+   'NPM_BUNDLE_LOCATION_UNVERIFIED');
+ assert.equal(reviewBellSoftEvidenceShape({...x,npmBundledUndiciVersion:'6.29.1'}).decision,
+   'EVIDENCE_SHAPE_ONLY');
 });

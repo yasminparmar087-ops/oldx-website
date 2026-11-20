@@ -1,7 +1,7 @@
-# OLDX BellSoft source-only candidate: no image build or deploy is authorized.
-# Must be given a NEW signed/patched Node24 linux/amd64 base digest explicitly;
-# previously signed fd67... has glibc r11 and is NOT acceptable for G2.
-ARG OLDX_BELLSOFT_BASE_IMAGE
+# OLDX Step04 EXPERIMENTAL npm-free runtime, SOURCE-ONLY; no build or deploy authorized.
+# Pin the owner-verified signed BellSoft Node24 glibc-r14 OCI index immutable digest.
+# AMD64 child sha256:3862d478c2737d8386911b777d713e56a26e182f7c107e702be23a7b1cfe4799 was separately verified.
+# Only linux/amd64 is within the reviewed evidence; do not use a mutable tag or base override.
 FROM node:24-bookworm-slim@sha256:dc26ae92c9fb15cf6b1d63e20f0944b2efe0f115b20e00be48fb23fceb061c54 AS dependencies
 WORKDIR /app
 ENV NODE_ENV=production
@@ -11,7 +11,7 @@ RUN npm ci --omit=dev --ignore-scripts
 
 # Inherit BellSoft nonroot USER and Node ENTRYPOINT ONLY after their exact
 # immutable image config has been independently verified. Fail if not proved.
-FROM ${OLDX_BELLSOFT_BASE_IMAGE} AS runtime
+FROM docker.io/bellsoft/hardened-nodejs@sha256:ef00ba8e634402e8dd3b374643fdbc178e876c7a312c9d55e4734efaa1e93d94 AS runtime
 WORKDIR /app
 ENV NODE_ENV=production
 

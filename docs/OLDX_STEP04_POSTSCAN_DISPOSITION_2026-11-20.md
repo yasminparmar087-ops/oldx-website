@@ -25,6 +25,16 @@ Image source git commit `3a4d5f0657c0d55cbedac3b6461353e4d2a69de1`, pinned BellS
 
 Official external background: [Docker RUN exec form / USER behavior](https://docs.docker.com/reference/dockerfile), [npm 11.21.2 shipped undici 6.29.1](https://docs.npmjs.com/cli/v11/using-npm/changelog/).
 
+## 20 Nov — next G2 source hardening (PINNED base + strict context + focused checks)
+
+The experimental alternative `Dockerfile.product-read.bellsoft-npm-free` now uses a **literal immutable, already signed BellSoft BASE OCI index** `docker.io/bellsoft/hardened-nodejs@sha256:ef00ba8e634402e8dd3b374643fdbc178e876c7a312c9d55e4734efaa1e93d94` (previously verified linux/amd64 child `sha256:3862d478c2737d8386911b777d713e56a26e182f7c107e702be23a7b1cfe4799`) instead of a user-overridable ARG or mutable tag. This pin restricts which already-known base can be used but is **NOT** a new vendor signature verification and does not itself remove any CVE.
+
+**New actual build-context fix:** candidate-specific `Dockerfile.product-read.bellsoft-npm-free.dockerignore` matches byte-for-byte the existing strict source allowlist; before this, there was no candidate-specific `.dockerignore` and no root `.dockerignore`. Without the new file, Docker could send unnecessary repository content into the build context. The focused source test verifies equality and final nonroot reversion. No secrets or build-context contents were transferred by these source edits.
+
+To avoid unnecessary repetition, `.github/workflows/product-read-container.yml` now triggers the **old Debian image smoke** only when the actual legacy Dockerfile/context or its other listed inputs change, not on unrelated experimental BellSoft Dockerfiles. Existing one-shot Step04 Distroless workflow remains disabled. A single unrelated existing workflow run might be triggered by its self-edit; do not re-dispatch it.
+
+The exact **build-time Node scrub** from GitHub candidate was independently executed in a local isolated Node v22 `vm` with fake filesystem: **8/8 focused cases PASS**, comprising one expected npm removal, six preflight rejection cases, and a post-removal verification failure case. This is simulation, NOT a Docker build, image scan, hosted trial or proof of production compatibility. Docker is not installed in this assistant's working runtime and the owner's D: WSL Docker is not connected. Therefore candidate image-specific native runtime & unfiltered scan are still NOT DONE. As before the sealed local prior image remains 1 CRITICAL / 8 HIGH, G2 HOLD; no Cloud/IAM/Firebase/production changes.
+
 ## Actual severe findings and bounded dispositions
 
 | Severity, ID(s) | Installed artifact and authoritative location | Evidence-based disposition | Next proof / remedy |

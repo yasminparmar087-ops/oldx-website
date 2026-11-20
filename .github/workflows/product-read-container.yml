@@ -4,7 +4,8 @@ on:
     branches: [security-hardening-review]
     paths:
       - '.github/workflows/product-read-container.yml'
-      - 'Dockerfile.product-read*'
+      - 'Dockerfile.product-read'
+      - 'Dockerfile.product-read.dockerignore'
       - 'package.json'
       - 'package-lock.json'
       - 'functions/staging-marketplace/product-read-server.mjs'

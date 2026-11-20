@@ -9,7 +9,7 @@ const request=body=>({method:'POST',headers:{authorization:'Bearer fake.test.tok
 function fixture(overrides={}){
  const f=fakeFirestoreSdk(),clock=Date.now();let uid='owner',revoked=false,verified=0,failDomain=false;
  // Native Admin-shaped TEST DOUBLE; does not initialize Firebase or use credentials.
- const adminFirestore={projectId:'oldx-staging',collection:name=>({doc:id=>f.sdk.doc(f.db,name,id)}),runTransaction:(work,opts)=>f.sdk.runTransaction(f.db,async tx=>{let domain=false;const result=await work({get:async ref=>{const s=await tx.get(ref);return {exists:s.exists(),data:s.data};},set:(ref,value)=>{if(ref.path.startsWith(c.privateRecords+'/'))domain=true;tx.set(ref,value);},delete:(...args)=>tx.delete(...args)});if(domain&&failDomain)throw Error('Simulated domain commit failure');return result;},opts)};
+ const adminFirestore={projectId:'oldx-staging',databaseId:'(default)',collection:name=>({doc:id=>f.sdk.doc(f.db,name,id)}),runTransaction:(work,opts)=>f.sdk.runTransaction(f.db,async tx=>{let domain=false;const result=await work({get:async ref=>{const s=await tx.get(ref);return {exists:s.exists(),data:s.data};},set:(ref,value)=>{if(ref.path.startsWith(c.privateRecords+'/'))domain=true;tx.set(ref,value);},delete:(...args)=>tx.delete(...args)});if(domain&&failDomain)throw Error('Simulated domain commit failure');return result;},opts)};
  const adminAuth={app:{options:{projectId:'oldx-staging'}},verifyIdToken:async(_token,checkRevoked)=>{verified++;assert.equal(checkRevoked,true);if(revoked)throw Error('private token detail');const now=Math.floor(Date.now()/1000);return {uid,sub:uid,aud:'oldx-staging',iss:'https://securetoken.google.com/oldx-staging',iat:now,exp:now+3600};}};
  for(const actor of ['owner','other'])f.seed(c.actors,actor,{uid:actor,canWrite:true,canPublish:true,suspended:false});f.seed(c.generations,'current',{value:0});
  const options={now:()=>clock,enabled:true,projectId:'oldx-staging',deploymentEnvironment:'preview',adminFirestore,adminAuth,FieldValue:{serverTimestamp:f.sdk.serverTimestamp},ratePolicy:{windowMs:60000,actorLimit:20,globalLimit:100},...overrides};
@@ -82,4 +82,18 @@ test('native namespace media policy/reference/atomic/delivery reuse the trusted 
  const photoRequest={kind:'product',parentId:id,expectedParentRevision:2,expectedPhotoRevision:1};assert.equal((await media.delivery.publicPhotos(photoRequest)).ok,true);
  assert.equal((await runtime.handle('/api/staging/marketplace/save',request({...publish,expectedRevision:2,requestId:'withdraw-native-media',publication:'withdraw'}))).status,200);
  assert.equal((await media.delivery.publicPhotos(photoRequest)).ok,false);
+});
+
+// G4 defense-in-depth: the standalone staging binding must reject a nondefault
+// Firestore instance even when it bypasses the already-strict HTTP initializer.
+test('staging SDK binding rejects nondefault database before and after binding',()=>{
+ const f=fixture();
+ f.options.adminFirestore.databaseId='other';
+ assert.throws(()=>createStagingMarketplaceBinding(f.options),/Staging binding unavailable/);
+ assert.equal(f.create().handle instanceof Function,true); // factory stays default-off on unsafe initialization
+ f.options.adminFirestore.databaseId='(default)';
+ const b=createStagingMarketplaceBinding(f.options);
+ f.options.adminFirestore.databaseId='other';
+ assert.throws(()=>b.sdk.doc(b.db,c.actors,'owner'),/Staging binding unavailable/);
+ assert.throws(()=>b.sdk.runTransaction(b.db,async()=>{}, {maxAttempts:3}),/Staging binding unavailable/);
 });

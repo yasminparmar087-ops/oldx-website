@@ -13,7 +13,7 @@ const bindings=new WeakSet();
 function binding({adminFirestore,FieldValue,deploymentEnvironment,projectId}={},emulator=false){
  const expected=emulator?'demo-oldx-admin-runtime':'oldx-staging';
  const check=()=>{if(emulator?(process.env.FIRESTORE_EMULATOR_HOST!=='127.0.0.1:8088'||adminFirestore?._settings?.servicePath!=='127.0.0.1'||adminFirestore?._settings?.port!==8088||adminFirestore?._settings?.ssl!==false):(!!process.env.FIRESTORE_EMULATOR_HOST||!!process.env.FIREBASE_AUTH_EMULATOR_HOST))throw Error('Unsafe SDK transport');
- if(deploymentEnvironment!=='preview'||projectId!==expected||adminFirestore?.projectId!==expected||typeof adminFirestore.collection!=='function'||typeof adminFirestore.runTransaction!=='function'||typeof FieldValue?.serverTimestamp!=='function')throw Error('Staging binding unavailable');};check();
+ if(deploymentEnvironment!=='preview'||projectId!==expected||adminFirestore?.projectId!==expected||(!emulator&&adminFirestore?.databaseId!=='(default)')||typeof adminFirestore.collection!=='function'||typeof adminFirestore.runTransaction!=='function'||typeof FieldValue?.serverTimestamp!=='function')throw Error('Staging binding unavailable');};check();
  const allowed=new Set([...Object.values(PROVIDER_SCHEMA_V1.collections),...Object.values(STAGING_PROVIDER_ENQUIRY_COLLECTIONS),...Object.values(STAGING_PROVIDER_CONVERSATION_COLLECTIONS),...Object.values(STAGING_MARKETPLACE_COLLECTIONS),...Object.values(STAGING_MEDIA_COLLECTIONS),...Object.values(STAGING_MEDIA_JOURNAL),...Object.values(STAGING_MEDIA_REFERENCES),STAGING_RATE_COLLECTION]);
  const references=new WeakMap(),db=adminFirestore;
  const native=ref=>{check();const value=references.get(ref);if(!value)throw Error('Unbound staging reference');return value;};

@@ -1,5 +1,24 @@
 # OLDX Step 04 — C1 ONE new private Registry copy (ATTEMPT STOPPED; REMOTE STATE UNKNOWN)
 
+## 21 Nov 2026 ~03:03 IST — C1 actual AMD64 config blob GET SHA256/size PASS; local-image equivalence and layers remain OPEN (LATEST)
+
+**Actual owner PowerShell screenshot:** Previously verified `linux/amd64` child OCI manifest referenced image-config blob `sha256:a5933c5665af3aeb1190f7bd74e41308dd595d61db5eb299d64f1780d2cf9524` (child manifest has 10 layer descriptors). In the **same Windows `PS D:\Temp>`** session, owner obtained a fresh short-lived Yasmin `gcloud.cmd` token in RAM, and issued a **read-only GET** for `https://asia-south1-docker.pkg.dev/v2/oldx-staging/oldx-staging-images/oldx-npmfree-20261121-a1/blobs/sha256:a5933c5665af3aeb1190f7bd74e41308dd595d61db5eb299d64f1780d2cf9524`. Output:
+```text
+HTTP_STATUS=200
+CONFIG_BLOB_DIGEST_MATCH=True
+CONFIG_SIZE_MATCH=True
+CONFIG_OS=linux
+CONFIG_ARCH=amd64
+ROOTFS_DIFF_IDS_COUNT=10
+```
+**Meaning:** Exact config bytes fetched from private Registry match the child manifest's SHA256 and size descriptor and identify `linux/amd64` with 10 rootfs diff IDs. **C1_INDEX=PASS; C1_AMD64_CHILD_MANIFEST=PASS; C1_REMOTE_CONFIG_BLOB=PASS.** This does NOT yet show local image equivalence or remote layer blob availability/byte integrity. Never disclose the config's Env/raw body (may contain sensitive settings).
+
+**New source-level discrepancy discovered during read-only code review, not a newly tested cloud condition:** Frozen C1 one-shot runner `scripts/step04-npmfree-c1-single-push-a1.py` `inspect_remote()` (lines 167–172) explicitly requires a **single-image manifest** (`"manifests" not in payload`) and `config.digest == SOURCE_ID` where `SOURCE_ID=sha256:0844b637cf1bfedef60caa6a54ad515ebf9c0a937453b409101ad0d2ff254f79`. Actual read-only Registry showed **a valid OCI INDEX** at digest `sha256:0844b637cf1bfedef60caa6a54ad515ebf9c0a937453b409101ad0d2ff254f79` with an AMD64 child, whose **actual config digest is `sha256:a5933c5665af3aeb1190f7bd74e41308dd595d61db5eb299d64f1780d2cf9524`**. Thus the current runner's expected output shape/config comparison **does not match the observed remote artifact topology**; this could explain the prior C1 STOP if verification reached that code path, but the exact prior exception stage remains **UNPROVEN**. Do not patch/re-execute the consumed C1 uploader or fake SUCCESS; retain journal and all remote objects.
+
+**Next focused read-only owner check (NOT executed yet):** Compare `$cfg.rootfs.diff_ids` (remote config JSON in current PowerShell memory) to **local** WSL `docker image inspect oldx-bellsoft-npmfree:20261120-a1` output restricted to `RootFS.Layers` (uncompressed diff IDs) only. Print counts and order-sensitive identity result, not raw config/environment. If matching, then later verify the **10 remote compressed layer blobs**, layer descriptors and transport separately; don't confuse compressed blob digest with uncompressed diff ID. If mismatch or local Docker absent STOP and reconcile source/containerd platform semantics. No rebuild, reupload, retag, Grype, preflight, CI or old C1 `--execute`, and no provider mutation.
+
+**Standing status:** `C1_REMOTE_CONFIG_BLOB=PASS`, `C1_LOCAL_IMAGE_EQUIVALENCE=UNVERIFIED`, `C1_LAYER_BLOBS=UNVERIFIED`, original builder SLSA unknown and original Grype 1 CRITICAL/5 HIGH; **G2 HOLD / G4 cross-DB OPEN / G8 all-provider spending STOP OPEN / Step04 HOLD / production NO-GO.**
+
 ## 21 Nov 2026 ~03:00 IST — C1 AMD64 child OCI manifest digest, header, size PASS; config blob NEXT (LATEST)
 
 **Owner's actual Windows Google Cloud SDK PowerShell screenshot, read-only Registry v2:** Using `$doc.manifests` from the previously verified index, owner selected unique `linux/amd64` OCI child descriptor `sha256:3150d898c8e013c833bac8b7f8adb8411023449093658d5c5c478a55d7ec28d1`, obtained a fresh short-lived Yasmin `gcloud.cmd` access token in RAM only (cleared in `finally`), and performed **one GET by that digest** to `https://asia-south1-docker.pkg.dev/v2/oldx-staging/oldx-staging-images/oldx-npmfree-20261121-a1/manifests/sha256:3150d898c8e013c833bac8b7f8adb8411023449093658d5c5c478a55d7ec28d1`, Accept `application/vnd.oci.image.manifest.v1+json`. Exact sanitized stdout:

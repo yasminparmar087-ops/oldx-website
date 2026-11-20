@@ -1,5 +1,22 @@
 # OLDX Agent Instructions
 
+## 21 Nov 2026 ~03:38 IST — C3 Cosign v3.1.4 stage-only SUCCESS, asset SHA256 matches OFFICIAL GitHub metadata; Sigstore signature NOT YET verified (LATEST)
+
+**Owner actual Windows PowerShell screenshot** of corrected **native Windows** pinned download (no nested WSL shell quoting) at `PS D:\Temp>`:
+```text
+C3_STAGED_ONLY=YES
+BINARY_SHA256=424E2C97D0B45FD7A6B608A87F090F35633F4C23ECE5F092D48BBA11AAF4BBFA
+SIGNATURE_VERIFIED=NO
+C3_SIGNING=NOT_STARTED
+```
+The owner script checked that `D:\OLDX\G2\c3-cosign-v3.1.4\cosign-linux-amd64` was **145,688,404 bytes** and the corresponding (non-KMS) `cosign-linux-amd64.sigstore.json` was **6,747 bytes**. Both fetched from exact official `sigstore/cosign` GitHub Release **v3.1.4**, no executable run/installation/signature writing. No C1/C2 repeat or cloud changes.
+
+**NEW independent metadata read** directly from official `https://api.github.com/repos/sigstore/cosign/releases/latest` by authenticated GitHub connector confirms latest `v3.1.4` released 20 Oct 2026 and the **official release asset's SHA256** `sha256:424e2c97d0b45fd7a6b608a87f090f35633f4c23ece5f092d48bba11aaf4bbfa` exactly equals owner's computed binary hash. **C3_BINARY_MATCHES_OFFICIAL_GITHUB_RELEASE_ASSET=PASS** (integrity relative to official GitHub asset). Official *bundle* asset metadata SHA256 is `sha256:355244bb0186e950ced20f03106640ba3a4630e1223d0467ff34bcebe10bb18a` — owner has NOT independently computed/compared bundle SHA yet; only bundle length checked. **C3_SIGSTORE_CRYPTOGRAPHIC_SIGNATURE_VERIFICATION=NOT_PERFORMED**. Even GitHub asset digest matching does not independently prove Sigstore release signer identity/chain/transparency. Do not run binary or start keyless OIDC/signing until authenticity procedure and owner public-identity/cost scope reviewed. No standing approval to disclose Yasmin's Google-account identity into public Sigstore Rekor logs. [Sigstore official installation verification](https://docs.sigstore.dev/cosign/system_config/installation/).
+
+**NEXT single locally safe task:** native Windows PowerShell `Get-FileHash -LiteralPath 'D:\OLDX\G2\c3-cosign-v3.1.4\cosign-linux-amd64.sigstore.json' -Algorithm SHA256` and compare to `355244bb0186e950ced20f03106640ba3a4630e1223d0467ff34bcebe10bb18a` (case insensitive); also recheck binary hash to documented `424e2c97d0b45fd7a6b608a87f090f35633f4c23ece5f092d48bba11aaf4bbfa` if necessary only to ensure staging has not been altered (no re-download). If both true, report `C3_GITHUB_ASSET_HASHES=PASS` but `SIGSTORE_SIGNATURE_VERIFIED=NO`. Then choose an independently authenticated verifier (TUF artifact.pub or trusted pre-installed Cosign / other Sigstore verifier); do not bootstrap verification by blindly executing unverified binary. Stop if SHA mismatch and preserve files.
+
+**Status:** C1 read-only Registry structure and layers availability PASS with documented limits; C2 OCI index descriptor identity PASS; C3 tools staged, official GitHub binary asset digest PASS, Sigstore signer verification and actual signing NOT DONE; original builder SLSA unknown; G2 HOLD, G4 cross-DB OPEN, G8 cross-provider spend STOP OPEN, Step04 HOLD and production NO-GO. No build, scan, push, IAM, billing, Cloud Run, Firebase, production or GitHub workflow permission change performed.
+
 ## 21 Nov 2026 ~03:34 IST — C3 Windows-native inventory confirms stage directory ABSENT; prior WSL shell STOP was not a real existing Windows staging directory (LATEST)
 
 **Owner screenshot** of **native Windows PowerShell** inventory `$p='D:\OLDX\G2\c3-cosign-v3.1.4'; Test-Path -LiteralPath $p -PathType Container` returned **`C3_STAGE_DIR=ABSENT`**. Earlier `wsl.exe -- sh -lc '...'` unexpectedly printed `/bin/bash: line 1: /cosign-linux-amd64: No such file or directory` and `C3_STAGE_ALREADY_EXISTS_STOP` without the success marker; those messages **cannot** be taken as proof the intended D:-backed staging directory existed or downloads completed. WSL nested quoting/PowerShell-dollar interpolation is the likely failure mode, but no specific root cause has been independently established. Do NOT rerun original WSL download command.

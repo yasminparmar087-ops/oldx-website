@@ -1,5 +1,21 @@
 # OLDX Agent Instructions
 
+## 21 Nov 2026 — C0 actual owner read-only Artifact Registry REPOSITORY DESCRIBE PASS (CURRENT)
+
+Screenshot from user's Windows Google Cloud SDK shell `D:\\Temp>` of `gcloud artifacts repositories describe oldx-staging-images --project=oldx-staging --location=asia-south1 --account=yasminparmar087@gmail.com --format="json(name,format,mode)"` returned an exact existing resource:
+```json
+{
+  "format": "DOCKER",
+  "mode": "STANDARD_REPOSITORY",
+  "name": "projects/oldx-staging/locations/asia-south1/repositories/oldx-staging-images"
+}
+```
+Google CLI also printed `Encryption: Google-managed key`, `Repository Size: 292.048MB`. **This is the current remote repository inventory size, not the WSL image local 301.58 MiB, not the size of a future npm-free upload, not proof of remaining 0.5 GiB-month free tier, and not permission to write.** This read-only lookup was SUCCESS and consumed; **do not repeat**. Existing repository means do not create a duplicate. Available official gcloud update warning is irrelevant: no CLI upgrade required now.
+
+**NEXT DISTINCT READ-ONLY C0 CHECK (not yet run):** Windows Google Cloud SDK `D:\\Temp>` (not WSL) `gcloud artifacts packages describe oldx-npmfree-20261121-a1 --project=oldx-staging --repository=oldx-staging-images --location=asia-south1 --account=yasminparmar087@gmail.com --format="json(name)"`. Proposed **new** image package `oldx-npmfree-20261121-a1` is a proposal, NOT published and NOT yet checked. `NOT_FOUND` is possible evidence the name was absent *at that instant only*; any permission error, API error, timeout or ambiguity is **NOT** name-free proof; an existing package means **STOP, choose a new name with owner review**, never overwrite. No magic retry/recreate. This is NOT an authorization to upload, tag, sign, pay, change IAM, launch B1, activate, or deploy. Later registry writer IAM, exact image digest custody and hard cost bound remain **UNVERIFIED**. WSL local no-rebuild image previously size 316232711 bytes (301.58 MiB), local SHA `sha256:0844b637cf1bfedef60caa6a54ad515ebf9c0a937453b409101ad0d2ff254f79`, new local scan 1 CRITICAL/5 HIGH unchanged; owner local checks all consumed.
+
+**Current:** Step04 ACTIVE/HOLD, G2 independent signed build provenance and remote custody OPEN, G4 other-database effective isolation OPEN, G8 all-provider cost STOP OPEN, production NO-GO. No new Cloud mutations, billable upload, Docker build/scan or CI needed for documentation checkpoint.
+
 ## 21 Nov 2026 — actual owner WSL C0 local metadata PASS, image size measured (LATEST)
 
 **Actual screenshot** at WSL `root@DESKTOP-6AUQN5U:/mnt/d/Temp#` of the pinned source-only `scripts/step04-npmfree-c0-local-metadata-a1.py` shows:

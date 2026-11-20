@@ -1,5 +1,15 @@
 # OLDX Step 04 — C2 identity reconciliation → C3 digest-bound signed custody (NO REUPLOAD)
 
+## 21 Nov 2026 ~03:34 IST — C3 Windows-native inventory confirms stage directory ABSENT; prior WSL shell STOP was not a real existing Windows staging directory (LATEST)
+
+**Owner screenshot** of **native Windows PowerShell** inventory `$p='D:\OLDX\G2\c3-cosign-v3.1.4'; Test-Path -LiteralPath $p -PathType Container` returned **`C3_STAGE_DIR=ABSENT`**. Earlier `wsl.exe -- sh -lc '...'` unexpectedly printed `/bin/bash: line 1: /cosign-linux-amd64: No such file or directory` and `C3_STAGE_ALREADY_EXISTS_STOP` without the success marker; those messages **cannot** be taken as proof the intended D:-backed staging directory existed or downloads completed. WSL nested quoting/PowerShell-dollar interpolation is the likely failure mode, but no specific root cause has been independently established. Do NOT rerun original WSL download command.
+
+**Fresh authoritative Sigstore GitHub Releases latest API confirmation 21 Nov:** latest `v3.1.4` (20 Oct 2026). Exact asset `cosign-linux-amd64` **145,688,404 bytes**, and **matching** `cosign-linux-amd64.sigstore.json` **6,747 bytes**. Do NOT use `cosign-linux-amd64-kms.sigstore.json` bundle for this main binary. Cosign official install guidance (https://docs.sigstore.dev/cosign/system_config/installation/) explicitly says verify release authenticity before execution; an HTTPS download, byte length, and SHA256 **without trusted signature/provenance verification** do not by themselves authenticate the executable.
+
+**NEXT only local setup (NOT yet run):** In current `PS D:\Temp>` use **native Windows PowerShell** `New-Item` and explicit `curl.exe` with *literal Windows paths* to create exactly `D:\OLDX\G2\c3-cosign-v3.1.4` and download exactly those two pinned assets **once**, no WSL `sh -lc`, no archive extraction, no `chmod`/execution or signing. Check exact published bytes, print hash and `C3_STAGED_ONLY=YES`, but keep `COSIGN_RELEASE_AUTHENTICITY=UNVERIFIED` until independently verified. If folder unexpectedly exists or download fails, STOP and inventory; no blind retry, overwrite or cleanup.
+
+**Absolute safety:** no Google OIDC sign-in, Sigstore Rekor identity disclosure, Registry signature push, image upload/rebuild/scan, IAM/billing/deploy/production changes without separate approval. Earlier C1/C2 evidence remains frozen, OCI index descriptor identity PASS, C3 NOT DONE; G2 HOLD, G4 effective cross-db OPEN, G8 all-provider financial stop OPEN, Step04 HOLD and production NO-GO.
+
 ## 21 Nov 2026 ~03:32 IST — C3 pinned Cosign staging command STOP; inspect folder read-only, do NOT retry (LATEST)
 
 **Owner actual Windows `PS D:\Temp>` screenshot** of proposed `wsl.exe -- sh -lc '...'` stage-only downloader:

@@ -1,5 +1,20 @@
 # OLDX Agent Instructions
 
+## 21 Nov 2026 ~03:32 IST — C3 pinned Cosign staging command STOP; inspect folder read-only, do NOT retry (LATEST)
+
+**Owner actual Windows `PS D:\Temp>` screenshot** of proposed `wsl.exe -- sh -lc '...'` stage-only downloader:
+```text
+/bin/bash: line 1: /cosign-linux-amd64: No such file or directory
+C3_STAGE_ALREADY_EXISTS_STOP
+```
+**Neither `C3_STAGED_ONLY=YES` nor `C3_BINARY_SIZE_BYTES` nor SHA256 was printed.** Therefore **C3 download success is NOT VERIFIED**, and no signing was initiated. Two signals suggest the combined Windows→WSL shell argument/variable quoting may have been transformed and/or the destination folder already existed; exact cause, directory contents and whether any partial files were written remain **UNKNOWN**. Do **NOT** repeat the same command, erase/overwrite the directory, chmod/run downloaded executable or start Google OIDC signing. No change to existing C1 image, C2 OCI identity, GitHub workflow, IAM, Firebase, Cloud Run, billing or production is evidenced by this attempt.
+
+**Important source correction before any future download:** Official Sigstore v3.1.4 release includes main binary `cosign-linux-amd64` and **matching** attestation bundle `cosign-linux-amd64.sigstore.json`. The prior combined staging command selected **`cosign-linux-amd64-kms.sigstore.json`**, a different-named KMS-variant bundle, which must **NOT** be assumed a valid authenticity bundle for the main binary. Release artifacts list independently includes `cosign-linux-amd64.sigstore.json` (main binary), and official signature verification must still be completed against the appropriate release trust root *before executing* any binary. Merely downloading HTTPS and hashing without comparing against authenticated/verified release evidence does not establish trusted software provenance.
+
+**NEXT exactly one low-risk local inspection (NOT YET RUN):** Use pure Windows **PowerShell** `Get-ChildItem -LiteralPath 'D:\OLDX\G2\c3-cosign-v3.1.4' -File` with `Test-Path`; show existence, count, basename and file sizes **only**, avoiding another WSL `sh -lc` quoting layer, network or filesystem writes. Do not reveal credentials, private config or raw executable contents. Based on actual inventory, propose an idempotent, carefully authenticated *future* staging fix without overwriting existing artifacts silently, followed by independent release signature verification and later separately consented identity disclosure/signing.
+
+**State:** `C3_STAGE=STOP_UNKNOWN_CONTENTS`, `C3_COSIGN_AUTHENTICITY=UNVERIFIED`, `C3_SIGNATURE=NOT_DONE`. C1 remote index/child/config SHA, RootFS IDs, 10 blob HEAD availability/size and runtime fields PASS; C2 local index descriptor identity PASS; **G2 HOLD, G4 cross-DB OPEN, G8 all-provider hard cost STOP OPEN, Step04 HOLD, production NO-GO**. No old build/Grype, C1 upload/execute or consumed checks again.
+
 ## 21 Nov 2026 ~03:29 IST — C3 owner WSL Cosign NOT INSTALLED; official v3.1.4 release verified by public GitHub metadata (LATEST)
 
 **Owner actual read-only Windows PowerShell screenshot** from `PS D:\Temp>` invoked `wsl.exe -- sh -lc 'if command -v cosign ...'` and returned exactly `C3_COSIGN_INSTALLED=NO`. This is **absence of a local signing tool**, not a failed registry signature and not a G2 PASS. There is no evidence any signature was made or previous image modified. Existing C1/C2 verifications remain frozen.

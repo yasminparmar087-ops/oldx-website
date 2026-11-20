@@ -95,7 +95,6 @@ env.update({
   "GRYPE_DB_CACHE_DIR":str(DB_CACHE),
   "GRYPE_DB_AUTO_UPDATE":"false",
   "GRYPE_CHECK_FOR_APP_UPDATE":"false",
-  "GRYPE_DB_VALIDATE_BY_HASH_ON_START":"false",
 })
 args=[str(GRYPE),"--config",str(config),"docker:"+TAG,
       "--scope","squashed","--output","json"]

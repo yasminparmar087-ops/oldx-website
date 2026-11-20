@@ -10,6 +10,8 @@ on:
       - 'Dockerfile.product-read.bellsoft.dockerignore'
       - 'tests/integration/step04-bellsoft-npm-free-source.test.mjs'
       - 'scripts/step04-npmfree-local-one-shot-a1.py'
+      - 'scripts/step04-npmfree-existing-evidence-a1.py'
+      - 'tests/integration/step04-npmfree-existing-evidence.test.py'
       - 'tests/integration/step04-runtime-cli-paths.test.mjs'
       - 'functions/staging-marketplace/product-read-server.mjs'
       - 'functions/staging-marketplace/runtime.mjs'
@@ -62,6 +64,8 @@ jobs:
         run: node --test tests/integration/step04-bellsoft-npm-free-source.test.mjs
       - name: Guard direct ldd and SQLite CLI invocation in copied runtime source
         run: node --test tests/integration/step04-runtime-cli-paths.test.mjs
+      - name: Verify new EXISTING-evidence read-only integrity guard with synthetic fixtures
+        run: python3 -m unittest discover -s tests/integration -p 'step04-npmfree-existing-evidence.test.py'
       - name: Check one-shot script parses without executing Docker or scanning
         run: |
           python3 -m py_compile scripts/step04-npmfree-local-one-shot-a1.py

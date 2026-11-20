@@ -52,6 +52,10 @@ test('reject the observed bundled undici 6.29.0 and unverified base paths',()=>{
    'BUNDLED_NPM_UNDICI_UNPATCHED');
  assert.equal(reviewBellSoftEvidenceShape({...x,npmBundledUndiciVersion:'6.28.99'}).reason,
    'BUNDLED_NPM_UNDICI_UNPATCHED');
+ assert.equal(reviewBellSoftEvidenceShape({...x,npmBundledUndiciVersion:'7.0.0'}).reason,
+   'BUNDLED_NPM_UNDICI_UNPATCHED');
+ assert.equal(reviewBellSoftEvidenceShape({...x,npmBundledUndiciVersion:'8.0.0'}).reason,
+   'BUNDLED_NPM_UNDICI_UNPATCHED');
  assert.equal(reviewBellSoftEvidenceShape({...x,npmBundledUndiciVersion:undefined}).reason,
    'BUNDLED_NPM_UNDICI_UNPATCHED');
  assert.equal(reviewBellSoftEvidenceShape({...x,npmBundledUndiciEvidenceSubjectDigest:hash('d')}).reason,

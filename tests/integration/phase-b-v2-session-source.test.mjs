@@ -221,6 +221,13 @@ test('V2 offline probe rejects retired targets, fixture replay and unsupported r
   ]) assert.equal(reviewV2OfflineProbe(draft).decision, 'BLOCKED');
 });
 
+test('G8 bounded V2 planning amount accepts up to ₹100 only, not a hard billed-cost guarantee', () => {
+  const atCap = probeDraft({}, {maxGrossPaise: 10_000});
+  assert.equal(reviewV2OfflineProbe(atCap).decision, 'SOURCE_PROBE_SHAPE_ONLY');
+  assert.equal(reviewV2OfflineProbe(probeDraft({}, {maxGrossPaise: 10_001})).decision, 'BLOCKED');
+  assert.equal(reviewV2OfflineProbe(probeDraft({}, {maxGrossPaise: Number.MAX_SAFE_INTEGER})).decision, 'BLOCKED');
+});
+
 test('V2 offline probe stops on invalid expiry, insufficient cleanup time or unknown journal', () => {
   const now = Date.now();
   for (const review of [
@@ -229,6 +236,10 @@ test('V2 offline probe stops on invalid expiry, insufficient cleanup time or unk
     {issuedAt: now - 1_000, expiresAt: now + 20 * 60_000},
     {issuedAt: now - 1_000, expiresAt: now + 80_000},
     {maxGrossPaise: 0},
+    // A recomputed scope fingerprint cannot accept an oversized cost plan.
+    // ₹100 equals 10,000 paise; this is NOT a cross-service hard spend STOP.
+    {maxGrossPaise: 10_001},
+    {maxGrossPaise: 2_000_000},
   ]) assert.equal(reviewV2OfflineProbe(probeDraft({}, review)).decision, 'BLOCKED');
   for (const journalState of ['CREATE_UNKNOWN', 'UPDATE_UNKNOWN', 'DELETE_UNKNOWN']) {
     assert.equal(reviewV2OfflineProbe({...probeDraft(), journalState}).decision,

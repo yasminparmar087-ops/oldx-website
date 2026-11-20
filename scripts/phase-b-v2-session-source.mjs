@@ -260,7 +260,9 @@ export function reviewV2OfflineProbe(input) {
   const now = Date.now();
   if (!Number.isSafeInteger(issuedAt) || !Number.isSafeInteger(expiresAt) ||
       issuedAt > now || expiresAt <= now || expiresAt - issuedAt > 20 * 60_000 ||
-      !Number.isSafeInteger(maxGrossPaise) || maxGrossPaise < 1 ||
+      // Planning envelope only: capped at the existing ₹100 Cloud Run-only
+      // spend-cap amount. Not provider-enforced all-service cost containment.
+      !Number.isSafeInteger(maxGrossPaise) || maxGrossPaise < 1 || maxGrossPaise > 10_000 ||
       !exactKeys(evidence, V2_EVIDENCE) ||
       !V2_EVIDENCE.every(key => typeof evidence[key] === 'string' && SHA256.test(evidence[key])) ||
       new Set([evidence.b1, evidence.r1, evidence.r2, evidence.cleanup]).size !== 4) return blocked();

@@ -644,7 +644,15 @@ export function inspectPhaseBConfiguration(read = gcloud, {preflight = false, ho
     const rows = bindings(policy);
     const invokers = rows.filter(({role}) => ['roles/run.invoker', 'roles/run.servicesInvoker'].includes(role));
     const publicBindings = rows.filter(({members}) => members.some(publicMember));
-    result[label] = {directInvokerBindings: invokers.length, publicBindings: publicBindings.length};
+    // Owner/Editor also carry run.routes.invoke at the PROJECT level.
+    // A service-only roles/run.invoker list does not establish exclusivity.
+    // Expose only aggregate counts, never principal emails or policy members.
+    const basicRoleBindings = rows.filter(({role, members}) =>
+      ['roles/owner', 'roles/editor'].includes(role) && members.length > 0);
+    result[label] = {directInvokerBindings: invokers.length,
+      publicBindings: publicBindings.length, basicInvokerBindings: basicRoleBindings.length};
+    if (label === 'projectPolicy' && basicRoleBindings.length)
+      result.leastPrivilegeInvoker = 'POTENTIAL_PROJECT_BASIC_ROLE_INVOCATION';
     return rows;
   }
   check('projectPolicy', () => json('projects', 'get-iam-policy', project, ...scoped), (policy) => {

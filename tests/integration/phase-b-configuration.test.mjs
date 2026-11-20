@@ -61,14 +61,40 @@ test('matching fixed configuration leaves effective IAM, invocation and release 
   assert.equal(report.configuration, 'MATCH');
   assert.equal(report.checks.projectPolicy, 'MATCH');
   assert.equal(report.checks.servicePolicy, 'MATCH');
-  assert.deepEqual(report.projectPolicy, {directInvokerBindings: 0, publicBindings: 0});
-  assert.deepEqual(report.servicePolicy, {directInvokerBindings: 1, publicBindings: 0});
+  assert.deepEqual(report.projectPolicy, {directInvokerBindings: 0, publicBindings: 0, basicInvokerBindings: 0});
+  assert.deepEqual(report.servicePolicy, {directInvokerBindings: 1, publicBindings: 0, basicInvokerBindings: 0});
   assert.equal(report.effectiveDatabaseIam, 'UNVERIFIED');
   assert.equal(report.leastPrivilegeInvoker, 'UNVERIFIED');
   assert.equal(report.stagingExecution, 'NO_GO');
   assert.equal(report.ingress, 'INTERNET_REACHABLE');
   assert.ok(!JSON.stringify(report).includes(runtime));
   assert.ok(!JSON.stringify(report).includes(invoker));
+});
+
+test('G4 flags basic Owner/Editor project grants as potential nonexclusive Cloud Run invocation', () => {
+  for (const role of ['roles/owner', 'roles/editor']) {
+    const broadMember = 'serviceAccount:synthetic-compute@developer.gserviceaccount.com';
+    const report = inspectPhaseBConfiguration(fakeRead((command, data) => {
+      if (command === 'projects get-iam-policy oldx-staging')
+        data.bindings.push({role, members: [broadMember]});
+    }));
+    assert.equal(report.configuration, 'MATCH', 'narrow base policy checks are separate');
+    assert.deepEqual(report.projectPolicy,
+      {directInvokerBindings: 0, publicBindings: 0, basicInvokerBindings: 1});
+    assert.equal(report.leastPrivilegeInvoker, 'POTENTIAL_PROJECT_BASIC_ROLE_INVOCATION');
+    assert.equal(report.stagingExecution, 'NO_GO');
+    assert.equal(report.production, 'HOLD_NO_GO');
+    assert.equal(JSON.stringify(report).includes('synthetic-compute'), false);
+  }
+  const report = inspectPhaseBConfiguration(fakeRead((command, data) => {
+    if (command === 'projects get-iam-policy oldx-staging') {
+      data.bindings.push({role: 'roles/editor',members:['user:synthetic-owner@example.invalid']});
+      data.bindings.push({role: 'roles/owner',members:['user:synthetic-admin@example.invalid']});
+    }
+  }));
+  assert.equal(report.projectPolicy.basicInvokerBindings, 2);
+  assert.equal(report.leastPrivilegeInvoker, 'POTENTIAL_PROJECT_BASIC_ROLE_INVOCATION');
+  assert.equal(report.configuration, 'MATCH');
 });
 
 test('wrong local project stops before cloud configuration commands', () => {

@@ -1,5 +1,16 @@
 # OLDX Agent Instructions
 
+## 21 Nov 2026 — C0 new private package name absent, authenticated read-only lookup (CURRENT)
+
+**New actual owner screenshot, Windows Google Cloud SDK Shell `D:\\Temp>`:**
+```
+gcloud artifacts packages describe oldx-npmfree-20261121-a1 --project=oldx-staging --repository=oldx-staging-images --location=asia-south1 --account=yasminparmar087@gmail.com --format="json(name)"
+ERROR: (gcloud.artifacts.packages.describe) NOT_FOUND: Requested entity was not found.
+```
+The CLI additionally confirmed this command was authenticated as `yasminparmar087@gmail.com`. **Decision:** `C0_NEW_PACKAGE_ABSENT_AT_INSPECTION=PASS` for proposed new package name `oldx-npmfree-20261121-a1` **at this one point in time**. It is NOT a reservation or atomic create-only guarantee; absence must be reconfirmed immediately before any *separately authorized* image publish, and concurrent creation can still race. Previous existing repository describe PASS is also consumed. Do **NOT** re-run these checks just to repeat prior evidence. No new package created, OCI uploaded, IAM policy changed, billable workload activated, signed custody or original trusted builder provenance established. Old Registry package `oldx-step04-g2-d13818-a1` remains separate and untouched.
+
+**Next distinct low-risk C0 read-only work**: inspect the repository's own IAM policy (e.g. `gcloud artifacts repositories get-iam-policy oldx-staging-images --project=oldx-staging --location=asia-south1 --account=yasminparmar087@gmail.com --format="json(bindings)"`). This reveals repository-specific grants but **NOT inherited project/folder/organization roles** or effective proof of uploadArtifacts. Existing earlier project-level Owner role for Yasmin is a point-in-time observation; do not grant any role or assume full write authorization from package NOT_FOUND. [Google Artifact Registry get-iam-policy](https://docs.cloud.google.com/sdk/gcloud/reference/artifacts/repositories/get-iam-policy), [IAM inheritance caveat](https://docs.cloud.google.com/iam/docs/granting-changing-revoking-access). After that, cost and scoped owner authorization for any single private upload remain separate. If IAM command fails, STOP; don't enable services or change roles. **G2 HOLD, G4 cross-database OPEN, G8 all-service-cost STOP OPEN, production NO-GO.**
+
 ## 21 Nov 2026 — C0 actual owner read-only Artifact Registry REPOSITORY DESCRIBE PASS (CURRENT)
 
 Screenshot from user's Windows Google Cloud SDK shell `D:\\Temp>` of `gcloud artifacts repositories describe oldx-staging-images --project=oldx-staging --location=asia-south1 --account=yasminparmar087@gmail.com --format="json(name,format,mode)"` returned an exact existing resource:

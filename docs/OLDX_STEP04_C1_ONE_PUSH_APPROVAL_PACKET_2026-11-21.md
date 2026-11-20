@@ -1,4 +1,15 @@
-# OLDX Step 04 — C1 one-copy Registry release decision packet (prepared, not authorized)
+# OLDX Step 04 — C1 ONE new private Registry copy (OWNER APPROVED; NOT EXECUTED)
+
+## 21 Nov 2026 — CURRENT APPROVAL AND SAFE ONE-PUSH RUNNER (LATEST)
+
+**Owner explicitly approved** one private upload of *existing* npm-free WSL image to the exact NEW target already proposed, with possible small incremental Registry storage charge, responding “ha manjuri chhe”. **C1_SINGLE_PRIVATE_COPY_OWNER_APPROVAL=YES**. Do NOT treat this as authorization for recurring storage indefinitely, arbitrary billable scans, signer setup, Cloud Run B1, IAM modifications, old image overwrite or production. The old introductory NOT APPROVED paragraph below is **historical, superseded by this section**. Automatic scan was last checked **SCANNING_DISABLED**; the implementation checks again immediately before any write and stops if changed. Tags were not shown to be immutable; fresh package absence helps but is not atomic create-only.
+
+**Execution code** [`b12527ad8db9a682da2a05c64bdc433a8f614bc6`](https://github.com/yasminparmar087-ops/oldx-website/commit/b12527ad8db9a682da2a05c64bdc433a8f614bc6), source path `scripts/step04-npmfree-c1-single-push-a1.py`, Git blob `6397a2513effda2429774d08e5e115d1f3115c8a`. Three controls:
+1. **`--preflight` is required**. Linux WSL root environment, local Docker image `sha256:0844b637cf1bfedef60caa6a54ad515ebf9c0a937453b409101ad0d2ff254f79`, exact existing private repo, proposed package STILL NOT_FOUND, current scanning disabled, nonimpersonated Windows `gcloud.cmd` token access under Yasmin. Only read-only Cloud metadata/token calls. Emits sanitized PASS or STOP; no Docker login/push, no image write or journal. Windows/WSL interop is the *new* unverified dependency.
+2. **`--execute` only after preflight pass & code CI.** Repeat minimal safety checks because package/tag name can race; use a private temporary Linux Docker auth config, one short-lived access token never printed, create exclusive `oldx-npmfree-c1-single-push-20261121-a1.json` on D: as *attempt journal* before first local tag and remote push. One Docker push only. On ambiguous errors STOP: never blindly retry. Do not delete existing image or mutate old Registry package. Success requires actual push returned immutable OCI manifest digest, remote manifest by digest and exact remote `config.digest` matching frozen local source image ID, plus validated layer descriptors. This is **signed custody NOT DONE**.
+3. **After success** report exact remote digest and preserve journal, then arrange separate C2 signing identity/attestation decision and 7-day manual storage review. The already scanned CVEs remain 1 CRITICAL/5 HIGH and original builder SLSA remains UNVERIFIED. Production and Cloud Run deployment stay NO-GO.
+
+**Owner next WSL command** uses pinned raw GitHub URL + blob verification, runs `python3 "$F" --preflight`. Verify output before issuing `python3 "$F" --execute`. Do not ask again for the approved one push; do not run untested preflight in Windows `D:\Temp>` shell. Old used WSL bash prompt `root@DESKTOP-6AUQN5U:/mnt/d/Temp#`. Full scan/hash/C0 tests are frozen and already consumed; no repetition. Potential small Artifact Registry storage cost remains outside the ₹100 Cloud Run-only cap; no project-wide provider hard spend stop. Do not assume a one-time upload costs exactly ₹0 or is protected by tag immutability.
 
 ## C1 actual read-only scan/immutability settings result — 21 Nov 2026 (LATEST)
 
@@ -8,7 +19,7 @@ Owner screenshot of **the exact new projected read-only `gcloud artifacts reposi
 
 **C1 current STOP rules:** Never overwrite old V2 image or any existing tag, do NOT change repo-wide `immutableTags` setting, keep a single new exact package `oldx-npmfree-20261121-a1` and a unique tag `c1-20261121-a1`, fresh absence check immediately before approved transfer, STOP if a name collision or ambiguous result, and do NOT retry an interrupted/uncertain push without read-only remote reconciliation. Signing a *future remote digest* is separate approval and does not prove original build SLSA. Existing old image C0, code/scan/CI and Yasmin `uploadArtifacts=YES` are consumed. C1 one-time upload NOT yet authorized; this is read-only analysis only.
 
-**Owner decision state (21 Nov 2026): NOT APPROVED TO EXECUTE.** This packet is a **proposed operational scope**, not a request to change IAM, enable scanning, reserve names, tag or upload artifacts, sign, activate Cloud Run, deploy or spend. User's last "continue" authorizes only bounded preparatory work. Keep all default-OFF and production NO-GO.
+**Historical status before the owner's explicit C1 approval (superseded by the latest section above): NOT APPROVED TO EXECUTE.** This packet is a **proposed operational scope**, not a request to change IAM, enable scanning, reserve names, tag or upload artifacts, sign, activate Cloud Run, deploy or spend. User's last "continue" authorizes only bounded preparatory work. Keep all default-OFF and production NO-GO.
 
 ## What is already established — do not repeat
 

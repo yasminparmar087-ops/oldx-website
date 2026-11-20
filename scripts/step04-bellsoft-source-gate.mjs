@@ -71,7 +71,7 @@ export function reviewBellSoftEvidenceShape(e={}){
   ||e.npmBundledUndiciEvidenceSubjectDigest!==e.amd64ChildDigest)
   return stop('NPM_BUNDLE_LOCATION_UNVERIFIED');
  const undici=/^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$/.exec(e.npmBundledUndiciVersion||'');
- if(!undici||Number(undici[1])<6
+ if(!undici||Number(undici[1])!==6
   ||(Number(undici[1])===6&&(Number(undici[2])<29
   ||(Number(undici[2])===29&&Number(undici[3])<1))))
   return stop('BUNDLED_NPM_UNDICI_UNPATCHED');

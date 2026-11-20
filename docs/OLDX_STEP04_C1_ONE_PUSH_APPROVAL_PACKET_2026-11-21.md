@@ -1,5 +1,25 @@
 # OLDX Step 04 — C1 ONE new private Registry copy (ATTEMPT STOPPED; REMOTE STATE UNKNOWN)
 
+## 21 Nov 2026 ~03:00 IST — C1 AMD64 child OCI manifest digest, header, size PASS; config blob NEXT (LATEST)
+
+**Owner's actual Windows Google Cloud SDK PowerShell screenshot, read-only Registry v2:** Using `$doc.manifests` from the previously verified index, owner selected unique `linux/amd64` OCI child descriptor `sha256:3150d898c8e013c833bac8b7f8adb8411023449093658d5c5c478a55d7ec28d1`, obtained a fresh short-lived Yasmin `gcloud.cmd` access token in RAM only (cleared in `finally`), and performed **one GET by that digest** to `https://asia-south1-docker.pkg.dev/v2/oldx-staging/oldx-staging-images/oldx-npmfree-20261121-a1/manifests/sha256:3150d898c8e013c833bac8b7f8adb8411023449093658d5c5c478a55d7ec28d1`, Accept `application/vnd.oci.image.manifest.v1+json`. Exact sanitized stdout:
+
+```text
+HTTP_STATUS=200
+CHILD_DIGEST_MATCH=True
+CHILD_HEADER_MATCH=True
+CHILD_SIZE_MATCH=True
+CONFIG_DIGEST=sha256:a5933c5665af3aeb1190f7bd74e41308dd595d61db5eb299d64f1780d2cf9524
+LAYERS_COUNT=10
+MEDIA_TYPE=application/vnd.oci.image.manifest.v1+json
+```
+
+**Conclusion:** Registry child manifest's response-bytes SHA256 matches its index child descriptor, `Docker-Content-Digest` header and descriptor byte length. **C1_REMOTE_INDEX_DIGEST=PASS** previously (index `sha256:0844b637cf1bfedef60caa6a54ad515ebf9c0a937453b409101ad0d2ff254f79`) and **C1_REMOTE_AMD64_CHILD_MANIFEST=PASS** now, with 10 **descriptors** (not proof that all blobs exist/resolve) and nested config descriptor `sha256:a5933c5665af3aeb1190f7bd74e41308dd595d61db5eb299d64f1780d2cf9524`. Not yet read/hashed the **config blob or individual layer blobs**; not yet reconciled the local Docker image/config ID/underlying layer identities. **IMPORTANT:** `sha256:0844b637cf1bfedef60caa6a54ad515ebf9c0a937453b409101ad0d2ff254f79` is positively verified as remote OCI **index digest** and was separately reported as frozen local Docker image-ID by local snapshot; `sha256:a5933c5665af3aeb1190f7bd74e41308dd595d61db5eb299d64f1780d2cf9524` is the actual remote AMD64 **config descriptor digest**, and the difference does not prove a mismatch without platform-aware local image inspection. DO NOT mark entire C1 upload/remote config match PASS solely on these results; original C1 single-push runner remains `STOP_C1_OUTCOME_POSSIBLY_REMOTE_CHANGED`, attempt already consumed.
+
+**NEXT single safe new step, NOT RUN:** Read-only Registry GET to `/v2/oldx-staging/oldx-staging-images/oldx-npmfree-20261121-a1/blobs/sha256:a5933c5665af3aeb1190f7bd74e41308dd595d61db5eb299d64f1780d2cf9524` with a *new* private short-lived `gcloud.cmd` token in RAM; hash exact response bytes and compare to `sha256:a5933c5665af3aeb1190f7bd74e41308dd595d61db5eb299d64f1780d2cf9524`, validate `$cm.config.size`, and print only `os`, `architecture`, `rootfs.diff_ids` count and match status (no `config.Env`, secrets, raw JSON). If any unexpected result STOP. Then later platform-aware **local WSL image inspection** and layer existence/digest validation, read-only only; never rerun old C1 `--execute` or old Grype/build/preflight/push. Do not delete any journal, Registry tag or package; no IAM, billing, signing, cloud deployment or production changes.
+
+**State:** Index PASS, AMD64 child manifest PASS; config/blob/layer/local-equivalence UNVERIFIED. Grype 1 CRITICAL/5 HIGH, independent builder SLSA unknown; **G2 HOLD, G4 cross-DB OPEN, G8 whole-provider hard spend STOP OPEN, Step04 HOLD, production NO-GO.**
+
 ## 21 Nov 2026 — C1 remote OCI index verified (read-only); AMD64 child manifest NEXT (LATEST)
 
 **Actual owner Windows Google Cloud SDK PowerShell screenshots, 21 Nov ~02:50–02:57 IST:** Using an in-memory short-lived Yasmin `gcloud.cmd auth print-access-token` token (not printed), read-only `GET https://asia-south1-docker.pkg.dev/v2/oldx-staging/oldx-staging-images/oldx-npmfree-20261121-a1/manifests/c1-20261121-a1` returned **HTTP 200**; `Content-Type: application/vnd.oci.image.index.v1+json` and `Docker-Content-Digest: sha256:0844b637cf1bfedef60caa6a54ad515ebf9c0a937453b409101ad0d2ff254f79`. Body length **856 bytes**. Initially `$r.Content | ConvertFrom-Json` yielded integer byte elements and falsely showed `MANIFESTS=0`; this was **PowerShell byte-array parsing**, **not absence of manifests**. Corrected **locally, with NO new Registry GET** via `[System.Text.Encoding]::UTF8.GetString([byte[]]$r.Content) | ConvertFrom-Json` gave `JSON_PARSE=PASS`, `schemaVersion=2`, `mediaType=application/vnd.oci.image.index.v1+json`, **2 child manifest descriptors**:

@@ -1,5 +1,23 @@
 # OLDX Agent Instructions
 
+## 21 Nov 2026 ~03:43 IST — C3 GO unavailable, OpenSSL available; pinned Sigstore artifact-key verification fallback selected (LATEST)
+
+**Owner actual PowerShell screenshot** after direct read-only `wsl.exe -- go version` and `wsl.exe -- openssl version` returned:
+```text
+C3_GO=NOT_INSTALLED
+OpenSSL 3.0.13 30 Jan 2024 (Library: OpenSSL 3.0.13 30 Jan 2024)
+C3_OPENSSL=AVAILABLE
+```
+C3 download and asset SHA256 previously PASS on owner machine: `cosign-linux-amd64` 145,688,404 bytes and keyless `cosign-linux-amd64.sigstore.json` 6,747 bytes, both exact official GitHub Release v3.1.4 hashes. **No Cosign execution or signing yet.**
+
+**Official research (21 Nov):** [Sigstore Cosign installation guide](https://docs.sigstore.dev/cosign/system_config/installation/) prescribes verifying the release binary *before first execution* using the separately available **`cosign-linux-amd64-kms.sigstore.json`** artifact-key signature and `openssl dgst -sha256 -verify artifact.pub` against the downloaded binary. Preferred `artifact.pub` retrieval is an **authenticated TUF client** bootstrapped from documented signed Sigstore root; Go is absent. The official [Sigstore Rekor release verification guide](https://docs.sigstore.dev/logging/verify-release/) additionally offers a practical weaker fallback of obtaining `artifact.pub` directly from `sigstore/root-signing` on GitHub. This permits **cryptographic verification relative to Sigstore GitHub-published public key**, but **NOT TUF-authenticated trust-root verification**: do not label `TUF_CHAIN=PASS` if doing that fallback. Avoid Go installation for this narrow scope.
+
+The official `sigstore/cosign` **v3.1.4** release API provides KMS bundle `cosign-linux-amd64-kms.sigstore.json`: **4,085 bytes**, SHA256 `b1282021bf1d6f1031d5df46cba12386c9b438d56d276d72f4df184a0008512b`. The published binary SHA256 `424e2c97d0b45fd7a6b608a87f090f35633f4c23ece5f092d48bba11aaf4bbfa` matches owner earlier screenshot. Sigstore `root-signing` main commit observed via GitHub connector: `6f637ea189df60b5ea9ed5f454b4623bd3a7b3aa`; verified a **pinned** raw `targets/artifact.pub` PEM exists at that commit. It is an **ordinary GitHub-sourced key**, not yet TUF-authenticated.
+
+**Next controlled local-only command (NOT YET RUN):** From existing `PS D:\Temp>`, fail closed if files exist, fetch only two *additional small* files into the already staged `D:\OLDX\G2\c3-cosign-v3.1.4` directory (pinned artifact.pub GitHub raw URL and exact KMS bundle). Validate KMS bundle published size/SHA, parse `messageSignature.signature` as base64 without printing, write decoded signature and call **preinstalled WSL openssl** `dgst -sha256 -verify <artifact.pub> -signature <decoded.sig> <cosign-linux-amd64>`. Do not run/execute the Cosign binary or access GCP/Registry. Output `C3_ARTIFACT_KEY_CRYPTO_VERIFY=PASS` **only if OpenSSL returns verified OK**; always state `TUF_KEY_AUTHENTICATION=NOT_PERFORMED`, `C3_IMAGE_SIGNING=NOT_STARTED`. On any failure STOP, no automatic retry, no deleting or overwriting existing files. Any eventual signing with Google OIDC could disclose identity in transparency log and incur Registry referrer storage; require separate explicit owner approval.
+
+**Frozen project status:** C1/C2 read-only image identity PASS within documented limits; original C1 uploader STOP historical and consumed; full compressed layer-byte SHA256 + original trusted builder SLSA unverified; C3 release signatures not yet verified, image unsigned; G2 HOLD, G4 cross-DB OPEN, G8 all-provider financial STOP OPEN; Step04 HOLD, production NO-GO.
+
 ## 21 Nov 2026 ~03:40 IST — C3 both official GitHub release asset digests match; independent TUF/artifact signature verification NEXT (LATEST)
 
 **Owner actual native Windows PowerShell screenshot:** Local downloaded `D:\OLDX\G2\c3-cosign-v3.1.4\cosign-linux-amd64.sigstore.json` SHA256 was compared with the independently fetched official Sigstore GitHub v3.1.4 release asset metadata and returned:

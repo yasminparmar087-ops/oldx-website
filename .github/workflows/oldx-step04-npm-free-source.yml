@@ -10,6 +10,34 @@ on:
       - 'Dockerfile.product-read.bellsoft.dockerignore'
       - 'tests/integration/step04-bellsoft-npm-free-source.test.mjs'
       - 'scripts/step04-npmfree-local-one-shot-a1.py'
+      - 'tests/integration/step04-runtime-cli-paths.test.mjs'
+      - 'functions/staging-marketplace/product-read-server.mjs'
+      - 'functions/staging-marketplace/runtime.mjs'
+      - 'features/service-providers/provider-discovery.mjs'
+      - 'features/service-providers/provider-profile.mjs'
+      - 'features/service-providers/provider-public-card.mjs'
+      - 'features/service-providers/provider-public-profile.mjs'
+      - 'features/service-providers/service-selections.mjs'
+      - 'features/shared/bounded-read.mjs'
+      - 'features/stores/store-catalogue.mjs'
+      - 'scripts/atomic-rate.mjs'
+      - 'scripts/bounded-json.mjs'
+      - 'scripts/classify-product-image-references.mjs'
+      - 'scripts/firebase-marketplace-repository.mjs'
+      - 'scripts/isolated-firestore-context.mjs'
+      - 'scripts/marketplace-command-http.mjs'
+      - 'scripts/photo-reference-contract.mjs'
+      - 'scripts/product-conversation-http.mjs'
+      - 'scripts/provider-draft-preparation.mjs'
+      - 'scripts/provider-draft-transaction.mjs'
+      - 'scripts/provider-enforcement-adapters.mjs'
+      - 'scripts/provider-owner-bootstrap.mjs'
+      - 'scripts/provider-publication-transaction.mjs'
+      - 'scripts/provider-schema-v1.mjs'
+      - 'scripts/staging-marketplace-context.mjs'
+      - 'scripts/staging-marketplace-rate.mjs'
+      - 'scripts/staging-public-query-sdk.mjs'
+      - 'scripts/verified-operation.mjs'
 
 permissions:
   contents: read
@@ -32,6 +60,8 @@ jobs:
           node-version: '24'
       - name: Test only the new npm-free recipe and Docker context allowlist
         run: node --test tests/integration/step04-bellsoft-npm-free-source.test.mjs
+      - name: Guard direct ldd and SQLite CLI invocation in copied runtime source
+        run: node --test tests/integration/step04-runtime-cli-paths.test.mjs
       - name: Check one-shot script parses without executing Docker or scanning
         run: |
           python3 -m py_compile scripts/step04-npmfree-local-one-shot-a1.py

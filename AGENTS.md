@@ -1,5 +1,22 @@
 # OLDX Agent Instructions
 
+## 21 Nov 2026 ~03:10 IST — C1 ordered local/remote RootFS diff-IDs MATCH, prior JSON string False was serialization only (LATEST)
+
+**Actual owner Windows PowerShell screenshot:** In existing `PS D:\Temp>`, with local WSL Docker `image inspect oldx-bellsoft-npmfree:20261120-a1 --format '{{json .RootFS.Layers}}'` output already held as parsed `$localParsed`, and earlier authenticated Registry AMD64 config blob `$cfg.rootfs.diff_ids` already held in memory, the owner compared all ten SHA-256 strings **element-by-element** using `-cne`, with an additional sorted set check. Exact observed output:
+```text
+LOCAL_COUNT=10
+REMOTE_COUNT=10
+MISMATCH_COUNT=0
+MISMATCH_POSITIONS=
+ELEMENTWISE_MATCH=True
+SAME_ID_SET=True
+```
+**Conclusion:** **C1_LOCAL_TO_REMOTE_UNCOMPRESSED_ROOTFS_DIFF_IDS=PASS** for all 10 items *in exact order*. Earlier `ConvertTo-Json -Compress` string equality `False` was a presentation/serialization artifact, **not actual layer diff-ID mismatch**. Prior local count=1 was incorrect PowerShell array wrapping, corrected to 10. This exact comparison is complete and must NOT be re-run. Previously verified private Registry OCI index SHA256 header+bytes, AMD64 child manifest digest+size, and Linux/AMD64 config blob SHA256+size each PASS. **Do not conflate** RootFS `diff_ids` (uncompressed layer digests) with OCI child `layers[].digest` (compressed remote distribution blobs). Full local config equality and remote compressed blob availability/content have **not** been proven merely by the diff-ID check.
+
+**NEXT distinct read-only task, not yet run:** In existing same `PS D:\Temp>` session with `$cm.layers` retained, verify 10 compressed layer descriptors are well-formed (SHA256 digests, positive sizes and mediaTypes), and optionally perform bounded authenticated **HEAD** requests by each exact remote blob digest to check existence/content-length without downloading full bytes. Do not claim SHA256 integrity of compressed layer blob bytes from HEAD alone. Avoid unbounded/full GET downloads and charges; no Docker/build/Grype/CI or Registry upload again. If any blob missing or forbidden STOP/reconcile, preserve status.
+
+**Persistent safety:** C1 one-shot `--execute` was consumed and emitted STOP, cannot rerun. Preserve D:-journal, Registry/index/tag and earlier scan evidence. No retag/push/delete/rebuild/rescan/signing, IAM, Billing, Cloud Run, Firebase or production changes. `C1_INDEX=PASS`; `C1_AMD64_CHILD=PASS`; `C1_CONFIG_BLOB=PASS`; `C1_LOCAL_ROOTFS_DIFF_IDS=PASS`; `C1_COMPRESSED_LAYER_BLOBS=UNVERIFIED`; signed builder SLSA unknown; G2 HOLD, G4 cross-DB OPEN, G8 all-provider spend STOP OPEN, Step04 HOLD; production NO-GO.
+
 ## 21 Nov 2026 ~03:08 IST — C1 local/remote Diff IDs now 10 vs 10, canonical JSON equality FALSE; investigate per-element before image mismatch conclusion (LATEST)
 
 **Actual owner PowerShell screenshot:** Earlier read-only WSL Docker inspect of frozen tag `oldx-bellsoft-npmfree:20261120-a1` produced JSON captured in `$raw` and registry AMD64 config blob's `$cfg.rootfs.diff_ids` remained in PowerShell memory. Previous `$localIds=@(ConvertFrom-Json -InputObject $raw)` showed a misleading local count of 1 from array wrapping; now corrected with `$localParsed=ConvertFrom-Json -InputObject $raw` (without `@(...)`). Actual stdout:

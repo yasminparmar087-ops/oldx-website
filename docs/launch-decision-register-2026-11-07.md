@@ -1,5 +1,20 @@
 # November 7 launch target: P0/P1 acceptance register
 
+## 20 November 2026 — Owner launch policy: vendor patches not an indefinite launch veto
+
+**Explicit owner instruction (Gujarati; prospective launch strategy, NOT an execution/deployment event):**
+> "jyare website nu kam puru thase tyare te samaye fix hajar nahi hoy to pan hu website lounch karvani manjuri aapu chhu, aapde security ma bija rasta te samaye apnavisu ane jem bane tem security majbut karvano praytn karisu, pan website te samay lounch karisu ane lounch thaya pachhi najar rakhisu fix ni."
+
+**Policy decision:** When the agreed OLDX website features and required release work are actually complete, the owner wants the website launched **even if some upstream/vendor CVE fixes are still unavailable**, using verified compensating security measures, documented residual-risk decisions and continued post-launch watching for vendor fixes. **Do not keep the website unpublished indefinitely solely because BellSoft/GCC/npm has not yet released a patch.** Prefer realistic protection and prompt remediation, rather than chasing scanner zero findings as a prerequisite in every case.
+
+**Practical acceptance procedure at that future gate:**
+- Report the exact then-current open CRITICAL/HIGH findings (including provenance, package and reachability), distinguish vendor-fixed CPE matches from installed vulnerable components, and seek alternatives: remove unused vulnerable runtime components, isolate public attack paths, minimize privilege, preserve deny-by-default controls, apply rate limits, abuse monitoring and rollback.
+- Show the owner which risks are actually reachable, the specific mitigations in force, what is still unverified, and obtain a **recorded final launch risk acceptance** in the release decision register. Owner's statement establishes business intent to proceed when reasonably safe **without waiting indefinitely for vendor releases**, not a blanket declaration that all present vulnerabilities are safe.
+- Do not bypass unresolved hard safety blockers for real users (authentication/authorization, private data exposure, uploads, financial/privacy handling), or mislabel G2 PASS; when a high-impact exploitable path cannot be adequately contained, recommend a feature-disabled or restricted public release, or clearly state the blocker rather than imply acceptable security.
+- After any launch, maintain vendor-fix monitoring and advisories, triage new findings, schedule patch deployment, security logs/alerts and incident/rollback response. Existing G2 Security Watch and Development Monitoring automations are already active; do not duplicate them.
+- **Current status unchanged:** Step04 G2 HOLD, G4/G8 and provenance still OPEN, production NO-GO. This prospective owner approval is **not** permission to deploy now, turn on staging flags, alter Cloud IAM, Firebase rules, billing, traffic, DNS or production. A release-time go/no-go and guarded execution is still needed.
+
+
 Updated 2 November 2026. November 7 is a target, not a guaranteed launch date.
 **HOLD/NO-GO** remains; repository work is not staging or production acceptance.
 No agreed Product, Store, Service, Chat, Admin, photo or gu/hi/en requirement is

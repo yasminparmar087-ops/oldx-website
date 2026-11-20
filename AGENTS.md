@@ -1,5 +1,22 @@
 # OLDX Agent Instructions
 
+## 21 Nov 2026 — ACTUAL C1 --execute STOP after one-shot journal; REMOTE REGISTRY STATE UNKNOWN (LATEST)
+
+**The owner has already run the ONE explicitly approved C1 `--execute` attempt** from actual WSL `root@DESKTOP-6AUQN5U:/mnt/d/Temp`; screenshot:
+```text
+C1_ONE_COPY_STARTED=YES
+STOP_C1_OUTCOME_POSSIBLY_REMOTE_CHANGED
+C1_NO_RETRY_AND_NO_DELETE
+C1_STATUS=STOP
+REASON=C1_SINGLE_PUSH_OUTCOME_REVIEW_REQUIRED
+DO_NOT_RETRY_EXECUTE_WITHOUT_READ_ONLY_RECONCILIATION
+```
+**STOP NOW.** The one-shot code created its exclusive local D: journal `/mnt/d/OLDX/G2/oldx-npmfree-c1-single-push-20261121-a1.json` **before** `docker tag`/push; output confirms stage past journal. An error happened somewhere in tagging, push, digest parsing, read-only remote manifest verification or journal update, but the runner deliberately masks raw stderr. The screenshot **DOES NOT prove a published image or a failed push with zero remote side effects**. No Registry digest is verified, signing has not begun, production unchanged. **DO NOT RE-RUN `--execute`**, no second push/tag, no journal deletion/mutation, no manual cleanup, no image rebuild/Grype/preflight, no cloud/IAM/billing/deploy changes. Prior approval was for ONE attempt only and is **consumed**, not a license for retry. **C1_REMOTE_STATE=UNKNOWN**, `C1_RECONCILIATION_READ_ONLY_REQUIRED`; Step04 and G2 HOLD.
+
+**NEXT ONLY read-only recovery check**, owner still in WSL: first `exit` to Windows `D:\Temp>` and run `gcloud artifacts docker images list asia-south1-docker.pkg.dev/oldx-staging/oldx-staging-images/oldx-npmfree-20261121-a1 --include-tags --project=oldx-staging --account=yasminparmar087@gmail.com --format="json(package,version,tags,createTime)"`. This queries the **NEW** proposed image only, not old V2, no writes. If the new remote digest exists, it must still be separately reconciled with frozen local config ID and layers; not yet trusted, signed or deployable. Empty list, NOT_FOUND or error is *not proof no layers transferred*; retain the exclusive journal and stop for targeted further read-only inspection. No blind retries. [Official gcloud image listing](https://docs.cloud.google.com/sdk/gcloud/reference/artifacts/docker/images/list). Screenshot evidence & exact STOP saved at [Issue #17 checkpoint](https://github.com/yasminparmar087-ops/oldx-website/issues/17#issuecomment-7050330656).
+
+Previously completed successful preflight (WSL/Windows token, new package absent, scanning disabled) and all focused/emulator/Safety CI PASS do NOT override actual C1 runtime STOP. Signed custody and original trusted builder provenance both NOT VERIFIED, original local 1 CRITICAL + 5 HIGH scan unchanged. G4 other-DB effective IAM OPEN, G8 all-provider hard spend STOP OPEN, production NO-GO. No need for Codex to interpret first remote inventory.
+
 ## 21 Nov 2026 — OWNER EXPLICIT C1 one new private Registry upload + possible small storage charge APPROVED; NOT YET RUN (LATEST)
 
 **Explicit current owner response**: “ha manjuri chhe” to the precise request to authorize **ONE** future upload of the **previously built/scanned** `oldx-bellsoft-npmfree:20261120-a1` to **new private package** `asia-south1-docker.pkg.dev/oldx-staging/oldx-staging-images/oldx-npmfree-20261121-a1:c1-20261121-a1`, with potential small incremental Artifact Registry storage charge. This is **C1 owner operational consent for ONE new private COPY**, and is separate from previously verified `artifactregistry.repositories.uploadArtifacts=YES` IAM permission. Do NOT ask for duplicate permission merely to do this one scoped upload after a safe preflight. Consent **does NOT** include another image build, Grype rescan, repository-wide scanning/API/tag-policy changes, granting IAM to former owner, new service account keys, GitHub signed provenance, old V2 image overwrite, OCI signing/attestation, Cloud Run B1 deployment, production release, or unconditional future ongoing Registry/storage spending. Seven-day retention is a proposed **MANUAL review**, not automatic cleanup.

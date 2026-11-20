@@ -168,12 +168,12 @@ function probeDraft(targetChanges = {}, reviewChanges = {}) {
     'effectiveIam', 'financeStop', 'nineCveDisposition', 'b1', 'r1', 'r2', 'cleanup']
     .map((key, i) => [key, String(i + 1).padStart(64, '0')]));
   const review = {issuedAt, expiresAt: issuedAt + 180_000, maxGrossPaise: 100,
-    evidence, ...reviewChanges};
+    scanSubjectImage: image, evidence, ...reviewChanges};
   const {project, region, service, tag, revision, image: uri, amd64Digest, sourceSha, runtime, invoker, b1Mode} = target;
   review.scopeSha256 = createHash('sha256').update(JSON.stringify(['OLDX_V2_OFFLINE_PROBE',
     [project, region, service, tag, revision, uri, amd64Digest, sourceSha, runtime, invoker, b1Mode],
     sessionId, manifest.authUids, manifest.firestoreDocs, review.issuedAt, review.expiresAt,
-    review.maxGrossPaise, Object.values(review.evidence)])).digest('hex');
+    review.maxGrossPaise, review.scanSubjectImage, Object.values(review.evidence)])).digest('hex');
   return {target, manifest, sessionId, review, journalState: 'UNUSED',
     probe: {scopeSha256: review.scopeSha256, status: 403, redirected: false, body: ''}};
 }
@@ -191,6 +191,24 @@ test('V2 offline probe binds exact scope and accepts only a denial shape with ex
     {probe: {...draft.probe, body: 'unverified denial'}},
     {probe: {...draft.probe, body: ' '.repeat(32_769)}},
   ]) assert.equal(reviewV2OfflineProbe({...draft, ...change}).decision, 'BLOCKED');
+});
+
+test('G2 ties V2 reported scan subject to the OLD exact Registry image, not local npm-free', () => {
+  const valid = probeDraft();
+  assert.equal(reviewV2OfflineProbe(valid).decision, 'SOURCE_PROBE_SHAPE_ONLY');
+  for (const reported of [
+    'oldx-bellsoft-npmfree:20261120-a1', // new WSL local-only image
+    image.replace('oldx-step04-g2-d13818-a1', 'oldx-other-copy'), // same digest, different path
+    image.replace('93b70b8b09255194974bc46c7e5942c81531261b81224bd80fa575330f7572e4', 'f'.repeat(64)),
+    '', undefined,
+  ]) {
+    // Even with a NEW correct review fingerprint, mismatched image subject stops.
+    const mismatch = probeDraft({}, {scanSubjectImage:reported});
+    assert.equal(reviewV2OfflineProbe(mismatch).decision, 'BLOCKED', String(reported));
+  }
+  const previousPacket = probeDraft();
+  delete previousPacket.review.scanSubjectImage;
+  assert.equal(reviewV2OfflineProbe(previousPacket).decision, 'BLOCKED');
 });
 
 test('V2 offline probe rejects retired targets, fixture replay and unsupported review evidence', () => {

@@ -210,7 +210,7 @@ export function rehearseV2AmbiguousCreateOffline({candidate, manifest, sessionId
 
 const V2_TARGET_KEYS = ['project', 'region', 'service', 'tag', 'revision', 'image', 'amd64Digest',
   'sourceSha', 'runtime', 'invoker', 'b1Mode'];
-const V2_REVIEW_KEYS = ['scopeSha256', 'issuedAt', 'expiresAt', 'maxGrossPaise', 'evidence'];
+const V2_REVIEW_KEYS = ['scopeSha256', 'issuedAt', 'expiresAt', 'maxGrossPaise', 'scanSubjectImage', 'evidence'];
 const V2_EVIDENCE = ['tagAvailability', 'sourceImageProvenance', 'identity', 'effectiveIam',
   'financeStop', 'nineCveDisposition', 'b1', 'r1', 'r2', 'cleanup'];
 const SHA256 = /^[a-f0-9]{64}$/;
@@ -256,13 +256,18 @@ export function reviewV2OfflineProbe(input) {
       !/^[a-f0-9]{40}$/.test(target.sourceSha) ||
       target.sourceSha === '2eebfa7a0c1a66d6c8563162aa5e612570f7a1e1') return blocked();
 
-  const {issuedAt, expiresAt, maxGrossPaise, evidence, scopeSha256} = review;
+  const {issuedAt, expiresAt, maxGrossPaise, scanSubjectImage, evidence, scopeSha256} = review;
   const now = Date.now();
   if (!Number.isSafeInteger(issuedAt) || !Number.isSafeInteger(expiresAt) ||
       issuedAt > now || expiresAt <= now || expiresAt - issuedAt > 20 * 60_000 ||
       // Planning envelope only: capped at the existing ₹100 Cloud Run-only
       // spend-cap amount. Not provider-enforced all-service cost containment.
       !Number.isSafeInteger(maxGrossPaise) || maxGrossPaise < 1 || maxGrossPaise > 10_000 ||
+      // A scan claim for a NEW local-only npm-free image cannot support the OLD
+      // private-registry index that this V2 review is expressly pinned to.
+      // This is claimant-declared subject consistency, NOT authenticated
+      // Grype provenance, artifact signature or a deployment authorization.
+      scanSubjectImage !== target.image || scanSubjectImage !== V2_PRIVATE_IMAGE ||
       !exactKeys(evidence, V2_EVIDENCE) ||
       !V2_EVIDENCE.every(key => typeof evidence[key] === 'string' && SHA256.test(evidence[key])) ||
       new Set([evidence.b1, evidence.r1, evidence.r2, evidence.cleanup]).size !== 4) return blocked();
@@ -272,7 +277,7 @@ export function reviewV2OfflineProbe(input) {
   const fingerprint = createHash('sha256').update(JSON.stringify([
     'OLDX_V2_OFFLINE_PROBE', V2_TARGET_KEYS.map(key => target[key]), sessionId,
     manifest.authUids, manifest.firestoreDocs, issuedAt, expiresAt, maxGrossPaise,
-    V2_EVIDENCE.map(key => evidence[key]),
+    scanSubjectImage, V2_EVIDENCE.map(key => evidence[key]),
   ])).digest('hex');
   if (scopeSha256 !== fingerprint || !exactKeys(probe, ['scopeSha256', 'status', 'redirected', 'body']) ||
       probe.scopeSha256 !== fingerprint || probe.status !== 403 || probe.redirected !== false ||

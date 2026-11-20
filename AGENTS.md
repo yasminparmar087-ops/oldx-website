@@ -1,5 +1,19 @@
 # OLDX Agent Instructions
 
+## 21 Nov 2026 — C1 TAG describe projected-fields NULL, not image absence (LATEST)
+
+**Actual owner Windows CMD screenshot**, after the consumed read-only `docker images list --include-tags` returned three new versions including `c1-20261121-a1`, owner ran:
+```cmd
+gcloud artifacts docker images describe asia-south1-docker.pkg.dev/oldx-staging/oldx-staging-images/oldx-npmfree-20261121-a1:c1-20261121-a1 --project=oldx-staging --account=yasminparmar087@gmail.com --format="json(name,uri,mediaType,imageSizeBytes,imageManifests,tags)"
+```
+**Output was `null` with no ERROR.** This only says the requested top-level *field projection* did not return matching values; **NOT a 404 or permission-denied and NOT proof image missing/deleted or fully validated**. Official `gcloud artifacts docker images describe` output can use nested `image_summary` rather than flat DockerImage REST fields (Google [CLI reference](https://docs.cloud.google.com/sdk/gcloud/reference/artifacts/docker/images/describe), [Google Cloud build provenance output example](https://docs.cloud.google.com/build/docs/securing-builds/generate-validate-build-provenance)). Do NOT repeat the **same bad field projection**.
+
+**Next one read-only metadata check** from existing Windows `D:\Temp>`:
+```cmd
+gcloud artifacts docker images describe asia-south1-docker.pkg.dev/oldx-staging/oldx-staging-images/oldx-npmfree-20261121-a1:c1-20261121-a1 --project=oldx-staging --account=yasminparmar087@gmail.com --format=json
+```
+This gets actual root output keys, `image_summary.digest` / `fully_qualified_digest` if available, without assuming REST field names. On weird output, read only and stop; do NOT switch to `--show-provenance` or paid scanning or credential logs without reviewing output. Previously listed TAGGED `sha256:0844b637cf1bfedef60caa6a54ad515ebf9c0a937453b409101ad0d2ff254f79` is identical to **local config image ID**, so **DO NOT** call it a verified OCI manifest digest yet. Other untagged versions `3150d898...d7ec28d1` and `4aa7a2d6...563f23b4` need separate classification only if necessary. **One-shot upload runner had STOP after journal**; tag/package/three versions exist, but `C1_REMOTE_IMAGE_INTEGRITY=UNVERIFIED`. No rerun `--execute`, no deletion, retagging, signing, new push, build, Grype, IAM/Billing or Cloud Run. G2 HOLD, G4 cross-DB OPEN, G8 all-provider financial STOP OPEN; Step04 HOLD, production NO-GO.
+
 ## 21 Nov 2026 — C1 post-STOP read-only Registry shows NEW PACKAGE + TAG and THREE versions, manifest identity STILL UNVERIFIED (LATEST)
 
 **Owner screenshot (actual, after C1 one-shot STOP):** From Windows Google Cloud SDK CMD `D:\Temp>`, ran exactly one new **read-only remote inventory**:

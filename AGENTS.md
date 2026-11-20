@@ -1,5 +1,29 @@
 # OLDX Agent Instructions
 
+## 21 Nov 2026 — actual owner WSL C0 local metadata PASS, image size measured (LATEST)
+
+**Actual screenshot** at WSL `root@DESKTOP-6AUQN5U:/mnt/d/Temp#` of the pinned source-only `scripts/step04-npmfree-c0-local-metadata-a1.py` shows:
+```
+C0_LOCAL_METADATA=PASS
+LOCAL_IMAGE_ID=sha256:0844b637cf1bfedef60caa6a54ad515ebf9c0a937453b409101ad0d2ff254f79
+LOCAL_IMAGE_SIZE_BYTES=316232711
+LOCAL_IMAGE_SIZE_MIB=301.58
+SIZE_TYPE=LOCAL_UNCOMPRESSED_NOT_REGISTRY_STORAGE_OR_TRANSFER
+REGISTRY_UNIQUE_DESTINATION=UNVERIFIED
+REGISTRY_AUTHORIZED_WRITER=UNVERIFIED
+BILLING_ACCOUNT_OTHER_ARTIFACTS_AND_QUOTA=UNVERIFIED
+ESTIMATED_PROVIDER_CHARGES=NOT_CALCULABLE_FROM_LOCAL_SIZE_ONLY
+OWNER_REGISTRY_UPLOAD_CONSENT=NOT_GIVEN
+BUILDER_SLSA_PROVENANCE=UNVERIFIED
+REGISTRY_PUSH_AND_CLOUD_CHANGES=NONE
+STEP04_RELEASE=HOLD
+```
+The exact image config ID matches earlier **frozen** npm-free WSL integrity PASS, and 301.58 MiB is **local Docker Size** (about 0.2945 GiB), NOT measured compressed Registry data, transferred bytes, charged storage or a hard spend guarantee. The Google Artifact Registry **0.5 GiB-month free per BILLING ACCOUNT** can already be partly/fully consumed by older artifacts and projects; no claim actual upload/free usage has been verified. It is the outcome of a new distinct metadata check; DO NOT redo it, prior local build/runtime/Grype/integrity, old Registry copy, staged B1/R1/R2, consumed G4 synthetic doc or any billing status check.
+
+Source at commit `3576cf935d05a428d718941ad9d8798512a792fc` and focused GitHub CI [44806692352](https://github.com/yasminparmar087-ops/oldx-website/actions/runs/44806692352) PASS. Service Providers [44806692310](https://github.com/yasminparmar087-ops/oldx-website/actions/runs/44806692310) PASS; full Safety [44806692480](https://github.com/yasminparmar087-ops/oldx-website/actions/runs/44806692480) **PASS**, all at exactly that source commit. Later documentation-only [4ac8dd4](https://github.com/yasminparmar087-ops/oldx-website/commit/4ac8dd4f158d18405ba2aa647c347b9bd1ec8178) saved preflight. No code or production changes in latest metadata output.
+
+**Next distinct C0 read-only condition:** decide unique proposed package `oldx-npmfree-20261121-a1` inside existing `asia-south1/oldx-staging-images` repository as a **proposal only**; a single `gcloud artifacts repositories describe` or `packages describe` can later inspect availability from the OWNER'S Windows Cloud SDK CMD, **not** WSL unless gcloud exists in WSL. A current repo/package lookup does not prove IAM write authorization, available monthly free quota, true image compressed size, or permission to publish; absence must be rechecked at any separate approved write. No GCP mutation/Registry publish/IAM or billing change approved by generic 'continue'. **G2 HOLD, G4 other-DB effective isolation OPEN, G8 all-provider financial STOP OPEN, Step04 ACTIVE/HOLD, production NO-GO.**
+
 ## 21 Nov — latest Step04 G2 C0 local Docker SIZE preflight SOURCE READY, focused CI PASS
 
 The previous signed-custody/no-rebuild option is **planned only** and not an owner authorization for Registry upload, signing, IAM change, Cloud access, or deployment. The **only distinct remaining local input** before an actual quantified C0 costing decision is the size of the *existing* 21 Nov WSL image. Code added in [3576cf935d05a428d718941ad9d8798512a792fc](https://github.com/yasminparmar087-ops/oldx-website/commit/3576cf935d05a428d718941ad9d8798512a792fc): `scripts/step04-npmfree-c0-local-metadata-a1.py`, Git blob `fab237df79302438175e37167de2ab2551bdd0ae`. It reads **only local Docker context/daemon/image metadata**, rejects remote context/host override or image-ID/platform/user/entrypoint drift, and prints Docker local **Size bytes and MiB** for the pinned `oldx-bellsoft-npmfree:20261120-a1` whose config ID is `sha256:0844b637cf1bfedef60caa6a54ad515ebf9c0a937453b409101ad0d2ff254f79`. It **DOES NOT** hash/scan again, build, execute a container, save/push/tag, authenticate, call `gcloud`, write Cloud/Billing, or run prior journal checks. Focused GitHub CI run [44806692352](https://github.com/yasminparmar087-ops/oldx-website/actions/runs/44806692352) **PASS** (synthetic negative cases; no owner's Docker accessed). Other broader new-commit CI not needed to validate this metadata checker once focused tests PASS, but its result must not be guessed. No actual owner Size output yet: C0 cost/identity package destination remains **UNVERIFIED**.

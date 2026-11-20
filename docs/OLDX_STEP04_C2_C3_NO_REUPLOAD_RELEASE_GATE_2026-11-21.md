@@ -1,5 +1,21 @@
 # OLDX Step 04 — C2 identity reconciliation → C3 digest-bound signed custody (NO REUPLOAD)
 
+## 21 Nov 2026 ~03:40 IST — C3 both official GitHub release asset digests match; independent TUF/artifact signature verification NEXT (LATEST)
+
+**Owner actual native Windows PowerShell screenshot:** Local downloaded `D:\OLDX\G2\c3-cosign-v3.1.4\cosign-linux-amd64.sigstore.json` SHA256 was compared with the independently fetched official Sigstore GitHub v3.1.4 release asset metadata and returned:
+```text
+C3_BUNDLE_HASH_MATCH=True
+C3_SIGNATURE_VERIFIED=NO
+C3_SIGNING=NOT_STARTED
+```
+Earlier owner's actual binary SHA256 `424E2C97D0B45FD7A6B608A87F090F35633F4C23ECE5F092D48BBA11AAF4BBFA` matches official release asset SHA256 `424e2c97d0b45fd7a6b608a87f090f35633f4c23ece5f092d48bba11aaf4bbfa`, size 145,688,404 bytes; correct **non-KMS** `cosign-linux-amd64.sigstore.json` 6,747 bytes matches official SHA256 `355244bb0186e950ced20f03106640ba3a4630e1223d0467ff34bcebe10bb18a`. Therefore **C3_RELEASE_BINARY_GITHUB_SHA256=PASS** and **C3_RELEASE_BUNDLE_GITHUB_SHA256=PASS**. No Sigstore cryptographic signature/certificate verification has yet been performed. Neither file has been executed; no image sign/OIDC/Registry mutation. Do NOT download again.
+
+**Verified current official Sigstore installation guide** https://docs.sigstore.dev/cosign/system_config/installation/ : before running downloaded Cosign, first obtain a verified artifact public key `artifact.pub` via the Sigstore **TUF** trusted root/client, fetch the matching release asset **`cosign-linux-amd64-kms.sigstore.json`** *only for artifact-key release verification*, decode `messageSignature.signature` and independently `openssl dgst -sha256 -verify artifact.pub -signature ... cosign-linux-amd64`. Only after this succeeds may Cosign itself be run to verify bundle/transparency and later become a signer. **Distinction:** existing non-KMS `cosign-linux-amd64.sigstore.json` is the **keyless identity** bundle, correct for later certificate-identity check, but NOT the TUF artifact-key signature bundle. Earlier download script erroneously paired the main binary with the KMS bundle as if that were the keyless bundle; correction: **both have legitimate but different verification roles**. Treat TUF integrity and origin of `artifact.pub` as an independently anchored trust step, not unauthenticated plain HTTPS file replacement.
+
+**NEXT single safe read-only prerequisite query (NOT EXECUTED):** check owner Windows/WSL availability of `go` (for official `tuf-client`) and `openssl` (public-key signature verification) without downloading/installing/starting any binary. If `go` is absent, pick alternative independent trust-root-aware verifier; do not force Go installation just to satisfy a checklist. Later require separate consent for identity disclosure and charged Registry signature storage before any C3 signing operation.
+
+**State:** C1/C2 exact OCI index and scoped config/rootfs/runtime checks already PASS with documented limitations; `C3_TOOL_FILES_INTEGRITY_VS_OFFICIAL_GITHUB=PASS`, `C3_RELEASE_SIGNATURE_INDEPENDENTLY_VERIFIED=NO`, `C3_IMAGE_SIGNED=NO`, original builder SLSA `UNKNOWN`. G2 HOLD, G4 cross-DB OPEN, G8 all-provider financial STOP OPEN; Step04 HOLD and production NO-GO. No re-build, re-scan, re-upload, or prior C1 operations.
+
 ## 21 Nov 2026 ~03:38 IST — C3 Cosign v3.1.4 stage-only SUCCESS, asset SHA256 matches OFFICIAL GitHub metadata; Sigstore signature NOT YET verified (LATEST)
 
 **Owner actual Windows PowerShell screenshot** of corrected **native Windows** pinned download (no nested WSL shell quoting) at `PS D:\Temp>`:

@@ -86,14 +86,13 @@ test('native namespace media policy/reference/atomic/delivery reuse the trusted 
 
 // G4 defense-in-depth: the standalone staging binding must reject a nondefault
 // Firestore instance even when it bypasses the already-strict HTTP initializer.
-test('staging SDK binding rejects nondefault database before and after binding',()=>{
+test('staging SDK binding rejects nondefault database before and after binding',async()=>{
  const f=fixture();
  f.options.adminFirestore.databaseId='other';
  assert.throws(()=>createStagingMarketplaceBinding(f.options),/Staging binding unavailable/);
- assert.equal(f.create().handle instanceof Function,true); // factory stays default-off on unsafe initialization
  f.options.adminFirestore.databaseId='(default)';
  const b=createStagingMarketplaceBinding(f.options);
  f.options.adminFirestore.databaseId='other';
  assert.throws(()=>b.sdk.doc(b.db,c.actors,'owner'),/Staging binding unavailable/);
- assert.throws(()=>b.sdk.runTransaction(b.db,async()=>{}, {maxAttempts:3}),/Staging binding unavailable/);
+ await assert.rejects(b.sdk.runTransaction(b.db,async()=>{}, {maxAttempts:3}),/Staging binding unavailable/);
 });

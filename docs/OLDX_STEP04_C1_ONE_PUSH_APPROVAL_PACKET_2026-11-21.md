@@ -1,5 +1,19 @@
 # OLDX Step 04 — C1 ONE new private Registry copy (ATTEMPT STOPPED; REMOTE STATE UNKNOWN)
 
+## 21 Nov 2026 ~03:08 IST — C1 local/remote Diff IDs now 10 vs 10, canonical JSON equality FALSE; investigate per-element before image mismatch conclusion (LATEST)
+
+**Actual owner PowerShell screenshot:** Earlier read-only WSL Docker inspect of frozen tag `oldx-bellsoft-npmfree:20261120-a1` produced JSON captured in `$raw` and registry AMD64 config blob's `$cfg.rootfs.diff_ids` remained in PowerShell memory. Previous `$localIds=@(ConvertFrom-Json -InputObject $raw)` showed a misleading local count of 1 from array wrapping; now corrected with `$localParsed=ConvertFrom-Json -InputObject $raw` (without `@(...)`). Actual stdout:
+```text
+LOCAL_DIFF_IDS_COUNT=10
+REMOTE_DIFF_IDS_COUNT=10
+LOCAL_REMOTE_DIFF_IDS_MATCH=False
+```
+This **removes the count/shape ambiguity** but **canonical JSON strings were unequal**. There may be actual differing diff-id values/order, or serialization differences; do not presume either yet. A strict element-by-element comparison is the next single local-only check; avoid dumping full image config/Env or rebuilding. The Docker inspect itself succeeded, and remote OCI index, AMD64 child manifest and config blob each independently passed SHA256/size checks. These PASS results are separate from *local-image equivalence* or actual remote layer-blob checks.
+
+**NEXT (not yet run):** In same `PS D:\Temp>` session, compare `$localParsed` and `$cfg.rootfs.diff_ids` as indexed arrays of strings using **`-cne`**, print only `LOCAL_COUNT`, `REMOTE_COUNT`, `DIFFERENT_POSITIONS` (1-based indices), and `ELEMENTWISE_MATCH`; no new Registry/Docker request. If any diff-id differs, stop declaring equivalence and investigate image manifest/version provenance/platform semantics read-only before moving to compressed layer retrieval. If all elements match, prior `ConvertTo-Json` false is a serialization artifact, and proceed later with read-only layer checks.
+
+**No-repeat / security:** prior C1 `--execute` STOP is consumed; never rerun/upload/tag/delete/modify journal; no fresh build, Grype, preflight, CI, IAM, billing, Cloud Run, Firebase or release. `C1_INDEX=PASS`, `C1_CHILD=PASS`, `C1_CONFIG_BLOB=PASS`, `LOCAL_EQUIVALENCE=UNVERIFIED`, `LAYER_BLOBS=UNVERIFIED`; original builder SLSA unknown; G2 HOLD, G4 cross-DB OPEN, G8 all-provider financial STOP OPEN; Step04 HOLD and production NO-GO.
+
 ## 21 Nov 2026 ~03:06 IST — Local-vs-remote DiffID compare reported 1 vs 10 due suspected PowerShell array wrapping; mismatch NOT YET ESTABLISHED (LATEST)
 
 **Owner actual Windows `PS D:\Temp>` screenshot:** After verified remote child config blob `linux/amd64`, 10 `$cfg.rootfs.diff_ids`, owner used a **read-only** `wsl.exe -- docker image inspect oldx-bellsoft-npmfree:20261120-a1 --format '{{json .RootFS.Layers}}'`, captured `$raw`, and ran `$localIds=@(ConvertFrom-Json -InputObject $raw)`, `$remoteIds=@($cfg.rootfs.diff_ids)`. Actual output `LOCAL_DIFF_IDS_COUNT=1`, `REMOTE_DIFF_IDS_COUNT=10`, `LOCAL_REMOTE_DIFF_IDS_MATCH=False`, **without a local Docker command error**. The use of `@(... -InputObject ...)` may wrap the entire PowerShell array as **one object** rather than flatten its 10 elements. Prior `$r.Content | ConvertFrom-Json` also initially misinterpreted Registry JSON as integer byte elements until properly UTF8-decoded. Therefore `False` here is **NOT** sufficient to conclude real content mismatch. Do not rebuild, reupload or rescan.

@@ -1,0 +1,38 @@
+# OLDX BellSoft source-only candidate: no image build or deploy is authorized.
+# Must be given a NEW signed/patched Node24 linux/amd64 base digest explicitly;
+# previously signed fd67... has glibc r11 and is NOT acceptable for G2.
+ARG OLDX_BELLSOFT_BASE_IMAGE
+FROM node:24-bookworm-slim@sha256:dc26ae92c9fb15cf6b1d63e20f0944b2efe0f115b20e00be48fb23fceb061c54 AS dependencies
+WORKDIR /app
+ENV NODE_ENV=production
+
+COPY package.json package-lock.json ./
+RUN npm ci --omit=dev --ignore-scripts
+
+# Inherit BellSoft nonroot USER and Node ENTRYPOINT ONLY after their exact
+# immutable image config has been independently verified. Fail if not proved.
+FROM ${OLDX_BELLSOFT_BASE_IMAGE} AS runtime
+WORKDIR /app
+ENV NODE_ENV=production
+
+# EXPERIMENTAL SOURCE-ONLY alternative for exact BellSoft npm/undici 6.29.0.
+# Node itself removes unneeded npm at BUILD time (no shell/busybox).
+# No image build, scan, publish or deploy is authorized by this Dockerfile.
+# Root is temporary for the build operation; final runtime is appuser.
+# STOP if the expected package identities/versions changed. This touches only
+# /usr/lib/node_modules/npm and does NOT claim to resolve glibc/SQLite risks.
+USER 0
+RUN ["/usr/bin/node","-e","const fs=require('node:fs');const root='/usr/lib/node_modules/npm';const manifest=JSON.parse(fs.readFileSync(root+'/package.json','utf8'));const undici=JSON.parse(fs.readFileSync(root+'/node_modules/undici/package.json','utf8'));if(process.getuid()!==0||!fs.lstatSync(root).isDirectory()||manifest.name!=='npm'||undici.name!=='undici'||undici.version!=='6.29.0')throw Error('NPM_STRIP_PREFLIGHT_FAILED');fs.rmSync(root,{recursive:true});if(fs.existsSync(root))throw Error('NPM_STRIP_INCOMPLETE');"]
+USER appuser
+COPY --from=dependencies /app/node_modules ./node_modules
+COPY package.json package-lock.json ./
+
+COPY functions/staging-marketplace/product-read-server.mjs functions/staging-marketplace/runtime.mjs ./functions/staging-marketplace/
+COPY features/service-providers/provider-discovery.mjs features/service-providers/provider-profile.mjs features/service-providers/provider-public-card.mjs features/service-providers/provider-public-profile.mjs features/service-providers/service-selections.mjs ./features/service-providers/
+COPY features/shared/bounded-read.mjs ./features/shared/
+COPY features/stores/store-catalogue.mjs ./features/stores/
+COPY scripts/atomic-rate.mjs scripts/bounded-json.mjs scripts/classify-product-image-references.mjs scripts/firebase-marketplace-repository.mjs scripts/isolated-firestore-context.mjs scripts/marketplace-command-http.mjs scripts/photo-reference-contract.mjs scripts/product-conversation-http.mjs scripts/provider-draft-preparation.mjs scripts/provider-draft-transaction.mjs scripts/provider-enforcement-adapters.mjs scripts/provider-owner-bootstrap.mjs scripts/provider-publication-transaction.mjs scripts/provider-schema-v1.mjs scripts/staging-marketplace-context.mjs scripts/staging-marketplace-rate.mjs scripts/staging-public-query-sdk.mjs scripts/verified-operation.mjs ./scripts/
+
+EXPOSE 8080
+STOPSIGNAL SIGTERM
+CMD ["functions/staging-marketplace/product-read-server.mjs"]

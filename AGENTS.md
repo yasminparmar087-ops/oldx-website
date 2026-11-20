@@ -1,5 +1,20 @@
 # OLDX Agent Instructions
 
+## 21 Nov 2026 ~03:14 IST — C1 runtime config pinned fields PASS (LATEST)
+
+**Actual owner's Windows Google Cloud SDK PowerShell screenshot**, using already verified OCI AMD64 config blob JSON retained in memory as `$cfg`, compared selected runtime settings against the **frozen C1 source runner** expectations and got:
+```text
+OS_ARCH_MATCH=True
+USER_MATCH=True
+ENTRYPOINT_MATCH=True
+CMD_MATCH=True
+```
+The matched values were `linux/amd64`, `config.User=appuser`, `config.Entrypoint=[/usr/bin/node]`, and `config.Cmd=[functions/staging-marketplace/product-read-server.mjs]`. This read-only check made **NO new Registry or Docker request** and printed no `config.Env`/raw config. The expected fields are pinned in `scripts/step04-npmfree-c1-single-push-a1.py` `review_local()` (source read-only). **C1_REMOTE_RUNTIME_PINNED_FIELDS=PASS**, but **not a complete independent configuration equivalence audit**.
+
+**Already completed and consumed read-only C1 evidence (DO NOT REPEAT):** actual OCI index HTTP 200, schema 2, by-tag body SHA256 and header match; valid `linux/amd64` child manifest digest/header/size match; AMD64 config blob HTTP 200, SHA256/size match; 10 local Docker RootFS diff IDs equal remote config `rootfs.diff_ids` element by element and in exact order; ten compressed OCI layer descriptors valid and all ten authenticated Registry HEAD requests returned HTTP 200 with exact matching Content-Length; currently pinned remote image config user/entrypoint/CMD OS/arch match. The **full bytes SHA256 of the ten compressed remote layer blobs were NOT independently downloaded/hashed**, and original trusted source/builder SLSA remains `unknown`; do not mark these PASS based on HEAD or layer diff-ID checks. These facts support **strong C1 read-only manifest/config/availability reconciliation** but do not change the original one-shot C1 `STOP_C1_OUTCOME_POSSIBLY_REMOTE_CHANGED` runner status or grant deployment clearance. The runner's old single-image-manifest assumption does not reflect the OCI-index output actually observed; don't rerun its `--execute` merely to get a clean status. Preserve D: attempt journal, existing Registry objects/tag and all evidence.
+
+**NEXT useful gate (NOT YET DONE):** Prepare/review source-only **C2 digest-bound signed custody option and exact owner authorization boundaries** against the real immutable *index* digest `sha256:0844b637cf1bfedef60caa6a54ad515ebf9c0a937453b409101ad0d2ff254f79`. Clarify expected trusted signer identity, keyless OIDC issuer, verification policy, no standing credentials, any Artifact Registry/signature storage and outbound costs, and separate acceptance for lack of original builder SLSA. Do not automatically push/sign, perform ten full layer downloads, trigger paid scanning, build new image, repeat past tests, modify IAM/Billing/Cloud Run or start production. Alternatively record a residual-risk release decision only at future actual guarded release gate. Original npm-free Grype residual 1 CRITICAL / 5 HIGH; G2 HOLD, G4 cross-database IAM OPEN, G8 overall provider hard spending STOP OPEN; Step04 HOLD, production NO-GO.
+
 ## 21 Nov 2026 ~03:12 IST — C1 all TEN compressed layer blob HEADs 200 + sizes exact PASS; full blob-bytes hash not performed (LATEST)
 
 **Owner actual Windows Google Cloud SDK PowerShell screenshot:** In existing `PS D:\Temp>` with verified AMD64 child manifest `$cm.layers`, exactly **10 OCI compressed layer descriptors** were checked for SHA256-shaped digest, positive size, nonblank media type. Using a fresh short-lived Yasmin `gcloud.cmd` token kept in memory and cleared in `finally`, the owner made exactly one **read-only HEAD** request per exact private Artifact Registry `/v2/oldx-staging/oldx-staging-images/oldx-npmfree-20261121-a1/blobs/{descriptor.digest}`. Sanitized stdout:

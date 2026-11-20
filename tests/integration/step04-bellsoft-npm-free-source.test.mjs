@@ -6,6 +6,8 @@ import test from 'node:test';
 const read = name => readFileSync(new URL('../../' + name, import.meta.url), 'utf8');
 const frozen = read('Dockerfile.product-read.bellsoft');
 const alternate = read('Dockerfile.product-read.bellsoft-npm-free');
+const frozenIgnore = read('Dockerfile.product-read.bellsoft.dockerignore');
+const candidateIgnore = read('Dockerfile.product-read.bellsoft-npm-free.dockerignore');
 const marker = 'FROM ${OLDX_BELLSOFT_BASE_IMAGE} AS runtime\nWORKDIR /app\nENV NODE_ENV=production\n';
 const runLines = alternate.split(/\r?\n/).filter(s => s.startsWith('RUN '));
 const scrubArgs = JSON.parse(runLines.at(-1).slice(4));
@@ -15,6 +17,9 @@ test('source-only experimental recipe exactly extends frozen one, never changes 
   const extra = alternate.slice(frozen.indexOf(marker) + marker.length,
     alternate.indexOf('COPY --from=dependencies /app/node_modules'));
   assert.equal(alternate, frozen.replace(marker, marker + extra));
+  assert.equal(candidateIgnore, frozenIgnore, 'candidate must reuse the identical strict Docker context allowlist');
+  assert.ok(candidateIgnore.startsWith('**\n')||candidateIgnore.includes('\n**\n'));
+
   assert.deepEqual(alternate.split('\n').filter(s=>s.startsWith('COPY ')),
     frozen.split('\n').filter(s=>s.startsWith('COPY ')));
   assert.equal(runLines.length, 2); // Original npm ci in builder, one runtime scrub

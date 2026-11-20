@@ -684,6 +684,8 @@ test('hosted candidate requires preserved four-row traffic, reviewed OCI image a
     'activation-disabled', 'adc-disabled', 'emulator-present', 'duplicate-activation',
     'secret-ref', 'too-small-window', 'rate-limits-reversed', 'wrong-project',
     'metadata-override', 'wrong-gcloud-project', 'lowercase-adc',
+    'missing-max-scale', 'max-two', 'idle-min-one', 'concurrency-eighty',
+    'timeout-three-hundred', 'cpu-two', 'memory-one-gib',
   ];
   for (const drift of cases) {
     const baseline = preflightRead((command, data) => {
@@ -718,11 +720,21 @@ test('hosted candidate requires preserved four-row traffic, reviewed OCI image a
       drift === 'canonical-child' ? amd64 : index;
     const observedTarget = drift === 'unreviewed-index'
       ? {...target, digest: actualDigest} : target;
+    const scale = {'autoscaling.knative.dev/maxScale': '1',
+      'autoscaling.knative.dev/minScale': '0'};
+    if (drift === 'missing-max-scale') delete scale['autoscaling.knative.dev/maxScale'];
+    if (drift === 'max-two') scale['autoscaling.knative.dev/maxScale'] = '2';
+    if (drift === 'idle-min-one') scale['autoscaling.knative.dev/minScale'] = '1';
+    const limits = {cpu: drift === 'cpu-two' ? '2' : '1',
+      memory: drift === 'memory-one-gib' ? '1Gi' : '512Mi'};
     const report = inspectPhaseBConfiguration((...args) => args[3] === target.revision
       ? JSON.stringify({
-        metadata: {name: target.revision, labels: {'serving.knative.dev/service': service}},
+        metadata: {name: target.revision, labels: {'serving.knative.dev/service': service},
+          annotations: scale},
         spec: {serviceAccountName: runtime,
-          containers: [{image: actualRepo + '@' + actualDigest, env}]},
+          containerConcurrency: drift === 'concurrency-eighty' ? 80 : 1,
+          timeoutSeconds: drift === 'timeout-three-hundred' ? 300 : 60,
+          containers: [{image: actualRepo + '@' + actualDigest, env,resources:{limits}}]},
         status: {imageDigest: repo + '@' +
           (drift === 'platform-manifest' ? 'sha256:' + 'c'.repeat(64) : amd64)},
       }) : baseline(...args), {preflight: true, hostedTarget: observedTarget});
@@ -741,6 +753,12 @@ test('hosted candidate requires preserved four-row traffic, reviewed OCI image a
       assert.equal(report.checks.hostedRevision, 'MISMATCH', drift);
     } else {
       assert.equal(report.checks.hostedRevision, 'MATCH', drift);
+    }
+    if (['missing-max-scale', 'max-two', 'idle-min-one', 'concurrency-eighty',
+      'timeout-three-hundred', 'cpu-two', 'memory-one-gib'].includes(drift)) {
+      assert.equal(report.checks.hostedResourceBounds, 'MISMATCH', drift);
+    } else {
+      assert.equal(report.checks.hostedResourceBounds, 'MATCH', drift);
     }
   }
 });

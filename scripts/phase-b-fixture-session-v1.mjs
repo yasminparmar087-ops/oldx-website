@@ -498,6 +498,23 @@ function guardOperator(read = gcloud) {
 // principal lists or revision environment values.
 // Pure metadata guard for any future *separately approved* enabled Cloud Run
 // revision. Never print environment values; reject duplicates and secret refs.
+// v1 Cloud Run revision resource limits, not an aggregate project billing cap.
+// Intended ONLY for a fresh, separately approved short-lived hosted trial.
+// Never treat unset/default Cloud Run scaling or concurrency as financially safe.
+export function hostedRevisionResourceBoundsVerified(revision) {
+  const annotations = revision?.metadata?.annotations;
+  const spec = revision?.spec;
+  const containers = spec?.containers;
+  const limits = Array.isArray(containers) && containers.length === 1
+    ? containers[0]?.resources?.limits : null;
+  return annotations?.['autoscaling.knative.dev/maxScale'] === '1' &&
+    annotations?.['autoscaling.knative.dev/minScale'] === '0' &&
+    spec?.containerConcurrency === 1 &&
+    Number.isInteger(spec?.timeoutSeconds) && spec.timeoutSeconds > 0 &&
+    spec.timeoutSeconds <= 60 &&
+    limits?.cpu === '1' && limits?.memory === '512Mi';
+}
+
 export function hostedRevisionActivationVerified(revision) {
   const containers = revision?.spec?.containers;
   if (!Array.isArray(containers) || containers.length !== 1 ||
@@ -737,6 +754,8 @@ export function inspectPhaseBConfiguration(read = gcloud, {preflight = false, ho
     if (!fixtureOnlyCanonicalImage) {
       result.checks.hostedActivation = hostedRevision === undefined ? 'UNAVAILABLE' :
         hostedRevisionActivationVerified(hostedRevision) ? 'MATCH' : 'MISMATCH';
+      result.checks.hostedResourceBounds = hostedRevision === undefined ? 'UNAVAILABLE' :
+        hostedRevisionResourceBoundsVerified(hostedRevision) ? 'MATCH' : 'MISMATCH';
     }
   }
   if (Object.values(result.checks).every((status) => status === 'MATCH')) result.configuration = 'MATCH';

@@ -1,0 +1,33 @@
+name: Step04 npm-free candidate focused source review
+on:
+  push:
+    branches: [security-hardening-review]
+    paths:
+      - '.github/workflows/oldx-step04-npm-free-source.yml'
+      - 'Dockerfile.product-read.bellsoft-npm-free'
+      - 'Dockerfile.product-read.bellsoft-npm-free.dockerignore'
+      - 'Dockerfile.product-read.bellsoft'
+      - 'Dockerfile.product-read.bellsoft.dockerignore'
+      - 'tests/integration/step04-bellsoft-npm-free-source.test.mjs'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: oldx-step04-npmfree-source-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  source-only:
+    name: No Docker, no cloud, no npm install
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Test only the new npm-free recipe and Docker context allowlist
+        run: node --test tests/integration/step04-bellsoft-npm-free-source.test.mjs

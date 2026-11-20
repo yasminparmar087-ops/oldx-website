@@ -1,5 +1,23 @@
 # OLDX Agent Instructions
 
+## 21 Nov 2026 ~04:06 IST — C3 WSL Docker registry auth config ABSENT; PowerShell -NoProfile NOT responsible (LATEST)
+
+**Owner actual PowerShell screenshot:** The corrected stdin-based Python script ran via `($lines -join "`n") | & wsl.exe -- python3 -` and returned:
+```text
+C3_DOCKER_CONFIG=ABSENT
+C3_HOST_HELPER=NOT_SET
+C3_HELPER_AVAILABLE=NO
+C3_GLOBAL_HELPER=NOT_SET
+C3_GLOBAL_HELPER_AVAILABLE=NO
+C3_HOST_AUTH=ABSENT
+C3_CONFIG_OVERRIDE=NO
+```
+This is the currently inspected **WSL user's Docker config scope only**. It does NOT prove that Windows `gcloud.cmd` lacks a valid login, that all other credential stores/temporary prior C1 credentials are absent, or that the private registry image disappeared. `PowerShell -NoProfile` only avoids loading PowerShell profile startup scripts and does **not** delete previously stored Google credentials or a WSL Docker config. No login/configure-docker/signing action has been performed. Do not print secrets or copy tokens to chat/GitHub.
+
+**Next safe decision:** Before `cosign sign --upload=false` for exact private OCI **index digest** `sha256:0844b637cf1bfedef60caa6a54ad515ebf9c0a937453b409101ad0d2ff254f79`, determine whether the command needs authenticated registry reads and select a transient, narrowly scoped credential-helper route (may reuse existing Windows `gcloud.cmd` account session locally without persisting a token), or obtain consent for a bounded local-only auth configuration. Avoid assuming `--upload=false` automatically removes authenticated private-registry access requirements. The owner has explicitly approved **public Sigstore identity disclosure** for Option A; no explicit broad Registry write/charges approval. Local bundle creation has NOT STARTED. C1 upload must NEVER be repeated.
+
+**Status:** `C3_WSL_DOCKER_CONFIG=ABSENT`, `C3_REGISTRY_AUTH_PATH=UNVERIFIED`, `C3_IMAGE_SIGNATURE=NOT_CREATED`; C1/C2 and Cosign v3 tool KMS/keyless release verification PASS within scope; G2 HOLD, G4 cross-DB OPEN, G8 all-provider financial cap OPEN, Step04 HOLD, production NO-GO.
+
 ## 21 Nov 2026 ~04:03 IST — C3 WSL Docker auth inspection NOT EXECUTED: PowerShell stripped quotes from python3 -c; switch to stdin (LATEST)
 
 **Actual owner Windows Google Cloud SDK PowerShell screenshot:** Previously proposed `wsl.exe -- python3 -c 'import json,os,pathlib,shutil; ...'` failed with `SyntaxError: invalid syntax`. The Python error echo showed intended string literals and `.docker/config.json` quotes stripped by Windows PowerShell → WSL process argument conversion. **No credential booleans were output, therefore `C3_REGISTRY_AUTH_PATH=UNVERIFIED`.** This was **NOT** an authentication denial or Registry failure. No Python code body executed successfully, no token/credential read leaked, no sign/upload/cloud mutation. C1/C2 evidence, Cosign v3.1.4 release verification results and explicit owner consent for public identity disclosure remain unchanged.

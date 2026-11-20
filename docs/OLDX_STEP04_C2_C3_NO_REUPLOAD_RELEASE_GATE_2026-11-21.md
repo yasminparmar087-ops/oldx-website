@@ -1,5 +1,28 @@
 # OLDX Step 04 — C2 identity reconciliation → C3 digest-bound signed custody (NO REUPLOAD)
 
+## 21 Nov 2026 ~04:27 IST — C3 owner-local bundle parsed: DSSE INDEX subject match, cert+1 tlog entry; cryptographic verify still NEXT (LATEST)
+
+**Actual owner native PowerShell screenshot of read-only local Sigstore bundle inspection**, after clearing old private OIDC login URL/code from current console:
+```text
+C3_BUNDLE_STRUCTURE=READABLE
+C3_BUNDLE_SIZE_BYTES=6947
+C3_BUNDLE_SHA256=1CE7427B1D5DBB3B1C13CFD9A97B690D5C94D20F3509516C8014259C933D896
+C3_JOURNAL_EXISTS=True
+C3_DSSE_PRESENT=True
+C3_MESSAGE_SIGNATURE_PRESENT=False
+C3_CERTIFICATE_PRESENT=True
+C3_TLOG_ENTRY_COUNT=1
+C3_SUBJECT_INDEX_DIGEST_MATCH=True
+C3_CRYPTOGRAPHIC_VERIFICATION=PENDING
+```
+**Meaning:** Previously generated nonempty local bundle is a **v3 DSSE envelope** (not `messageSignature`), with a Fulcio certificate and 1 transparency-log entry. Its *unverified decoded* in-toto statement has **one SHA256 subject equal to frozen OCI INDEX** `0844b637cf1bfedef60caa6a54ad515ebf9c0a937453b409101ad0d2ff254f79`. JSON-field existence and subject string matching are **NOT** a cryptographic verification. Neither the encrypted signing key nor Google OIDC URL/code were retained in GitHub. Journal and bundle must never be deleted or overwritten, and no new signing attempt / Registry upload is allowed.
+
+**Correct version-pinned verification discovered by reading official Sigstore Cosign v3.1.4 source, not guessing:** `cmd/cosign/cli/verify/verify_blob_attestation.go` allows `cosign verify-blob-attestation` **without a blob file**, using `--digest <hex> --digestAlg sha256` to constrain the signed in-toto subject digest while `--certificate-identity` and `--certificate-oidc-issuer` constrain the verified signer; `--bundle` uses new Sigstore v0.3 bundle. `cmd/cosign/cli/sign/sign.go` function `signDigestBundle` confirms `cosign sign --upload=false IMAGE@sha256:...` generates in-toto v1 DSSE with `PredicateType=types.CosignSignPredicateType`, defined in `pkg/types/predicate.go` as **`https://sigstore.dev/cosign/sign/v1`**. Accordingly use exact `--type https://sigstore.dev/cosign/sign/v1`, NOT default `custom`. Official source (v3.1.4): https://github.com/sigstore/cosign/blob/v3.1.4/cmd/cosign/cli/verify/verify_blob_attestation.go ; https://github.com/sigstore/cosign/blob/v3.1.4/cmd/cosign/cli/sign/sign.go ; https://github.com/sigstore/cosign/blob/v3.1.4/pkg/types/predicate.go .
+
+**NEXT exactly one read-only cryptographic verification, not run:** from `PS D:\Temp>`, direct `wsl.exe -- /mnt/d/OLDX/G2/c3-cosign-v3.1.4/cosign-linux-amd64 verify-blob-attestation --bundle /mnt/d/OLDX/G2/c3-cosign-v3.1.4/oldx-c3-index-20261121-a1.sigstore.json --certificate-identity yasminparmar087@gmail.com --certificate-oidc-issuer https://accounts.google.com --digest 0844b637cf1bfedef60caa6a54ad515ebf9c0a937453b409101ad0d2ff254f79 --digestAlg sha256 --type https://sigstore.dev/cosign/sign/v1`. It should verify DSSE signature, exact cert email identity, Google issuer, trusted-root/transparency proof and the exact index digest subject **without Registry access or attaching signature**. If `Verified OK` with exit 0, then mark `C3_LOCAL_SIGNED_INDEX_BUNDLE_VERIFIED=PASS`; do not infer Registry signature exists or original builder SLSA. If error, STOP (no sign retry or insecure bypass); inspect without sharing full JSON/emails/auth codes. One-shot journal remains frozen.
+
+**Status:** `C3_LOCAL_BUNDLE_DSSE_STRUCTURE_AND_INDEX_SUBJECT=PASS_CONTENT_ONLY`, `C3_LOCAL_BUNDLE_CRYPTO_IDENTITY_VERIFY=PENDING`, `C3_REGISTRY_SIGNATURE_UPLOAD=DISABLED`; G2 HOLD, G4 effective cross-DB IAM OPEN, G8 all-provider financial stop OPEN, Step04 HOLD, production NO-GO. Older C1 upload STOP consumed; C1/C2 scoped proofs preserved; never rebuild, rescan, repush or repeat successful checks.
+
 ## 21 Nov 2026 ~04:23 IST — C3 keyless owner-local Sigstore bundle CREATED, ephemeral Docker auth cleaned; verification PENDING (LATEST)
 
 **Actual owner Windows PowerShell screenshot** of *one already-approved* C3 signing attempt after the owner completed the Sigstore browser authorization in the active terminal:

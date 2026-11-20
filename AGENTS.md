@@ -1,5 +1,26 @@
 # OLDX Agent Instructions
 
+## 21 Nov 2026 — C1 post-STOP read-only Registry shows NEW PACKAGE + TAG and THREE versions, manifest identity STILL UNVERIFIED (LATEST)
+
+**Owner screenshot (actual, after C1 one-shot STOP):** From Windows Google Cloud SDK CMD `D:\Temp>`, ran exactly one new **read-only remote inventory**:
+```text
+gcloud artifacts docker images list asia-south1-docker.pkg.dev/oldx-staging/oldx-staging-images/oldx-npmfree-20261121-a1 --include-tags --project=oldx-staging --account=yasminparmar087@gmail.com --format="json(package,version,tags,createTime)"
+```
+Returned **three versions in exact NEW package** `asia-south1-docker.pkg.dev/oldx-staging/oldx-staging-images/oldx-npmfree-20261121-a1` created around `2026-11-20T20:49:16–17Z`:
+1. **TAGGED** `c1-20261121-a1` version `sha256:0844b637cf1bfedef60caa6a54ad515ebf9c0a937453b409101ad0d2ff254f79` — **same SHA as frozen LOCAL Docker image config ID**. This is a **significant identity ambiguity**: do **NOT** label the tagged `version` as an independently verified *OCI manifest digest*, or claim config/layer consistency by comparing this string alone.
+2. **UNTAGGED** `sha256:3150d898c8e013c833bac8b7f8adb8411023449093658d5c5c478a55d7ec28d1`.
+3. **UNTAGGED** `sha256:4aa7a2d6d64f66bab72917565864b44e4da6ab4e45e77e3c2ea1a6be563f23b4`.
+
+**Material conclusion:** The one-shot did cause **observable remote package/image artifacts and one tag to exist**; the earlier hypothetical "nothing reached Registry" is ruled out. But the pinned C1 runner emitted `STOP_C1_OUTCOME_POSSIBLY_REMOTE_CHANGED`, **not** `C1_REGISTRY_SINGLE_PUSH=SUCCESS` or `C1_REMOTE_CONFIG_ID_MATCH=PASS`. The three version rows alone **DO NOT** establish which is the OCI image manifest/index or establish that the remote file system/layers match the frozen `301.58 MiB` existing WSL image. Treat **`C1_REMOTE_ARTIFACTS_PRESENT=YES`**, **`C1_REMOTE_IMAGE_INTEGRITY=UNVERIFIED`**, **`C1_ONE_SHOT_OUTCOME=STOP_RECONCILIATION`**. No signature, SLSA, deployment or release clearance.
+
+**Next one novel read-only check:** From **Windows Cloud SDK CMD** use official `gcloud artifacts docker images describe` by the **exact new tag** to inspect metadata `name,uri,mediaType,imageSizeBytes,imageManifests,tags`:
+```cmd
+gcloud artifacts docker images describe asia-south1-docker.pkg.dev/oldx-staging/oldx-staging-images/oldx-npmfree-20261121-a1:c1-20261121-a1 --project=oldx-staging --account=yasminparmar087@gmail.com --format="json(name,uri,mediaType,imageSizeBytes,imageManifests,tags)"
+```
+This is distinct from the already completed *list* and identifies tagged object's media type/digest. Official [Google CLI describe](https://docs.cloud.google.com/sdk/gcloud/reference/artifacts/docker/images/describe) and [DockerImage schema](https://docs.cloud.google.com/artifact-registry/docs/reference/rest/v1/projects.locations.repositories.dockerImages). If result errors, do not infer absent package; STOP and analyze read-only. If digest/mediaType ambiguous, later inspect exact untagged version(s) read-only. Do NOT auto-accept any digest as verified just because it equals local config ID.
+
+**Safety:** **NEVER RERUN `python3 ... --execute`**, old preflight/build/Grype or C0; keep D: `oldx-npmfree-c1-single-push-20261121-a1.json` exclusive journal, all tags and registry objects untouched. No tag/push/delete/cleanup, image signing, IAM, Cloud Run, Firebase, billing or production changes. C1 prior one upload approval **CONSUMED**. Original builder SLSA unverified, 1C/5H residual scan, G2 HOLD; G4 other-DB OPEN; G8 all-provider STOP OPEN; Step04 ACTIVE/HOLD; production NO-GO.
+
 ## 21 Nov 2026 — ACTUAL C1 --execute STOP after one-shot journal; REMOTE REGISTRY STATE UNKNOWN (LATEST)
 
 **The owner has already run the ONE explicitly approved C1 `--execute` attempt** from actual WSL `root@DESKTOP-6AUQN5U:/mnt/d/Temp`; screenshot:

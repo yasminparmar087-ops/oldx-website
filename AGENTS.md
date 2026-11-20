@@ -1,5 +1,22 @@
 # OLDX Agent Instructions
 
+## 21 Nov 2026 ~04:19 IST — C3 local keyless sign attempt is WAITING for private Google OIDC verification code (LATEST)
+
+**Owner actual Windows PowerShell screenshot** after the approved **one-shot local-only** `cosign sign --yes --upload=false --bundle=... EXISTING_INDEX@sha256:0844b637cf1bfedef60caa6a54ad515ebf9c0a937453b409101ad0d2ff254f79` wrapper:
+```text
+C3_SIGNING_ATTEMPT_STARTED=YES
+Generating ephemeral keys...
+error opening browser: exec: "xdg-open,x-www-browser,www-browser": executable file not found in $PATH
+Go to the following link in a browser:
+[PRIVATE AUTH URL OMITTED]
+Enter verification code:
+```
+**Interpretation:** Cosign is *still interactive and waiting for an OIDC verification code*. Browser auto-launch failed because no WSL GUI launcher is available, but it provided a **manual login URL** and a verification-code input fallback. This is **NOT** evidence of a completed signature, failed Registry login, successful signer identity, local bundle or finalized transparency entry. The original one-shot journal was created **before** this signing attempt; DO NOT rerun command or delete journal, even if a timeout/error occurs. The temporary Docker credential directory remains active until the parent PowerShell wrapper reaches its `finally` block, not yet known cleaned.
+
+**NEXT action (owner UI only, no new command):** Copy the private URL **from the active terminal itself** into Chrome without using Ctrl+C to interrupt; authenticate **only as Yasmin's approved Google account** and obtain the resulting verification code; paste code **only** into the SAME waiting `Enter verification code:` PowerShell prompt, then press Enter. Do not post/share URL, authorization code, OTP, token or screen containing them. A signature/transparency event may be created after authentication; public signer identity disclosure was explicitly approved. The `--upload=false` command should avoid uploading an OCI signature to private Registry, but do not assume success until exit, local bundle presence, journal status and cleanup outcome are observed. If terminal is no longer waiting or error appears, STOP: no new signing attempt, preserve journal/bundle for reconciliation.
+
+**Status:** `C3_SIGN_ATTEMPT_STARTED=YES`, `C3_OIDC_VERIFICATION=WAITING_USER`, `C3_LOCAL_BUNDLE=UNVERIFIED`, `C3_SIGNED_CUSTODY=NOT_YET_VERIFIED`, `C3_TEMP_AUTH_CLEANUP=NOT_YET_OBSERVED`. Original C1 uploader STOP already consumed; no rebuild/reupload/Grype/CI/IAM/Billing/Cloud Run/Firebase/prod. G2 HOLD, G4 cross-DB OPEN, G8 all-provider cost hard stop OPEN, Step04 HOLD, production NO-GO.
+
 ## 21 Nov 2026 ~04:13 IST — C3 ephemeral Registry auth preflight PASS, credentials deleted; next ONE local-only digest signature attempt (LATEST)
 
 **Actual owner Windows `PS D:\Temp>` screenshot** using the previously approved *new* `$code | & wsl.exe -- python3 -` block. Within WSL, Python read a short-lived Yasmin account token from the previously verified Windows `gcloud.cmd` via the prior C1-style Windows-cmd bridge, passed it **only on Docker login stdin** into a temporary `/tmp/oldx-c3-auth-...` Docker config, suppressed subprocess secrets/logs, confirmed host auth entry, and automatically deleted temp directory on exit. Actual sanitized stdout:

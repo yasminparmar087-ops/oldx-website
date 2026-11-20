@@ -1,5 +1,20 @@
 # OLDX Agent Instructions
 
+## 21 Nov 2026 ~04:30 IST — C3 LOCAL signed custody of immutable OLDX OCI index cryptographically VERIFIED OK (LATEST)
+
+**Ground truth from owner's actual Google Cloud SDK Windows PowerShell screenshot**, one read-only Cosign **v3.1.4** command (executed and returned to `PS D:\Temp>` prompt):
+```text
+wsl.exe -- /mnt/d/OLDX/G2/c3-cosign-v3.1.4/cosign-linux-amd64 verify-blob-attestation --bundle /mnt/d/OLDX/G2/c3-cosign-v3.1.4/oldx-c3-index-20261121-a1.sigstore.json --certificate-identity yasminparmar087@gmail.com --certificate-oidc-issuer https://accounts.google.com --digest 0844b637cf1bfedef60caa6a54ad515ebf9c0a937453b409101ad0d2ff254f79 --digestAlg sha256 --type https://sigstore.dev/cosign/sign/v1
+Verified OK
+```
+The signed 6,947-byte Sigstore v0.3 bundle was previously verified **structurally** to contain a DSSE envelope, one Sigstore transparency entry, Fulcio certificate and *one* in-toto subject SHA256 digest matching the frozen OCI **index**; local bundle SHA256 `1CE7427B1D5DBB3B1C13CFD9A97B690D5C94D20F3509516C8014259C933D896`. Now Cosign verifies **cryptographically** the bundle signature, exact **Yasmin Google account email certificate identity**, Google OIDC issuer, **signed subject digest**, expected cosign-sign-v1 predicate, and transparency evidence using its default safe verification path (no `--insecure-ignore-tlog`, no `--insecure-ignore-sct`). **`C3_LOCAL_SIGNED_INDEX_BUNDLE_CRYPTOGRAPHICALLY_VERIFIED=PASS`**. Unlike the previous mere JSON match, this is a genuinely verified keyless locally stored signing receipt.
+
+**Critical scope limits:** The original signing command had **`--upload=false`**, so **NO Registry signature/referrer was uploaded**; no ordinary remote `cosign verify <image>` claim. A different verifier must be given the local bundle and explicit owner cert/issuer policy. The image index itself remains in private Artifact Registry; no reupload, rebuild or rescans. No independent trusted original builder SLSA (still `UNKNOWN`), complete compressed layer byte SHA check, vulnerability fix or G2 overall pass is implied. Old C1 one-shot runner `STOP` remains immutable and consumed. C4 residual-risk assessment is next under canonical gate plan, before C5 guard/deployment; G4 effective cross-database IAM controls and G8 all-provider spend caps are still OPEN. `G2=HOLD`, `STEP04=HOLD`, `PRODUCTION=NO_GO`.
+
+**Protect private evidence:** Owner local immutable paths: `D:\OLDX\G2\c3-cosign-v3.1.4\oldx-c3-index-20261121-a1.sigstore.json` and `oldx-c3-sign-20261121-a1.attempt.txt`. Do not delete, overwrite, sign again, republish raw bundle/auth codes or upload it to public GitHub. Durable GitHub status notes must record only hash, digest, signer's agreed public identity and sanitized verification status. Explicit public Sigstore identity consent was granted prior to signing, but **any future Registry referrer attachment/write/charges remains separately scoped**. No need to repeat any C3 release verification, local bundle inspection or the above successful verification.
+
+**Next work (not executed):** Source-only C4 qualified residual-risk decision packet referencing **exact current Grype report** (previously 1 CRITICAL / 5 HIGH, review each with mitigation and reachability, no unconditional waiver), source/base/provenance and one local verified digest. Then decide independently whether an OCI Registry signature attachment is actually a prerequisite for the chosen C5 guarded-staging verifier; do not blindly upload a second artifact. Plan G4/G8 actions without conflating signature with general launch clearance.
+
 ## 21 Nov 2026 ~04:27 IST — C3 owner-local bundle parsed: DSSE INDEX subject match, cert+1 tlog entry; cryptographic verify still NEXT (LATEST)
 
 **Actual owner native PowerShell screenshot of read-only local Sigstore bundle inspection**, after clearing old private OIDC login URL/code from current console:

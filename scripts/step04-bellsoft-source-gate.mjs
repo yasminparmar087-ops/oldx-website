@@ -63,6 +63,19 @@ export function reviewBellSoftEvidenceShape(e={}){
  if(!digest(e.gccEvidenceDigest)||e.gccEvidenceSubjectDigest!==gccSubject||
    !['SIGNED_VENDOR_VEX','VERIFIED_EXACT_COMPILED_POSIX_MEMALIGN'].includes(e.gccEvidenceKind))
   return stop('GCC_BINARY_UNVERIFIED');
+ // A signed BellSoft base with patched glibc can still bundle npm's
+ // vulnerable undici 6.29.0 (three observed HIGH advisories).
+ // Require an exact AMD64 filesystem location review for that base.
+ // The caller's assertions are not independent signature verification.
+ if(e.npmBundledUndiciEvidenceKind!=='EXACT_BASE_AMD64_PACKAGE_JSON'
+  ||e.npmBundledUndiciEvidenceSubjectDigest!==e.amd64ChildDigest)
+  return stop('NPM_BUNDLE_LOCATION_UNVERIFIED');
+ const undici=/^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$/.exec(e.npmBundledUndiciVersion||'');
+ if(!undici||Number(undici[1])<6
+  ||(Number(undici[1])===6&&(Number(undici[2])<29
+  ||(Number(undici[2])===29&&Number(undici[3])<1))))
+  return stop('BUNDLED_NPM_UNDICI_UNPATCHED');
+ // A truly npm-free base requires separately reviewed complete-rootfs proof.
  return {decision:'EVIDENCE_SHAPE_ONLY',liveExecution:'DISABLED',
   requiresIndependentPublisherAndDerivedAttestation:true,baseIndexDigest:m[1]};
 }

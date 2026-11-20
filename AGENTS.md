@@ -1,5 +1,21 @@
 # OLDX Agent Instructions
 
+## 21 Nov 2026 — ACTUAL C1 repository auto-scanning DISABLED by API; immutable protection NOT evidenced (LATEST)
+
+**Owner's actual Windows Cloud SDK screenshot:** The new read-only projected repository-config lookup `gcloud artifacts repositories describe oldx-staging-images --project=oldx-staging --location=asia-south1 --account=yasminparmar087@gmail.com --format="json(dockerConfig,vulnerabilityScanningConfig)"` succeeded and returned:
+```json
+{
+  "vulnerabilityScanningConfig": {
+    "enablementState": "SCANNING_DISABLED",
+    "enablementStateReason": "API containerscanning.googleapis.com is not enabled.",
+    "lastEnableTime": "2026-11-13T14:01:10.733036265Z"
+  }
+}
+```
+Current **effective** repository scanner state is **SCANNING_DISABLED**, because `containerscanning.googleapis.com` API is not enabled. `lastEnableTime` is historical metadata, NOT a claim scanning is active now. Automatic Google per-image vulnerability scan cost (~$0.26/new digest when active) **is not expected from an unchanged upload in this currently disabled state**, but could change if API/settings change before push. **DO NOT enable the API or toggle scan settings for this work.** The same result contains **NO `dockerConfig`** object, so immutable-tag enforcement is **NOT DEMONSTRATED** by this output. Google's default Docker tag behavior is mutable unless immutable tags are enabled; therefore **assume tag overwrite is POSSIBLE**, plan a completely unique new package/tag, protect old V2 package, recheck absence immediately before any separately approved action; do not change repository-wide tag-immutability policy just for this image. No additional repo configuration lookup needed merely to re-ask the same projected fields.
+
+**C0 fully consumed:** Yasmin uploader permission YES; existing Docker private repo PASS; proposed unique `oldx-npmfree-20261121-a1` package NOT_FOUND at prior timestamp; local WSL image ID `sha256:0844b637cf1bfedef60caa6a54ad515ebf9c0a937453b409101ad0d2ff254f79` / local uncompressed 301.58MiB; source+scan checksum, full Grype 1 CRITICAL/5 HIGH/12 MEDIUM/2 LOW, CI PASS. Do not repeat C0 or rebuild/scan. Registry ingress transfer free, potential **storage** bill outside ₹100 Cloud Run-only spend cap and other-provider expenses not covered; no account-wide hard stop verified. **Next owner decision:** a specifically authorized C1 one-time new private package push with bounded expected cost exposure and 7-day *manual* retention review; no automatic cleanup, signing, build or Cloud Run activation implied. Before any execution, source-only one-shot WSL↔Windows credentials plan must be prepared and reviewed; STOP on uncertain tag/digest, never blind retry. **G2 HOLD, G4 cross-DB OPEN, G8 all-provider hard cost STOP OPEN, production NO-GO.** References: https://docs.cloud.google.com/artifact-registry/docs/reference/rest/v1/projects.locations.repositories and https://docs.cloud.google.com/artifact-registry/docs/repositories/create-repos.
+
 ## 21 Nov 2026 — C1 exact one-copy cost/signing decision packet READY; AUTO-SCAN expense discovered (LATEST)
 
 **Latest completed C0 actual success:** Yasmin current `artifactregistry.repositories.uploadArtifacts=YES` via read-only repo `testIamPermissions`; prior repo STANDARD/DOCKER exists, proposed package `oldx-npmfree-20261121-a1` NOT_FOUND at inspection (not reserved), image already built/scanned locally 301.58 MiB, scan 1 CRITICAL / 5 HIGH, prior frozen identity receipts PASS. All these probes **consumed; NO repeat**.

@@ -1,5 +1,9 @@
 # OLDX Step 04 — preserve local npm-free image, plan ONE signed custody transfer (21 Nov 2026)
 
+## 21 Nov 2026 — C1 scan-cost status confirmed DISABLED; immutable tag setting not proven (LATEST)
+
+The owner ran the one remaining material read-only `--format="json(dockerConfig,vulnerabilityScanningConfig)"` against existing `oldx-staging-images` and got `enablementState="SCANNING_DISABLED"`; reason: Container Scanning API **not enabled**. `lastEnableTime` is historical and does not override current disabled state. The returned JSON omitted `dockerConfig`, so there is **no evidence of server-enforced immutable tags**. Per Google documentation Docker tags by default can move to other digests if immutability not enabled. Avoid any repository-wide setting mutation; use a unique package name and tag, fresh pre-write absence check, STOP on ambiguous/error response. Current automatic per-digest scan billing **not expected** while service remains disabled, but cannot promise future API configuration won't change. Inbound transfer free; storage/signer bytes, other billing-account artifacts, possible egress and G8 whole-project hard spending STOP still unverified. Do NOT rerun exact C0 checks or publish without separate specific written permission. Plan/STOP rules updated in `docs/OLDX_STEP04_C1_ONE_PUSH_APPROVAL_PACKET_2026-11-21.md`.
+
 ## 21 Nov 2026 — C1 scan charge found, no-repeat one-copy preapproval rules (LATEST)
 
 C0 actual current-account Yasmin `uploadArtifacts=YES` remains PASS/consumed, and the frozen new npm-free image local 301.58 MiB / 1 CRITICAL 5 HIGH scan remains unchanged and **unpublished**. The next real barrier is *not* IAM or old CVE rescanning; it is **C1 provider cost & tag immutability settings** plus operational one-time upload approval.

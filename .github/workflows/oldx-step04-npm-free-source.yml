@@ -9,6 +9,7 @@ on:
       - 'Dockerfile.product-read.bellsoft'
       - 'Dockerfile.product-read.bellsoft.dockerignore'
       - 'tests/integration/step04-bellsoft-npm-free-source.test.mjs'
+      - 'scripts/step04-npmfree-local-one-shot-a1.py'
 
 permissions:
   contents: read
@@ -31,3 +32,7 @@ jobs:
           node-version: '24'
       - name: Test only the new npm-free recipe and Docker context allowlist
         run: node --test tests/integration/step04-bellsoft-npm-free-source.test.mjs
+      - name: Check one-shot script parses without executing Docker or scanning
+        run: |
+          python3 -m py_compile scripts/step04-npmfree-local-one-shot-a1.py
+          python3 scripts/step04-npmfree-local-one-shot-a1.py --help > /dev/null

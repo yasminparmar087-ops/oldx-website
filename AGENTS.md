@@ -1,5 +1,11 @@
 # OLDX Agent Instructions
 
+## 21 Nov 2026 — C4 residual-risk decision packet PREPARED source-only after C3 local crypto PASS (LATEST)
+
+**New canonical next-phase handoff:** [C4 residual-risk decision packet](docs/OLDX_STEP04_C4_RESIDUAL_RISK_DECISION_PACKET_2026-11-21.md). No live/test/scan/cloud work performed to create it. It consolidates the **owner-observed `Verified OK` Cosign v3.1.4 read-only local index DSSE verification** bound to exact approved Yasmin certificate identity `yasminparmar087@gmail.com`, Google OIDC issuer, `sha256:0844b637cf1bfedef60caa6a54ad515ebf9c0a937453b409101ad0d2ff254f79` and `https://sigstore.dev/cosign/sign/v1`; signed 6,947-byte local bundle SHA256 `1ce7427b1d5dbb3b1c13cfd9a97b690d5c94d20f3509516c8014259c933d896`, with one-shot journal preserved. **`C3_LOCAL_SIGNED_CUSTODY=VERIFIED_PASS`**; **Registry signature NOT attached** as `--upload=false`; original trusted builder SLSA remains unknown. Do not sign/reupload/rebuild/rescan or rerun any prior passed check.
+
+**C4 source-only evidence:** Frozen npm-free local image unfiltered Grype one-shot: **1 CRITICAL, 5 HIGH, 12 MEDIUM, 2 LOW**. Six severe source-tracker IDs: `CVE-2019-1010022` (CRITICAL glibc), `CVE-2019-1010023`, `CVE-2026-0861`, `CVE-2026-19499`, `CVE-2026-84243` (HIGH glibc), and `CVE-2026-119586` (HIGH sqlite-libs). Individual mitigations and risk acceptance still OPEN, even where BellSoft official version evidence or CLI-path-specific low exposure suggests a possible false-positive/limited-reachability disposition. Do not claim CVEs all fixed, zero HIGH or G2 PASS. `C4_RESIDUAL_RISK_DECISION=PENDING`; G2 HOLD; G4 cross-DB IAM OPEN; G8 all-provider spending stop OPEN; Step04 HOLD; production NO-GO. Next do source-only six-CVE reviewer/owner risk disposition and decide separately if C5 actually requires a Registry signature attachment. No user shell command needed just to prepare this packet.
+
 ## 21 Nov 2026 ~04:30 IST — C3 LOCAL signed custody of immutable OLDX OCI index cryptographically VERIFIED OK (LATEST)
 
 **Ground truth from owner's actual Google Cloud SDK Windows PowerShell screenshot**, one read-only Cosign **v3.1.4** command (executed and returned to `PS D:\Temp>` prompt):

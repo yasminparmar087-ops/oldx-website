@@ -65,7 +65,7 @@ jobs:
       - name: Guard direct ldd and SQLite CLI invocation in copied runtime source
         run: node --test tests/integration/step04-runtime-cli-paths.test.mjs
       - name: Verify new EXISTING-evidence read-only integrity guard with synthetic fixtures
-        run: python3 -m unittest discover -s tests/integration -p 'step04-npmfree-existing-evidence.test.py'
+        run: python3 tests/integration/step04-npmfree-existing-evidence.test.py -v
       - name: Check one-shot script parses without executing Docker or scanning
         run: |
           python3 -m py_compile scripts/step04-npmfree-local-one-shot-a1.py

@@ -36,7 +36,7 @@ function simulate({npmName='npm', undiciName='undici', undiciVersion='6.29.0', u
     },
     lstatSync(p){assert.equal(p,root);return {isDirectory:()=>directory};},
     rmSync(p,opts){
-      assert.equal(p,root);assert.deepEqual(opts,{recursive:true});
+      assert.equal(p,root);assert.equal(opts.recursive,true); assert.equal(Object.keys(opts).length,1);
       removed.push(p);
     },
     existsSync(p){assert.equal(p,root);return removed.length===0;}

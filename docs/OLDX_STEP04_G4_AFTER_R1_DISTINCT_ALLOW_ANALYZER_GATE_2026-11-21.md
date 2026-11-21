@@ -1,5 +1,33 @@
 # OLDX Step04 — Post-R1 G4 distinct IAM allow-analysis gate (source-only)
 
+## 21 Nov 2026 ~19:03 IST — corrected allow-policy query PASS WITH LIMITS (NEW LATEST)
+
+**Owner-observed actual Windows PowerShell screenshot** from exactly one execution of the corrected nested-`mainAnalysis` parser in the immediately preceding section: terminal prompt returned, no STOP; visible output:
+
+```text
+G4_CORRECTED_SCHEMA=mainAnalysis.analysisResults
+G4_ALLOW_ACTUAL_RESULT_COUNT=1
+G4_ALLOW_UNCONDITIONAL=0
+G4_ALLOW_EXACT_DEFAULT_DB_CONDITION=1
+G4_ALLOW_OTHER_CONDITION=0
+G4_ALLOW_RESULT=ALLOW_ONLY_ANALYSIS_WITH_LIMITS
+G4_OTHER_DB_EFFECTIVE_DENY=UNVERIFIED
+G4_DENY_AND_PAB_EFFECTIVE=UNVERIFIED
+G4_CLOUD_WRITES=NONE
+```
+
+The corrected script would reach the last five lines only after checking `$r.mainAnalysis`, exact echo of the **project scope** and **runtime service account identity**, the four Firestore entity permissions GET/CREATE/UPDATE/DELETE, outer and nested `fullyExplored=true`, no nested noncritical errors, and each result's binding shape. These guards are **inferred from the successful control flow**, not separately printed fields. Therefore this is one valid scoped **Cloud Asset IAM allow-policy** snapshot for `serviceAccount:oldx-product-read-staging@oldx-staging.iam.gserviceaccount.com` at project `oldx-staging`: exactly **one matching allow binding** and its **exact condition** `resource.name == "projects/oldx-staging/databases/(default)"`; zero unconditioned or other-conditioned *matches for this query*. This improves static allow-policy inventory substantially. The first 18:59 script's printed zero counts were an invalid parser artifact; **superseded, not to be reused as evidence**.
+
+**What it does NOT establish:** All possible IAM permissions beyond these four, group/impersonation expansion (not requested), deny or Principal Access Boundary evaluation, IAM direct/exclusive Cloud Run invocation, the effective denial of a hypothetical second Firestore database, or any actual hosted Product API safety. The one-doc positive operations/DELETE403 observed previously on `(default)` remain separate consumed data-plane evidence. Do not infer cross-DB denial from the presence of a conditional allow binding alone. No second Firestore DB creation, extra policy analyzer request, Policy Troubleshooter retries, IAM edits, token minting or enabled Product request is needed/authorized merely for this checkpoint.
+
+**Disposition:** `G4_ALLOW_POLICY_SELECTED_PRINCIPAL_FOUR_ENTITY_PERMISSIONS=COMPLETE_WITH_LIMITS`; `G4_ALLOW_MATCHES=1_EXACT_DEFAULT_DB_CONDITION`; `G4_UNCONDITIONAL_MATCHES=0_IN_QUERY_SCOPE`; `G4_EFFECTIVE_OTHER_DATABASE_DENIAL=UNVERIFIED`; `G4_EXCLUSIVE_CLOUD_RUN_INVOKER=NOT_PROVEN`; `G4_ENABLED_PRODUCT_API=NO_GO`; `G4_ANALYZER_REQUERY=DO_NOT_REPEAT`. Previous one-shot B1 private OFF-only deploy / 3 metadata GETs / R1 tag-only rollback are DONE, not repeatable by default. Original 100%-main stays `oldx-owner-read-00001-8kr`, historical old tags preserved; R2 no-op. Owner's security/cost residual-risk acceptance was only for the **finished** OFF-only B1 trial and must not silently apply to a future enabled rollout.
+
+**Next Step04 decision:** Stop G4 allow-only evidence accumulation here. Reuse this result when designing a distinct *enabled* G4-B release gate; if there is no approved second database/resource on which to run a genuine negative test, retain `OTHER_DB_DENY=UNVERIFIED` rather than manufacture one. Move to outstanding independent G2 original-builder provenance and the six frozen severe CVE findings (1 CRITICAL, 5 HIGH) via already saved C4 evidence/monitoring; do NOT repeat builds, registry uploads, signing, Grype scans or C1–C5. Step04 **HOLD**, production **NO-GO**.
+
+Provider references (for the precise limited interpretation): https://docs.cloud.google.com/asset-inventory/docs/reference/rest/v1/TopLevel/analyzeIamPolicy ; https://docs.cloud.google.com/policy-intelligence/docs/policy-analyzer-overview ; https://docs.cloud.google.com/iam/docs/policy-types .
+
+---
+
 ## 21 Nov 2026 ~18:59 IST — FIRST ANALYZER QUERY RAN, BUT OUTPUT PARSER IS WRONG (NEW LATEST)
 
 Owner's actual Windows PowerShell screenshot (not merely pasted code) shows `G4_ALLOW_ANALYZER_RESULT_COUNT=0`, `G4_ALLOW_ANALYZER_UNCONDITIONAL_MATCHES=0`, `G4_ALLOW_ANALYZER_CONDITIONAL_MATCHES=0`, `G4_ALLOW_ANALYZER=ALLOW_ONLY_QUERY_COMPLETE`, `G4_CROSS_DATABASE_NEGATIVE_DENIAL=UNVERIFIED`, `G4_IAM_DENY_AND_PAB_EFFECTIVE=UNVERIFIED`, `G4_PROVIDER_WRITES=NONE`, normal prompt, no STOP. The Cloud Asset request evidently returned with CLI exit zero and outer `fullyExplored` true. **However the results counts are INVALID** due to our PowerShell parser bug: it read `$r.analysisResults` and `$r.nonCriticalErrors` at the **wrong top-level fields**. Google's official `AnalyzeIamPolicyResponse` schema uses **`$r.mainAnalysis.analysisResults`**, **`$r.mainAnalysis.nonCriticalErrors`** and **`$r.mainAnalysis.fullyExplored`**. See https://docs.cloud.google.com/asset-inventory/docs/reference/rest/v1/TopLevel/analyzeIamPolicy#response-body. Thus 0 was an artifact of PowerShell's null-as-empty behavior, not verified absence of IAM grants. Previous actual one-doc positive access makes a security claim from these zeros particularly unsafe. Outer `fullyExplored` alone does NOT validate the nested analysis.

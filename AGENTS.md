@@ -1,5 +1,31 @@
 # OLDX Agent Instructions
 
+## 21 Nov 2026 ~16:51 IST — C4 frozen npm-free CLI-path ONE-SHOT inspection COMPLETE; 6 paths NOT_CONFIRMED (LATEST)
+
+**Owner actual Windows PowerShell screenshot** of the pinned dedicated C4 one-shot script `scripts/step04-c4-npmfree-cli-presence-once-a1.py`, now run **once** in the correct `PS C:\Users\Yasmin Parmar>` shell:
+```text
+C4_SOURCE_SHA256=PASS
+C4_EXACT_FROZEN_IMAGE=PASS
+C4_CONTAINER_STARTED=NO
+C4_PATH=/usr/bin/sqlite3 STATE=NOT_CONFIRMED
+C4_PATH=/bin/sqlite3 STATE=NOT_CONFIRMED
+C4_PATH=/usr/local/bin/sqlite3 STATE=NOT_CONFIRMED
+C4_PATH=/usr/bin/ldd STATE=NOT_CONFIRMED
+C4_PATH=/bin/ldd STATE=NOT_CONFIRMED
+C4_PATH=/usr/local/bin/ldd STATE=NOT_CONFIRMED
+C4_LOCAL_RECEIPT_SAVED=YES
+C4_CONTAINER_CLEANUP=PASS
+C4_PROBE_STATUS=INSPECTION_COMPLETE
+C4_CVE_DISPOSITION=STILL_REVIEW_REQUIRED
+C4_G2=HOLD
+```
+
+**Evidence limitations exactly as script implemented:** The local image identity/config/OCI index descriptor matched the frozen `oldx-bellsoft-npmfree:20261120-a1` and `sha256:0844b637cf1bfedef60caa6a54ad515ebf9c0a937453b409101ad0d2ff254f79`. Docker created **one stopped container** (never started image process), inspected six `sqlite3` and `ldd` absolute paths with `docker cp`, discarded tar bytes, then deleted stopped container. **`NOT_CONFIRMED` deliberately conflates failed `docker cp` with a possibly missing file/other error**, so do NOT promote to `ABSENT`, `UNREACHABLE`, `PATCHED` or `CVE_FIXED`. Unchecked filesystem paths, shell alternatives, native/third-party components and dynamic execution remain outside this focused probe. Exact reason for each `docker cp` failure is not collected (stderr suppressed). Owner-private receipt is **`D:\OLDX\G2\c4-npmfree-cli-presence-20261121-a1.json`**, already saved; preserve. No C1 or C3 repeat, no new build/scan/upload/Registry/Cloud write, no deployment.
+
+**Next source-only C4 disposition using this evidence:** For `CVE-2019-1010023` (`ldd` on malicious ELF) and `CVE-2026-119586` (SQLite CLI unsafe `.recover` pipeline), classify `KNOWN_SIX_CLI_PATHS_NOT_CONFIRMED_AND_FIRST_PARTY_DIRECT_EXEC_PATHS_NOT_SEEN` with **partial exposure-reduction support**, but NOT established absence or unexploitable. Existing official Red Hat/SQLite/BellSoft version/advisory evidence for the other four remains frozen; overall original local one-shot Grype **1 CRITICAL / 5 HIGH** stays unchanged. A **qualified reviewer/owner must expressly decide** six separate risk dispositions/mitigations and whether extra proof is necessary. Do not invent a waiver or blanket C4 PASS.
+
+**Decision/current:** `C4_EXACT_IMAGE_PROBE=INSPECTION_COMPLETE`, `C4_CONTAINER_CLEANUP=PASS`, `C4_QUALIFIED_SIX_CVE_DISPOSITION=PENDING`, `C4_OWNER_RISK_ACCEPTANCE=PENDING`, `C3_LOCAL_DSSE_SIGNATURE=CRYPTOGRAPHICALLY_VERIFIED_PASS`, `C3_REGISTRY_SIGNATURE=NOT_ATTACHED`, `G2=HOLD`, `G4_OTHER_DB=OPEN`, `G8_ALL_PROVIDER_SPEND_STOP=OPEN`, `STEP04=HOLD`, `PRODUCTION=NO_GO`. Stop: never repeat this C4 one-shot; no follow-up shell checks needed just to preserve evidence.
+
 ## 21 Nov 2026 ~16:48 IST — C4 local files inventory CONFIRMS both ABSENT; CMD mistake did not create one-shot receipt (LATEST)
 
 **Owner screenshot in correctly opened Windows PowerShell `PS C:\Users\Yasmin Parmar>`** (launched via `powershell.exe -NoProfile` after original command was pasted in CMD) shows the exact two read-only Test-Path outputs:

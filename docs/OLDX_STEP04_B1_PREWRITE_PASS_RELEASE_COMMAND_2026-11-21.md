@@ -1,5 +1,10 @@
 # OLDX Step 04 — B1 one-try owner execution packet after service prewrite PASS
 
+## 21 Nov 2026 ~18:16 IST — B1 OWNER ONE-SHOT DEPLOY SUCCESS, new revision `00010-zud` at 0% main (NEW LATEST)
+
+Actual owner screenshot shows **Cloud Run deployment DONE**, creation of **`oldx-owner-read-00010-zud`**, CLI reports **serving 0% main traffic**, `--no-traffic --tag=ownerreadv2`, exact immutable previously signed npm-free OCI index `sha256:0844b637cf1bfedef60caa6a54ad515ebf9c0a937453b409101ad0d2ff254f79`, two literal `false` feature env flags, `--no-deploy-health-check`, `--cpu-throttling`, CPU1/mem512Mi/concurrency1/timeout30/min0/max1, same SA and region/project; PowerShell prompt returned, **NO error**. **B1 EXECUTED ONCE; NEVER REDEPLOY blindly.** [Screenshot interpretation and single targeted post-B1 service+new-revision+service-IAM read-only verification block](docs/OLDX_STEP04_B1_DEPLOY_OBSERVED_POSTCHECK_PREPARED_2026-11-21.md) saved. **POST-DEPLOY VERIFICATION NOT YET RUN**: don't claim old main 100%, old tags, new latest image/resolved child, effective IAM, scaling, or two flags verified *after deployment* yet. Next command is **ONE bounded set of 3 read-only GETs** (service metadata, **new revision only** `00010-zud`, service direct IAM), no old C5 revision GET, project IAM/billing repeat, URL invocation, Grype scan, build, signing, registry push or second deploy. Any STOP => diagnose only; rollback R1 tag-only/R2 conditional main correction previously consented but **not executed**, do not assume rollback reverts latest template. No Firebase/Product enabled calls. G4 full effective IAM and other-DB denial UNVERIFIED, G2 builder provenance UNKNOWN, original CVEs C4 and G8 OFF-only risks accepted with limits, **STEP04 HOLD**, production NO-GO.
+
+
 Date: 21 November 2026 ~18:12 IST. This is a **conditional owner-authorized private staging revision create**, NOT a production release. **This command has not yet been executed.**
 
 ## Actual owner screenshot, read-only service prewrite complete (DO NOT REPEAT)

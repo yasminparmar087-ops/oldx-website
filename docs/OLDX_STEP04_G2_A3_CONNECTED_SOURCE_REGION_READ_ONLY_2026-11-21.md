@@ -1,5 +1,26 @@
 # OLDX Step04 — G2 A3 one new Cloud Build connection inventory (region-only, read-only)
 
+## 21 Nov 2026 ~19:27 IST — A3 ACTUALLY EXECUTED: 0 REGIONAL CONNECTIONS, DONE (NEW LATEST)
+
+Owner's actual Windows PowerShell terminal screenshot (not a proposed script) shows successful completion of the exact one previously prepared read-only A3 command, and normal prompt return without STOP:
+
+```text
+G2_A3_CONNECTION_COUNT_ASIA_SOUTH1=0
+G2_A3_GITHUB_CONNECTION_COUNT_ASIA_SOUTH1=0
+G2_A3_GITHUB_REPOSITORY_OLDX_LINKED=UNVERIFIED
+G2_A3_OTHER_REGIONS=NOT_CHECKED
+G2_A3_BUILD_SERVICE_ACCOUNT=NOT_CHECKED
+G2_A3_BUILD_REGISTRY_DEPLOY_WRITES=NONE
+G2_A3_REGION_ONLY_READ=COMPLETE_WITH_LIMITS
+PS C:\Users\Yasmin Parmar>
+```
+
+**Interpretation:** `gcloud.cmd builds connections list --region=asia-south1 --project=oldx-staging --account=yasminparmar087@gmail.com --format=json --quiet` returned successfully; the A3 code accepted the empty JSON-array response as a valid empty result. There are **zero currently returned Cloud Build v2 connections in the single queried region**, including GitHub connections. Does NOT prove the absence of connections in other regions, OLDX GitHub connectivity globally, build identity, builder permissions, or whether direct Git URL source could be used. No new Cloud Build job, Registry push, Cloud Run or IAM commands in A3. Cloud Build API A2 enabled/verified earlier at ~19:22 and is not to be re-enabled.
+
+**`G2_A3=COMPLETE_WITH_LIMITS_CONSUMED` — do not run A3 again.** Next avoid automatic GitHub connection creation/secret/IAM setup. Current official `gcloud builds submit` documentation supports *direct public Git URL source* with `--git-source-revision=<commit SHA>` and the Build REST `GitSource` source type, independently of connectedRepository. Since OLDX repository metadata was observed `public`, evaluate that **less-privileged source-pinning lane** before considering a paid/persistent connection. This is documentation evidence only; no direct-URL build was tested and SLSA provenance scope for this source must still be independently verified on a separately approved future new image. [New exact A4 source-only evaluation](OLDX_STEP04_G2_A4_DIRECT_PUBLIC_GIT_SOURCE_EXIT_2026-11-21.md). Existing G2 six severe IDs and builder-origin `UNKNOWN`; G4 effective cross-DB/Cloud Run inherited invoker unverified, `STEP04=HOLD`, `PRODUCTION=NO_GO`.
+
+---
+
 Date: 21 Nov 2026. Repo `yasminparmar087-ops/oldx-website`, branch `security-hardening-review`. Project `oldx-staging`, explicit owner account `yasminparmar087@gmail.com`.
 
 ## Current truth before A3

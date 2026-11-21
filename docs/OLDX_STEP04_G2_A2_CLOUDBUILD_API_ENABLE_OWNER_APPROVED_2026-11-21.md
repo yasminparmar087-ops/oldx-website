@@ -1,5 +1,26 @@
 # OLDX Step04 G2 A2 — one exact Cloud Build API enable approved, owner-run guarded command
 
+## 21 Nov 2026 ~19:22 IST — A2 OWNER EXECUTED: CLOUD BUILD API ENABLED_VERIFIED (NEW LATEST)
+
+**Actual owner Windows PowerShell screenshot** after exactly the previously approved single guarded A2 command, returned to normal PowerShell prompt **without STOP**:
+
+```text
+G2_A2_FRESH_PREIMAGE=API_NOT_ENABLED
+G2_A2_SINGLE_API_ENABLE_ATTEMPT=BEGIN
+Operation "operations/acf.p2-38472235077-..." finished successfully.
+G2_A2_ENABLE_CLI=EXIT_ZERO
+G2_A2_CLOUD_BUILD_API=ENABLED_VERIFIED
+G2_A2_BUILD_DEPLOY_IAM_COMMANDS=NONE
+G2_A2_ONE_TIME_ENABLE=COMPLETE
+PS C:\Users\Yasmin Parmar>
+```
+
+The owner-supervised single `gcloud.cmd services enable cloudbuild.googleapis.com --project=oldx-staging --account=yasminparmar087@gmail.com --quiet` command returned successfully and **one** post-enable enabled-service read found the expected API. The fresh prewrite read saw disabled before this one attempt. **`G2_A2=COMPLETE_VERIFIED`**, **`CLOUD_BUILD_API=ENABLED_AS_OF_OWNER_SCREENSHOT`**. A2 is now **CONSUMED: DO NOT RUN AGAIN**. `G2_A2_BUILD_DEPLOY_IAM_COMMANDS=NONE` establishes no such CLI subcommands in the prepared script, **not** a global audit of provider-managed service agent IAM changes. The screenshot does **not** assert a GitHub connection was queried, a Cloud Build job ran, or that any image, deployment, IAM grants or billing configuration were otherwise modified by the operator. The Cloud Build service may provision its own managed service agent as documented; do not infer the entire IAM policy is unchanged.
+
+**NEXT distinct evidence:** One **read-only** `gcloud.cmd builds connections list --region=asia-south1` using the same owner and project. This check was intentionally never run in A1 because API was disabled. A regional list cannot prove the state in other regions; a connection count does not prove OLDX's repository is linked. Do not create a connection, service account or source trigger without separate exact approval. Continue Step04 G2 with independent builder provenance and 1 CRITICAL/5 HIGH frozen Grype risk unresolved, G4 effective other-DB/Invoker unverified. `STEP04=HOLD`, `PRODUCTION=NO_GO`. No redo of C1–C5/B1/R1/G4/A1/A2.
+
+---
+
 Date: 21 Nov 2026. Repo: `yasminparmar087-ops/oldx-website`, `security-hardening-review`.
 
 ## Actual owner permission — NEW

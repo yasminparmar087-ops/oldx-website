@@ -1,5 +1,19 @@
 # OLDX Agent Instructions
 
+## 21 Nov 2026 ~17:19 IST — Task 19 FINAL C5 actual tag proven `step3rc14` (NEW LATEST)
+
+**Owner screenshot of local-only native PowerShell output** shows:
+```text
+C5_ACTUAL_STEP3_TAG=[step3rc14]
+C5_TAG_LENGTH=9
+C5_EXPECTED_TAG_MATCH=False
+C5_CLOUD_CALLS=NONE
+```
+The actual cached `$svc.status.traffic` revision `oldx-owner-read-00003-nus` tag is **exactly `step3rc14`** (no hyphen). The preflight/script expected `step3-rc14` (with a hyphen), explaining the prior local STOP; there is **no evidence of live Cloud Run drift**, nor a new cloud read. Prior main 100% `00001-8kr` untagged and `00002-tid` `healthcheck` match prior captured preimage; latest ready is `00003-nus`. The screenshot alone establishes cached snapshot, not fresh live state.
+
+**C5 correction:** compare with exact `step3rc14` in the C5 read-only guard; retain all existing fail-closed identity/traffic assertions. Never normalize away mismatches; no rerun of C1–C4 or previously performed G4/G8 service/IAM/billing GETs. Next distinct task is the 3 yet-unexecuted revision-describe READs with sanitized digest/resource/activation-flag output only, once the existing `$svc` variable is available and a fresh-drift decision is made; no deployment, no traffic update. Any subsequent B1/R1/R2 requires separate explicit consent and proper fresh live preimage. **C5_REVISION_READS=0, C5_DEPLOYMENT=NOT_STARTED, STEP04=HOLD, PRODUCTION=NO_GO**, C4 owner residual risk OPEN, G4 effective other-DB OPEN, G8 total-provider hard stop OPEN.
+
+
 ## 21 Nov 2026 ~17:16 IST — C5 local guard diagnosis isolates mismatch to EXACT step3 tag, no live drift proven (LATEST)
 
 **Owner actual PowerShell screenshot**, after previous cached in-memory preimage guard `STOP_C5_REVISION_PREIMAGE / REASON=C5_TRAFFIC_PREIMAGE_CHANGED`, shows **local-only** diagnostic (no `gcloud` call):

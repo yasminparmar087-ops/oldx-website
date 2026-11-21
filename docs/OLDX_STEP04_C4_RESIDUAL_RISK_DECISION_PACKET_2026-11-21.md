@@ -1,5 +1,56 @@
 # OLDX Step 04 — C4 source-only residual-risk decision packet
 
+## 21 Nov 2026 — C4 bounded disposition and G4/G8 gated handoff (LATEST)
+
+This is the **reviewer's source-and-evidence-based RECOMMENDATION**, not an owner waiver, qualified third-party certificate, signed VEX, new Grype scan or authorization to activate a cloud service. It is based on the exact owner-observed one-shot C4 result at ~16:51 IST: six `docker cp` checks reported **`NOT_CONFIRMED`**, `C4_EXACT_FROZEN_IMAGE=PASS`, `C4_CONTAINER_STARTED=NO`, receipt saved, cleanup PASS. The original offline Grype snapshot **remains 1 CRITICAL + 5 HIGH + 12 MEDIUM + 2 LOW**.
+
+### Decision matrix — one disposition per existing severe finding
+
+| ID / package | Technical disposition **proposed**, not a scanner rewrite | Mandatory containment / decision trigger |
+| --- | --- | --- |
+| **CVE-2019-1010022** / glibc 2.43.0-r14 / CRITICAL | **DISPUTED CLASSIFICATION — CONDITIONAL REVIEW ONLY.** Red Hat marked NOTABUG; evidence suggests a stack-canary hardening/post-compromise concern, rather than an established OLDX HTTP attack. Exact BellSoft VEX not present. | Keep scanner CRITICAL visible; restrict to private nonroot default-OFF/503 staging until qualified reviewer and owner **explicitly** record any residual risk acceptance; untrusted native processing or a demonstrated exploit chain = STOP |
+| **CVE-2019-1010023** / glibc / HIGH | **CLI PATH REQUIRES UNTRUSTED ELF + `ldd` — NOT PROVEN REACHABLE.** Source test covers 27 first-party JS files; six common `ldd` path probes returned NOT_CONFIRMED, **not ABSENT**. | No untrusted ELF accepted for dependency inspection; no generic subprocess/exec in product-read route; third-party/native paths still unknown. If an actual untrusted-file → `ldd` chain is found, STOP until eliminated |
+| **CVE-2026-0861** / glibc / HIGH | **UPSTREAM AFFECTED VERSION RANGE EXCLUDES CURRENT 2.43.0-r14 — STRONG VENDOR-EVIDENCE CANDIDATE.** BellSoft's noted affected range is 2.30–2.42; exact image VEX absent. | Confirm publisher/base lineage is unchanged at frozen digest; do **not** compare fix `-r6` from a different upstream glibc version as if directly ordered against `2.43.0-r14`. If advisory scope changes, review material delta |
+| **CVE-2026-19499** / glibc / HIGH | **SAME-STREAM VENDOR FIXED-VERSION MATCH CANDIDATE.** BellSoft reports 2.43.0-r6 fixed; frozen exact installed 2.43.0-r14, not independently image-specific VEX. | Require exact package lineage/immutability and reviewer acknowledgement. If evidence of an exploitable `strfmon*` path or wrong package stream, STOP |
+| **CVE-2026-84243** / glibc / HIGH | **EXACT VENDOR FIXED-VERSION MATCH CANDIDATE.** BellSoft lists 2.43.0-r14 as fixed and frozen image reports r14, but no signed image-scoped negative VEX. | Keep nonroot/privilege boundaries verified at target revision; reassess if locale path/trust boundary is exposed or version mapping changes |
+| **CVE-2026-119586** / sqlite-libs 3.54.1-r0 / HIGH | **SQLITE CLI PIPELINE EXPOSURE NOT ESTABLISHED.** SQLite describes `.recover` + unsafe second sqlite3 CLI, not core library API; six path probe returned three sqlite3 `NOT_CONFIRMED`, **not CLI ABSENT**. | No untrusted DB → `sqlite3 .recover` → second CLI path; first-party route lacks direct CLI use, transitive/other paths unknown. A reachable CLI chain requires a targeted fix or disabling feature before serving requests |
+
+**No `RESOLVED`, `PATCHED`, `VEX_PASS` or `C4_OWNER_ACCEPTED` status is claimed** for any row. Existing G2 Security Watch tracks only *material newly published vendor evidence*; do not create a duplicate monitor or rerun old scan/build to refresh these dispositions.
+
+### Two distinct acceptance levels — do not conflate them
+
+**Level 1 — one possible future, separately approved, private Cloud Run B1 trial with DEFAULT-OFF/503, owner-supervised.** A *candidate* bounded operational risk acceptance can be considered only when all conditions are verified for the actual revision: 0% main traffic (tagged URL can still be invoked by authorized principals), no public/anonymous caller, min instances 0, bounded max instances, no credential-backed product reads/writes enabled, no new sensitive fixture inputs, exact pinned OCI index digest and local signature-bundle receipt, short rollback/cleanup window, and owner-approved nonzero cost exposure. The previous **G4 limited acceptance** applies only to existing Owner/Editor potential invokers for one OFF-only B1; it **does not** authorize B1 execution nor prove exclusive effective invocation. Private OFF-only B1, if ever authorized and observed, is **not** C4 risk acceptance for enabled traffic or production.
+
+**Level 2 — enabled feature, live user data or production launch.** **NO-GO by this packet.** Before a release, independently review routes, authz/data isolation, abuse/rate limits, third-party/native execution and hard failures; evidence-tie any remaining severe findings to exact deployed digest, version and chosen compensating control, and collect a **separate, dated explicit owner acceptance** of named residual risks. The owner's strategic decision not to wait indefinitely for vendor patches applies at *that future release gate*, not as a present blanket security waiver.
+
+### G4/G8 exact limitation at next Step04 handoff (no live changes)
+
+- **G4 Cloud Run:** The owner already accepted *existing* project Owner/Editor **possible additional authenticated invokers** for **one** future private OFF B1; `G4_EFFECTIVE_EXCLUSIVE_INVOKER=UNVERIFIED/NONEXCLUSIVE`, because basic project roles can also provide `run.routes.invoke`. No roles are added to the former Owner or to any principal, and no existing privileges are removed in this source review. Even a 0% traffic revision can be invoked by authorized principals through tagged URL. **Separate G4 Firestore:** oldx-staging has previously observed only `(default)`; default-DB one-doc source/runtime proof passed, but no actual other-DB negative isolation was performed and no second DB should be provisioned solely for the check. A precise IAM condition doesn't override other unconditional project grants. For OFF-only trial, **do not enable any Firestore-dependent route** until scoped policy evidence is sufficient.
+- **G8 spend:** Owner-observed **₹100/month Cloud Run-only** spend cap is *one project + one eligible service*, not all-provider enforcement. Source-only 20-minute review planning bound `maxGrossPaise <= 10000` is a proposal validation, **not billed-spend verification or provider hard kill switch**. Firestore/Auth/Logging/Artifact Registry/network and delayed charges can escape the Cloud Run-only cap. For a future trial, minimize chargeable surface, designate exact owner/operator, hard-stop operationally on usage/error, specify short end time and cleanup, and obtain **explicit approval for unbounded-by-cap side costs** or do not deploy. No all-provider G8 PASS is possible from present evidence; alerts-only budgets do not cap spending.
+- **Signature/provenance:** C3 owner-local DSSE signature for `sha256:0844b637cf1bfedef60caa6a54ad515ebf9c0a937453b409101ad0d2ff254f79` cryptographically verified with exact Yasmin/Google issuer; Registry signature referrer **NOT ATTACHED**; independent trusted builder SLSA **UNVERIFIED**. C5 should verify that *same exact local bundle or an approved attached signature*; it must not silently fall back to a mutable tag or the older V2 image.
+- **No repeat:** C1 original single-push journal consumed, C2 passed, C3 signed once and verified, C4 filesystem probe completed. No repeat of passed checks, no new build/scan/signature/Registry write merely to close documentation.
+
+**Decision ledger at this checkpoint:**
+
+```text
+C4_SIX_CVE_TECHNICAL_TRIAGE=PREPARED_WITH_CONDITIONAL_DISPOSITIONS
+C4_FROZEN_SCAN_COUNTS=1_CRITICAL_5_HIGH_12_MEDIUM_2_LOW_UNCHANGED
+C4_OWNER_EXPLICIT_RESIDUAL_RISK_ACCEPTANCE=NOT_GRANTED
+C4_ENABLED_RELEASE_CLEARANCE=HOLD
+C4_PRIVATE_OFF_B1=ONLY_FUTURE_CANDIDATE_SEPARATE_AUTHORIZATION
+G2_PROVENANCE_AND_SECURITY_CLEARANCE=HOLD
+G4_NONEXCLUSIVE_OFF_B1_RISK=OWNER_ACCEPTED_LIMITED
+G4_OTHER_DATABASE_ISOLATION=UNVERIFIED
+G8_CLOUD_RUN_ONLY_CAP=PREVIOUSLY_OBSERVED_100_INR_MONTH
+G8_ALL_PROVIDER_FINANCIAL_HARD_STOP=NOT_PROVEN
+C5_STAGING_DEPLOYMENT=NOT_AUTHORIZED
+STEP04=HOLD
+PRODUCTION=NO_GO
+```
+
+**Next meaningful task (no new console command required for this source-only checkpoint):** reconcile the *existing* G4/G8 evidence into a single limited B1 approval card with explicit OFF/503, zero traffic, cross-DB exclusion, all-provider expense warning, verification of the exact derived digest and rollback. Do not trigger B1 yet. If this card cannot offer a bounded safe trial, document BLOCK rather than call C4/G2 PASS.
+
+
 ## 21 Nov 2026 ~16:51 IST — C4 frozen npm-free CLI-path ONE-SHOT inspection COMPLETE; 6 paths NOT_CONFIRMED (LATEST)
 
 **Owner actual Windows PowerShell screenshot** of the pinned dedicated C4 one-shot script `scripts/step04-c4-npmfree-cli-presence-once-a1.py`, now run **once** in the correct `PS C:\Users\Yasmin Parmar>` shell:

@@ -1,5 +1,26 @@
 # OLDX Step04 — G2 A6 exact dedicated build identity existence preflight (SOURCE-ONLY)
 
+## 21 Nov 2026 ~19:55 IST — A6 REAL OWNER RESULT: NOT_PRESENT, READ SUCCESSFUL (NEW LATEST)
+
+Owner's actual Windows PowerShell screenshot of the exact prepared A6 `gcloud.cmd iam service-accounts list --project=oldx-staging --account=yasminparmar087@gmail.com --format=json` read returned successfully and PowerShell prompt came back, with **no STOP**:
+
+```text
+G2_A6_DEDICATED_BUILDER_ID=NOT_PRESENT
+G2_A6_OTHER_ACCOUNT_IAM=NOT_EVALUATED
+G2_A6_COMPUTE_DEFAULT_PERMISSIONS=NOT_CHECKED
+G2_A6_CLOUD_BUILD_JOB=NOT_STARTED
+G2_A6_CLOUD_WRITES=NONE
+G2_A6_EXISTENCE_READ=COMPLETE_WITH_LIMITS
+```
+
+**Meaning:** Proposed `oldx-step04-build@oldx-staging.iam.gserviceaccount.com` was **not found in the returned project service-account inventory at the time**; identity was NOT created by this read, and absence is not a grant, quota certificate or proof that other build identities do not exist. Existing Compute default would be chosen by Cloud Build if no service account were specified (A5), but its **effective IAM remains UNKNOWN**. **A6 CONSUMED: never repeat.**
+
+**Next:** [A7 bundled, *owner approval required*, no-key dedicated identity and least-privilege setup decision packet](OLDX_STEP04_G2_A7_BUILDER_IDENTITY_LEAST_PRIVILEGE_APPROVAL_2026-11-21.md). No action performed yet: `A7=DESIGN_ONLY_NOT_APPROVED`, `BUILD=NOT_STARTED`. The A7 proposal keeps build identity separate from runtime `oldx-product-read-staging`, preserves no new public access, and minimizes permissions to Artifact Registry writer on the exact existing repository, project Cloud Logging writer if needed for `CLOUD_LOGGING_ONLY`, and narrowly scoped `iam.serviceAccounts.actAs` for the invoking owner. Specific IAM allow bindings, API prerequisites, legacy inherited rights and logged costs must be checked before any mutation; no blanket Editor. Cloud Build service agent/provider behavior is separate.
+
+All original C1–C5, B1/R1, G4, Cloud Build A1–A6, source scan and billing evidence consumed. `STEP04=HOLD`, `PRODUCTION=NO_GO`.
+
+---
+
 21 Nov 2026, after owner A5 screenshot, repo `yasminparmar087-ops/oldx-website`, branch `security-hardening-review`, GCP project `oldx-staging`.
 
 ## The consumed new result

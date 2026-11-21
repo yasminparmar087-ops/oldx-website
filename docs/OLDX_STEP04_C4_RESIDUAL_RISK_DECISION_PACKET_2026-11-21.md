@@ -1,4 +1,13 @@
 # OLDX Step 04 — C4 source-only residual-risk decision packet
+
+## 21 Nov 2026 — C4 EXACT npm-free CLI-path presence probe PREPARED, NOT YET RUN (LATEST)
+
+**New dedicated script:** [scripts/step04-c4-npmfree-cli-presence-once-a1.py](scripts/step04-c4-npmfree-cli-presence-once-a1.py), frozen initial commit `7cba228f59bcb6903bb64c783231605b2ea3bf16`, Git blob SHA `1bc7941c9cd2434493343d34b01f9d15d53ef3d1`, **SHA256 `270f8978c2b3a7345114f7e2522cbf7228ff6a6169c195437e84e2f56b8cec4e`** (calculated from exact committed source by a SHA256 function that passed the known `abc` test vector). Owner has **not run the script yet**. Do not reuse the older `step04-bellsoft-fs-exposure-once-a1.py` since it targets an older, different image.
+
+**Exact scope:** Safeguard local WSL + Unix Docker context with no remote override; pin existing `oldx-bellsoft-npmfree:20261120-a1` by both local image ID and OCI index `sha256:0844b637cf1bfedef60caa6a54ad515ebf9c0a937453b409101ad0d2ff254f79` / media type / 856 bytes; check expected `appuser` + Node entrypoint/CMD. Create a **never-started** local Docker container (`--network none --read-only --cap-drop ALL`), only `docker cp` 6 `sqlite3`/`ldd` path probes with copied file bytes discarded, and remove stopped container in `finally`. Create one exclusive small owner-local receipt `D:\OLDX\G2\c4-npmfree-cli-presence-20261121-a1.json` with status/cleanup. File check responses are `PRESENT` or `NOT_CONFIRMED` (NOT “definitely absent”); cannot establish transitive library execution or prove CVE fixed. Only temporary local Docker container metadata and a tiny private receipt are written; no image execution, build, upload, scan, IAM, cloud, billing or deployment.
+
+**Next owner's exact one-time step:** Download pinned raw script from public GitHub commit into unused `D:\OLDX\G2\c4-npmfree-cli-presence-once-a1.py`; verify its exact SHA256 by PowerShell then `wsl.exe -- python3 /mnt/d/OLDX/G2/c4-npmfree-cli-presence-once-a1.py` ONCE. STOP on mismatch/errors/existing file, no automatic re-runs. Wait for actual owner screenshot before declaring result. All prior C1/C2/C3 checks frozen; C3 local signed bundle crypto PASS; C4 six severe risk acceptance PENDING, G2 HOLD, G4 cross-db OPEN, G8 full-provider spend stop OPEN, Step04 HOLD, production NO-GO.
+
 **Prepared 21 November 2026 after C3 LOCAL signature verification. Source-only; no automatic waiver, deployment, IAM, Registry write, scan or cost approval.**
 
 ## C4.1 — 21 Nov 2026 official-vendor and code-path independent source review

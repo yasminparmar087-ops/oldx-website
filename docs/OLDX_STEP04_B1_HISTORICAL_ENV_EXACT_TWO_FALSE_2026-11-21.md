@@ -66,3 +66,28 @@ Official guidance:
 - https://docs.cloud.google.com/run/docs/configuring/services/environment-variables
 - https://docs.cloud.google.com/sdk/gcloud/reference/run/deploy
 - https://docs.cloud.google.com/run/docs/rollouts-rollbacks-traffic-migration
+
+## Next exact read-only command (ONE new Cloud Resource Manager metadata GET; NOT EXECUTED)
+
+This owner-run Windows PowerShell block emits only whether a parent organization/folder was **reported**. It never prints parent ID, project number, principals, or metadata. It makes NO IAM/billing/service write, no Cloud Run calls. `NO_PARENT_REPORTED` is absence in this response, not full inherited-permissions proof. If `PRESENT_REQUIRES_REVIEW` or `STOP`, halt prior to deployment.
+
+```powershell
+& {
+  try {
+    $raw = & gcloud.cmd projects describe oldx-staging --project=oldx-staging --account=yasminparmar087@gmail.com --format=json 2>$null
+    if ($LASTEXITCODE -ne 0 -or -not $raw) { throw 'READ_FAILED' }
+    $project = $raw | Out-String | ConvertFrom-Json -ErrorAction Stop
+    if ($project.projectId -cne 'oldx-staging') { throw 'PROJECT_MISMATCH' }
+    if ($null -eq $project.parent) {
+      'G4_PROJECT_PARENT=NO_PARENT_REPORTED'
+    } else {
+      'G4_PROJECT_PARENT=PRESENT_REQUIRES_REVIEW'
+    }
+    'G4_PROJECT_PARENT_READ=COMPLETE_WITH_LIMITS'
+    'G4_PARENT_READ_CLOUD_CHANGES=NONE'
+  } catch {
+    'STOP_G4_PROJECT_PARENT_READ'
+    'G4_PARENT_READ_RESULT=UNVERIFIED'
+  }
+}
+```

@@ -1,5 +1,40 @@
 # OLDX Agent Instructions
 
+## 21 Nov 2026 ~17:03 IST — G4/G8 bounded current Cloud Run/IAM/Billing READ-ONLY snapshot COMPLETE; C5 preimage shows 3 revisions, new npm-free index NOT deployed (LATEST)
+
+**Owner actual screenshot from correct Windows PowerShell** of the single previously owner-approved `gcloud.cmd` Cloud Run/IAM/billing-state read-only block (no mutation):
+```text
+G4_G8_READ_ONLY_START=YES
+G4_SERVICE_READ=PASS
+SERVICE_NAME=oldx-owner-read
+LATEST_READY_REVISION=oldx-owner-read-00003-nus
+RUNTIME_SERVICE_ACCOUNT=oldx-product-read-staging@oldx-staging.iam.gserviceaccount.com
+INGRESS=all
+CURRENT_IMAGE=asia-south1-docker.pkg.dev/oldx-staging/oldx-staging-images/oldx-owner-read-step3-rc@sha256:c5fc856b45b19ec995167753d0ab7449fea9550f7e06b1b75da025fe179928dc
+MIN_SCALE=UNKNOWN
+MAX_SCALE=1
+TRAFFIC_ENTRY_COUNT=3
+TRAFFIC_REVISION=oldx-owner-read-00001-8kr PERCENT=100 TAG=UNTAGGED
+TRAFFIC_REVISION=oldx-owner-read-00002-tid PERCENT=UNKNOWN TAG=healthcheck
+TRAFFIC_REVISION=oldx-owner-read-00003-nus PERCENT=UNKNOWN TAG=step3-rc14
+G4_SERVICE_IAM_READ=PASS
+SERVICE_PUBLIC_POLICY_MEMBERS=0
+G4_PROJECT_IAM_READ=PASS
+PROJECT_OWNER_MEMBER_COUNT=2
+PROJECT_EDITOR_MEMBER_COUNT=1
+PROJECT_RUN_INVOKER_MEMBER_COUNT=0
+G8_BILLING_ENABLED=True
+G8_SPEND_CAP_RECHECK=NOT_PERFORMED
+G8_ALL_PROVIDER_HARD_STOP=NOT_PROVEN
+G4_G8_READ_ONLY_SNAPSHOT=COMPLETE
+```
+**Important qualified conclusions:** Service **latest ready revision** `00003-nus` is **not** revision serving 100% main traffic (`00001-8kr`). `CURRENT_IMAGE` from `spec.template.spec.containers[0].image` is **latest service template** `oldx-owner-read-step3-rc@sha256:c5fc...` and not necessarily the 100%-traffic revision image. It is also **NOT** the newly frozen/signed npm-free OCI index `sha256:0844b637cf1bfedef60caa6a54ad515ebf9c0a937453b409101ad0d2ff254f79`; this is expected before new C5 and no deploy was authorized. Tagged revisions' percent property was **absent** in the projected output -> `UNKNOWN` printed, not proof of exact zero. Existing GitHub earlier evidence describes old step3 revision with 0%, but distinguish historical from current projection. Max scale template=1; min scale `UNKNOWN`, not a proof that 0 is explicitly set. Project policy counts are direct returned policy bindings and omit potential parent-level roles; 2 Owners/1 Editor can potentially invoke, so **no exclusive-owner IAM claim**. Service policy has zero `allUsers` or `allAuthenticatedUsers`, but **not yet proof authentication IAM check is enabled**: Google Cloud Run may be made public by `run.googleapis.com/invoker-iam-disabled=true` even with zero public bindings. Need in-memory read-only check of that service annotation (no Cloud API retry) before asserting private access. `INGRESS=all` permits network reachability but is not equal to permission to invoke. Billing enabled does **not** prove Cloud Run-only ₹100 cap or all-provider hard-stop, which remains OPEN.
+
+**NEXT only from existing PowerShell variables (no new gcloud calls):** user should inspect **already populated** `$svc.metadata.annotations.'run.googleapis.com/invoker-iam-disabled'` (print sanitized `TRUE_STOP` / `FALSE` / `NOT_SET`), service-level `run.googleapis.com/minScale` and template-level `autoscaling.knative.dev/minScale` (print `NOT_SET` on missing), `$svc.spec.template.spec.containers[0].env` for exact expected feature activation flags only (print `EXACT_FALSE` / `MISSING` / `NOT_FALSE_STOP`, never raw values/secret environment variables), and from already-loaded `$servicePolicy.bindings` print only **named** `roles/run.invoker` binding count/member count (no members). Fail closed if `$svc` or `$servicePolicy` no longer in memory; do not automatically fetch again without a new limited decision. No copies of raw Cloud IAM or secrets uploaded to GitHub.
+
+**State:** `G4_G8_READ_ONLY_SNAPSHOT=COMPLETE` limited scope; `G4_EFFECTIVE_EXCLUSIVE_IAM=NOT_PROVEN`; `G4_INVOKER_IAM_CHECK=NOT_YET_INSPECTED`; `G4_OTHER_DB_ISOLATION=OPEN`; `G8_BILLING_ENABLED=TRUE`, `G8_ALL_PROVIDER_HARD_STOP=OPEN`; `C3_LOCAL_SIGNED_INDEX=CRYPTO_PASS`, `C4_OWNER_RISK_ACCEPTANCE=PENDING`, `C5_NPMFREE_REVISION=NOT_DEPLOYED`, `STEP04=HOLD`, `PRODUCTION=NO_GO`. NEVER redo C1/C2/C3/C4 one-shots, source tests, old billing cap screenshot, Grype, upload or signing.
+
+
 ## 21 Nov 2026 — Owner explicitly APPROVED ONE bounded G4/G8 read-only Cloud Run/IAM/Billing-state snapshot; NOT YET EXECUTED (LATEST)
 
 **Current conversation direct owner reply:** `ha manjuri chhe` to the precise proposed **read-only** check of existing `oldx-staging` / `oldx-owner-read` Cloud Run service and effective-policy context plus G8 billing scope, **without deployment, IAM, database, Billing mutations or old test repetitions**. This is an approval for **GET/list/describes only**, NOT future B1/R1/R2, tokens, service invocation, chargeable logs, new APIs, image or scan, re-sign or production. No live Google Cloud credentials in ChatGPT connector: owner will run one sanitized native Windows **PowerShell** script via existing `gcloud.cmd`. **No command has been executed yet; no new evidence of current state available**.

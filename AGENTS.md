@@ -1,5 +1,18 @@
 # OLDX Agent Instructions
 
+## 21 Nov 2026 ~17:12 IST — C5 revision preimage guard STOP before any revision GET; mismatch is local-check result, NOT proven live drift (LATEST)
+
+**Actual owner's native PowerShell screenshot:** After pasting the planned C5 first-read script in the same `PS C:\Users\Yasmin Parmar>` shell, the only **result** lines were:
+```text
+STOP_C5_REVISION_PREIMAGE
+REASON=C5_TRAFFIC_PREIMAGE_CHANGED
+```
+The script first checked `$svc.metadata.name`, expected three `$svc.status.traffic` entries, latest Ready `00003-nus`, and one entry per `00001-8kr`, `00002-tid`, `00003-nus`. It then evaluates **four local comparisons** `[string]$main.percent -ne '100'`, truthy `$main.tag`, `$health.tag -ne 'healthcheck'`, `$step3.tag -ne 'step3-rc14'` and threw before printing `C5_PREVIOUS_TRAFFIC_PREIMAGE=MATCH`. Crucially the `gcloud run revisions describe` loop is *after* this throw: **NONE of the planned three new revision GETs were issued**, nor any Cloud Run/IAM/Billing write. Do **NOT** infer actual live traffic drift from the guard label; the comparison was made against already fetched in-memory ~17:03 snapshot. The four individual comparison outcomes have **not** been observed. Previous old service/IAM/Billing read-only snapshot remains valid for its observation time; C1/C2/C3/C4 results remain frozen.
+
+**Recovery recommended NEXT — owner read-only local PowerShell only; NOT YET RUN:** Inspect the already-loaded `$svc.status.traffic` in memory without any `gcloud` call, log/output **only booleans** for the 4 guard predicates and presence/count of exactly expected 3 revisions (no URLs, principal names, auth tokens or environment values). Do not print raw labels/secret fields. If variable missing, STOP and explicitly decide whether a separate live refresh needs consent; no blind replay of the previous three-revision script. After exact mismatch isolated, adjust the **comparison/check logic** in source-only docs if needed, never silently bypass drift safeguards. Before any C5 rollout, still require **fresh current preimage**, exact authorized B1, rollback R1/R2 preserving 100% `00001-8kr` and tags, C4 owner risk disposition, G4 effective limitations and G8 side-provider cost acceptance.
+
+**State:** `C5_PREIMAGE_ATTEMPT=LOCAL_GUARD_STOP`, `C5_REVISION_GETS=ZERO`, `C5_PREIMAGE_READ_ONLY_COMPLETE=NO`, `C5_DEPLOYMENT=NOT_STARTED`; C3 local Sigstore signature PASS; C4 1C/5H acceptance OPEN; G2 HOLD, G4 cross-DB OPEN, G8 all-provider STOP OPEN; Step04 HOLD, production NO-GO. **Do not simply re-run the failing command.**
+
 ## 21 Nov 2026 — C5 read-only three-revision preimage/rollback preparation READY; owner has not executed (LATEST)
 
 **New canonical C5 source-only gate document:** [OLDX_STEP04_C5_REVISION_PREIMAGE_READ_ONLY_2026-11-21.md](docs/OLDX_STEP04_C5_REVISION_PREIMAGE_READ_ONLY_2026-11-21.md) created after reading latest AGENTS/current handoff/C4 packet and Google [Cloud Run revision](https://docs.cloud.google.com/run/docs/managing/revisions) + [rollbacks/traffic](https://docs.cloud.google.com/run/docs/rollouts-rollbacks-traffic-migration) documentation. No new GCP call or deployment. It contains a **single runnable native PowerShell block** requiring the **already loaded $svc read-only snapshot** to guard exact three expected revisions and current observed main traffic, then **only three new `gcloud run revisions describe` READs** to print sanitized old revision digest, concurrency, CPU, memory, timeout, min/max annotations and two exact feature env flag statuses; no raw secret values, no repeats of the existing service/IAM/Billing reads. Owner has NOT executed. Stop if $svc missing, drift, read errors or unexpected shape; no automatic retry.

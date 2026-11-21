@@ -1,5 +1,20 @@
 # OLDX Step 04 — C5 revision preimage / rollback-safe READ-ONLY gate (21 Nov 2026)
 
+## 21 Nov 2026 ~17:24 IST — C5 THREE targeted revision READs completed; cached traffic guard MATCH (NEW LATEST)
+
+Owner's PowerShell screenshot shows `C5_CACHED_PREIMAGE=MATCH`, existing tags `healthcheck,step3rc14`, and successful **three new read-only `gcloud run revisions describe`** calls. Results (the status applies to observed revisions, not an assertion of permanently locked traffic):
+
+| Revision | Role | Image digest (sha256 prefix) | CPU / memory / concurrency / timeout | revision min / max | activation / ADC flags |
+| --- | --- | --- | --- | --- | --- |
+| `oldx-owner-read-00001-8kr` | 100% main in cached traffic preimage | `e5ad2ae1ae23b9f2` | 1 / 512Mi / 1 / 300s | NOT_SET / 1 | MISSING / MISSING |
+| `oldx-owner-read-00002-tid` | `healthcheck` tagged | `5abd5e7b1b3d3cf2` | 1 / 512Mi / 1 / 300s | NOT_SET / 1 | MISSING / MISSING |
+| `oldx-owner-read-00003-nus` | `step3rc14` tagged; latestReady | `eabe4207e307d1e4` | 1 / 512Mi / 1 / 30s | NOT_SET / 1 | EXACT_FALSE / EXACT_FALSE |
+
+Terminal ends `C5_REVISION_PREIMAGE_READ_ONLY=COMPLETE` and `C5_DEPLOYMENT=NOT_STARTED`, without STOP. Important: **`MISSING` activation flags in first two revisions are not proof of DEFAULT-OFF**, and original main revision's 300-second timeout is not an approved new revision configuration. `MIN_SCALE=NOT_SET` is not an effective-zero guarantee. The two old revision image digests differ from the latestReady digest; do not conflate a revision container/image digest with the service template or frozen npm-free index. No deploy, traffic change, build, scan, re-signing, IAM/Billing change or app calls took place in the reported procedure.
+
+**C5 scoped evidence read is DONE; do not repeat it**. Next source-only work: prepare concrete R1 (remove *only a new* `ownerreadv2` tag, if subsequently created) and R2 (preserve/restore preexisting `00001-8kr=100%` plus the two existing tags); guard against drift, never `--to-latest`, and verify fresh live preimage immediately before any authorized mutation. Any B1/R1/R2 write needs its own explicit scope and owner approval. **C4 owner acceptance OPEN; G2 HOLD; G4 other-db effective denial OPEN; G8 provider-wide spend STOP OPEN; STEP04 HOLD; production NO-GO.**
+
+
 ## 21 Nov 2026 ~17:19 IST — Task 19 FINAL C5 actual tag proven `step3rc14` (NEW LATEST)
 
 **Owner screenshot of local-only native PowerShell output** shows:

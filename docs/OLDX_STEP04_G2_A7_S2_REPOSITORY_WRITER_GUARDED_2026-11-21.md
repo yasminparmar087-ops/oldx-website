@@ -1,5 +1,23 @@
 # OLDX Step04 G2 A7 S2 — repository-only Artifact Registry Writer (owner approved, PREPARED NOT EXECUTED)
 
+## 21 Nov 2026 ~20:16 IST — S2 TARGET UNCONDITIONAL DIRECT BINDING VERIFIED, NO-OP (NEW LATEST)
+
+**Actual owner PowerShell screenshot:** The screenshot's upper portion shows pasted source text of the **earlier guarded S2 script**, not the expected new read-only-only reconciliation script. Crucially, the **executed terminal output at the bottom** is:
+
+```text
+G2_A7_S2_WRITER=ALREADY_DIRECT_UNCONDITIONAL_NO_WRITE
+G2_A7_S2_OTHER_IAM_WRITES=NONE
+PS C:\Users\Yasmin Parmar>
+```
+
+This result is emitted **only by the existing unconditional target-binding no-op path** after the guarded S2 script fetched the exact repository IAM policy from `oldx-staging/asia-south1/oldx-staging-images`. Thus at ~20:16 IST the **direct unconditional** `roles/artifactregistry.writer` grant to `serviceAccount:oldx-step04-build@oldx-staging.iam.gserviceaccount.com` **was present**, and this latest run **did not issue another write**. The previous ~20:12 S2 STOP may have been caused after a successful prior mutation, but there is **no independent receipt of exactly when/which actor changed it** and **no stored complete old/new IAM policy delta from that attempt**. Do NOT claim unrelated bindings were independently proven preserved. The screenshot is **NOT** `G2_A7_S2_REPO_WRITER=ADDED_VERIFIED` and the S2 no-op path must not be confused with the separate read-only reconciliation source.
+
+**State:** `A7_S2_TARGET_REPO_WRITER=DIRECT_UNCONDITIONAL_PRESENT_VERIFIED`; `A7_S2_LATEST_RUN=NO_WRITE`; `A7_S2_OTHER_BINDINGS_UNCHANGED=NOT_INDEPENDENTLY_VERIFIED`; `A7_S2=COMPLETE_WITH_LIMITS_CONSUMED`. **NEVER REPEAT S2 grant or its diagnostic**. The exact S1 builder identity was previously validated after a different STOP. A7 S3 project logging writer and S4 Yasmin actAs remain approved but **NOT EXECUTED**. Next: one owner-supervised, guarded S3 project-level `roles/logging.logWriter` to only builder SA, preserving unrelated bindings; [canonical S3 preparation](OLDX_STEP04_G2_A7_S3_LOGGING_WRITER_GUARDED_2026-11-21.md). Do not run S4 until S3 checkpoint.
+
+No build, docker, registry upload, firebase, Cloud Run, or production action was proven; `STEP04=HOLD`, `PRODUCTION=NO_GO`.
+
+---
+
 ## 21 Nov 2026 ~20:12 IST — S2 attempted, STOP_UNEXPECTED_ERROR; LIVE REPO POLICY UNKNOWN (LATEST)
 
 The owner shared an actual Windows PowerShell screenshot from **ONE already approved A7 S2** attempt (not merely pasted script). Visible execution output ends:

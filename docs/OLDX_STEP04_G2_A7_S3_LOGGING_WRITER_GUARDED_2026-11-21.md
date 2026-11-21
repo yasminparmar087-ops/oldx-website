@@ -16,6 +16,7 @@ One fresh read of the exact project IAM policy is needed before this **new proje
 
 ```powershell
 & {
+  $stage = 'START'
   try {
     $project = 'oldx-staging'
     $member = 'serviceAccount:oldx-step04-build@oldx-staging.iam.gserviceaccount.com'
@@ -43,6 +44,7 @@ One fresh read of the exact project IAM policy is needed before this **new proje
     }
 
     $readArgs = @('projects','get-iam-policy',$project) + $common
+    $stage = 'PRE_READ'
     $preRaw = & gcloud.cmd @readArgs 2>$null
     if ($LASTEXITCODE -ne 0 -or -not $preRaw) {
       throw 'S3_PRE_READ_FAILED'
@@ -63,6 +65,7 @@ One fresh read of the exact project IAM policy is needed before this **new proje
       return
     }
 
+    $stage = 'PREIMAGE_CHECK'
     $before = @(Member-Keys $pre | Sort-Object)
     'G2_A7_S3_PREIMAGE=TARGET_LOGGING_WRITER_ABSENT'
 
@@ -70,12 +73,14 @@ One fresh read of the exact project IAM policy is needed before this **new proje
       'projects','add-iam-policy-binding',$project,
       "--member=$member", "--role=$role", '--condition=None'
     ) + $common
+    $stage = 'WRITE'
     & gcloud.cmd @writeArgs 2>$null | Out-Null
     if ($LASTEXITCODE -ne 0) {
       throw 'S3_WRITE_OUTCOME_UNCERTAIN'
     }
     'G2_A7_S3_WRITE_CLI=EXIT_ZERO'
 
+    $stage = 'POST_READ'
     $postRaw = & gcloud.cmd @readArgs 2>$null
     if ($LASTEXITCODE -ne 0 -or -not $postRaw) {
       throw 'S3_POST_READ_FAILED'
@@ -83,6 +88,7 @@ One fresh read of the exact project IAM policy is needed before this **new proje
     $post = $postRaw | Out-String | ConvertFrom-Json -ErrorAction Stop
     $expected = @($before) + @("$role||$member")
     $actual = @(Member-Keys $post | Sort-Object)
+    $stage = 'DELTA_CHECK'
     $difference = @(Compare-Object -ReferenceObject $expected -DifferenceObject $actual)
     if ($difference.Count -ne 0) {
       throw 'S3_POLICY_DELTA_UNEXPECTED'
@@ -98,6 +104,7 @@ One fresh read of the exact project IAM policy is needed before this **new proje
       $reason = 'S3_UNEXPECTED_ERROR'
     }
     'STOP_G2_A7_S3_NO_AUTOMATIC_RETRY'
+    "STAGE=$stage"
     "REASON=$reason"
     'G2_A7_S3_CONFIRM_LIVE_PROJECT_IAM_BEFORE_ANY_NEW_WRITE'
   }
@@ -108,7 +115,7 @@ One fresh read of the exact project IAM policy is needed before this **new proje
 
 - `G2_A7_S3_PROJECT_LOGGING_WRITER=ADDED_VERIFIED`: one conditional-free direct binding added and post-read tuple change exactly intended, **if** none concurrently changed the policy. Proceed only after screenshot/receipt to S4 guarded Yasmin-only actAs on the builder SA resource.
 - `G2_A7_S3_LOGGING_WRITER=ALREADY_DIRECT_UNCONDITIONAL_NO_WRITE`: existing direct grant observed, no S3 write; S3 can be considered complete with limits.
-- `STOP_G2_A7_S3_NO_AUTOMATIC_RETRY`: **do not rerun the S3 script**, even if `S3_WRITE_OUTCOME_UNCERTAIN`. Use one distinct targeted read-only project IAM reconciliation before any further IAM changes. STOP does not prove binding absent or no write.
+- `STOP_G2_A7_S3_NO_AUTOMATIC_RETRY`: **do not rerun the S3 script**, even if `S3_WRITE_OUTCOME_UNCERTAIN`. Use one distinct targeted read-only project IAM reconciliation before any further IAM changes. STOP does not prove binding absent or no write. The output includes a sanitized `STAGE=` marker to locate pre-read/write/post-read/delta-check problems without printing sensitive policy details.
 - Never print raw project IAM policy, users, etags, credentials or tokens, and never remove unrelated grants or add roles to the former owner.
 - **No build/deploy/Registry image writes** within S3; original G2 unfiltered scan has 1 CRITICAL + 5 HIGH and trusted independent builder provenance remains UNKNOWN; G4 effective other DB denial and Cloud Run invoker exclusivity remain UNVERIFIED. `STEP04=HOLD`, `PRODUCTION=NO_GO`.
 

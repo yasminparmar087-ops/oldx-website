@@ -1,5 +1,10 @@
 # OLDX Agent Instructions
 
+## 21 Nov 2026 — C5 R1/R2 rollback SOURCE-ONLY gate READY (NEW LATEST)
+
+Created [C5 R1/R2 guarded rollback plan](docs/OLDX_STEP04_C5_R1_R2_ROLLBACK_GUARD_PLAN_2026-11-21.md) after C5 three read-only revisions complete and Cloud Run official `update-traffic` docs review. R1 is conditional removal of **only future** `ownerreadv2` tag with fresh current preflight, never clear other tags; R2 is **no-op when old 00001 main 100% + `healthcheck`/`step3rc14` are intact**, otherwise incident triage and separate approved exact restoration. Never `--to-latest`, `--clear-tags`, broad stale YAML restore, or automatic retry. This is source-only documentation, **NOT executable B1/R1/R2 authorization**. C1–C5 existing evidence frozen; C4 owner risk disposition, G4 effective IAM/other DB, G8 provider-wide spend STOP remain OPEN. `B1=NOT_EXECUTED`, `R1=NOT_EXECUTED`, `R2=NOT_EXECUTED`, `STEP04=HOLD`, production NO-GO.
+
+
 ## 21 Nov 2026 ~17:24 IST — C5 THREE targeted revision READs completed; cached traffic guard MATCH (NEW LATEST)
 
 Owner's PowerShell screenshot shows `C5_CACHED_PREIMAGE=MATCH`, existing tags `healthcheck,step3rc14`, and successful **three new read-only `gcloud run revisions describe`** calls. Results (the status applies to observed revisions, not an assertion of permanently locked traffic):

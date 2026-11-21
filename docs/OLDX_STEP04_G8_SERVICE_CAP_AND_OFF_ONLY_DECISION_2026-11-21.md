@@ -1,4 +1,16 @@
 # OLDX Step 04 — G8 service-cap scope and narrowly gated OFF-only cost decision
+
+## 21 Nov 2026 — OWNER G8 RESIDUAL COST RISK ACCEPTED FOR NARROW OFF-ONLY TRIAL (LATEST)
+
+**Direct owner reply in the continuing OLDX conversation:** `ha svikaru chhu` ("Yes, I accept") to this exact question: **accept limited residual exposure to possible additional Google Cloud costs beyond the Cloud Run-only cap, solely for a future private, DEFAULT-OFF/503 staging attempt, while understanding that ₹2,000 is not a guaranteed whole-project maximum and deployment requires separate approval.** This is a **recorded risk-disposition decision only**, not B1, R1, R2, cloud spend creation, Cloud Run deploy, request/invocation, image publish, IAM/billing/Roles edit, or broader enabled release authorization.
+
+- `G8_OFF_ONLY_RISK_ACCEPTED_WITH_LIMITS=YES` (owner; 21 Nov 2026; prospective single bounded supervised staging trial only)
+- `G8_PROVIDER_WIDE_HARD_RUPEE_STOP=NOT_PROVEN`, `G8_CLOUD_RUN_CAP_CURRENT_STATUS=NOT_RECHECKED`; alerts are not guaranteed hard limits
+- Future scope to specify separately: one new `ownerreadv2` 0%-main private tag, immutable exact image, default OFF/503, 20-min supervised **proposed**, min0/max1, concurrency1, 1CPU/512Mi, timeout30s, no app/test traffic or Firestore/Auth data-plane operations, original root traffic and old tags intact; evaluate possible unexpected charges, stop/recovery control, and operator monitoring
+- **B1_RELEASE_CONSENT=NOT_GRANTED**, **R1_CONSENT=NOT_GRANTED**, **R2_CONSENT=NOT_GRANTED**. C4 six-severe CVE owner disposition and G4 inherited/cross-DB controls still OPEN; G2 trusted original builder provenance UNKNOWN; Step04 HOLD, production NO-GO
+
+**Next:** Advance C4 six-CVE conditional-risk decision separately, and G4 effective boundaries/compensating no-data-plane isolation; no redundant G8 read-only snapshot, scan, image build/push or C5 revision reads. Preserve prior dates as history; latest heading supersedes older `NOT_GRANTED_IN_THIS_STEP` status.
+
 Date: 21 Nov 2026. Source-only, not a live budget, billing, IAM, or Cloud Run action.
 
 ## Why this decision is needed

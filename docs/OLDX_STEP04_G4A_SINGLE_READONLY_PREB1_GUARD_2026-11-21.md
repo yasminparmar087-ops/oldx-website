@@ -1,5 +1,10 @@
 # OLDX Step 04 — G4-A finite Cloud Run pre-B1 read-only guard (SOURCE-ONLY)
 
+## 21 Nov 2026 — conditional B1 approval arrived, execute only this read-only gate NEXT
+
+Owner has now expressly approved **one future B1 only conditional on G4-A PASS and remaining security review**. This is not permission to deploy before the guard is completed or to perform R1/R2. See [exact owner decision](OLDX_STEP04_B1_CONDITIONAL_OWNER_APPROVAL_2026-11-21.md). The single PowerShell block below remains **read-only**; run it once on owner Windows PowerShell when ready, share only sanitized output markers. `G4A_READ_ONLY=NOT_EXECUTED` until actual output; `B1_EXECUTION=BLOCKED_PENDING_RESULTS`. Even a `COMPLETE_WITH_LIMITS` output does not establish inherited-parent IAM or effective other-DB denial. Avoid repeating existing scans/billing/IAM snapshot or C5 separate revision reads.
+
+
 Date: 21 Nov 2026. Repo: yasminparmar087-ops/oldx-website; authorized branch: security-hardening-review.
 
 **This file is source-only preparation and has NOT been executed.** It authorizes no B1/R1/R2, IAM, billing, Firebase, image, signature or traffic write. Run only from the owner's Windows PowerShell with the existing authenticated `gcloud.cmd` on the desired supervised read-only gate. No Cloud Shell, no key material, no service invocation.

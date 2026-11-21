@@ -1,5 +1,24 @@
 # OLDX — Current Chat Handoff / Start Here
 
+## 21 Nov 2026 ~17:07 IST — G4 existing in-memory service IAM/default-OFF settings review COMPLETE (LATEST)
+
+**Actual owner screenshot** of a new **PowerShell-only in-memory** inspection of *already fetched* `$svc` and `$servicePolicy` from 17:03 cloud read; **NO additional GCP API calls, no mutation**:
+```text
+G4_INVOKER_IAM_CHECK=NOT_EXPLICITLY_DISABLED
+SERVICE_MIN_SCALE=NOT_SET
+REVISION_MIN_SCALE=NOT_SET
+OLDX_PRODUCT_READ_ACTIVATE_STAGING=EXACT_FALSE
+OLDX_PRODUCT_READ_STAGING_ADC=EXACT_FALSE
+SERVICE_NAMED_INVOKER_MEMBERS=1
+G4_CONFIGURATION_IN_MEMORY_REVIEW=COMPLETE
+C5_DEPLOYMENT=NOT_STARTED
+```
+**Precise interpretation:** On the **latest service-template** snapshot, `run.googleapis.com/invoker-iam-disabled` was **not set**; this is consistent with Cloud Run default IAM-check-on but the snippet alone is not a complete effective/public access review. Service IAM policy from prior snapshot had **zero public members**, and now **one named `roles/run.invoker` binding member** (ID deliberately not printed). Previous project basic roles Owner=2/Editor=1 imply **potential extra authenticated invokers**; parent grants remain unreviewed. `INGRESS=all` means Internet network ingress possible, but not authentication bypass by itself. Google Cloud Run official docs https://docs.cloud.google.com/run/docs/securing/managing-access : public access can also come from an explicitly disabled Invoker IAM check. Avoid calling single named member “exclusive Yasmin access”. Both exact feature env flags are **explicitly false** in latest service template, not proof for every older 100%-traffic/tagged revision; do not infer uninspected other flags. `minScale` annotations `NOT_SET` means not explicitly provisioned at these levels; Google default is typically zero (https://docs.cloud.google.com/run/docs/configuring/min-instances), but **not an explicitly verified actual zero** or cost stop. `maxScale=1` came from preceding read-only snapshot.
+
+**Still required before any hosted C5 B1 authorization:** get exact *current* preimage/rollback plan for tag + root traffic without changing it; verify proposed new npm-free OCI index as exact target and local Sigstore receipt, ensure latest/new revision flags and service IAM remain safe; confirm other effective access (parent/basic-role) expectations and service Invoker IAM-check policy; document scope for side-provider spend and explicit owner acceptance. **C4 six-CVE conditional technical triage prepared but OWNER RELEASE ACCEPTANCE PENDING**; historical scan 1 CRITICAL/5 HIGH persists. C3 LOCAL verified PASS and registry signature NOT attached. Existing G4 Owner/Editor nonexclusive limited-risk owner acceptance is for **one future separately authorized OFF-only trial**, not a deployment approval. **G8 billingEnabled=True only**, all-provider hard financial stop unproven. **No deploy, invoker call, new database, IAM edit, billing edit or new cloud request happened in this step**.
+
+**Current gate:** `G4_IN_MEMORY_CONFIG_REVIEW=COMPLETE`, `G4_IAM_CHECK_NOT_EXPLICITLY_DISABLED=PASS_WITH_SCOPE`, `G4_NAMED_INVOKER_COUNT=1_NOT_EXCLUSIVE`, `G4_OTHER_DB=OPEN`; `G8_ALL_PROVIDER_SPEND_STOP=OPEN`; `C5_DEPLOYMENT=NOT_STARTED`, `G2_HOLD`, `STEP04_HOLD`, `PRODUCTION_NO_GO`. NEVER repeat completed C1/C2/C3/C4, single read-only Cloud snapshot or this in-memory check merely to produce another green result.
+
 ## 21 Nov 2026 ~17:03 IST — G4/G8 bounded current Cloud Run/IAM/Billing READ-ONLY snapshot COMPLETE; C5 preimage shows 3 revisions, new npm-free index NOT deployed (LATEST)
 
 **Owner actual screenshot from correct Windows PowerShell** of the single previously owner-approved `gcloud.cmd` Cloud Run/IAM/billing-state read-only block (no mutation):

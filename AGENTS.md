@@ -1,5 +1,13 @@
 # OLDX Agent Instructions
 
+## 21 Nov 2026 — C5 read-only three-revision preimage/rollback preparation READY; owner has not executed (LATEST)
+
+**New canonical C5 source-only gate document:** [OLDX_STEP04_C5_REVISION_PREIMAGE_READ_ONLY_2026-11-21.md](docs/OLDX_STEP04_C5_REVISION_PREIMAGE_READ_ONLY_2026-11-21.md) created after reading latest AGENTS/current handoff/C4 packet and Google [Cloud Run revision](https://docs.cloud.google.com/run/docs/managing/revisions) + [rollbacks/traffic](https://docs.cloud.google.com/run/docs/rollouts-rollbacks-traffic-migration) documentation. No new GCP call or deployment. It contains a **single runnable native PowerShell block** requiring the **already loaded $svc read-only snapshot** to guard exact three expected revisions and current observed main traffic, then **only three new `gcloud run revisions describe` READs** to print sanitized old revision digest, concurrency, CPU, memory, timeout, min/max annotations and two exact feature env flag statuses; no raw secret values, no repeats of the existing service/IAM/Billing reads. Owner has NOT executed. Stop if $svc missing, drift, read errors or unexpected shape; no automatic retry.
+
+**Critically different revision roles:** `oldx-owner-read-00001-8kr` is main **100% traffic**, while `00002-tid` is tagged `healthcheck` and `00003-nus` tagged `step3-rc14` and LatestReady. The latest **service template** pinned digest `c5fc856b...` is not necessarily the 100% live revision image, nor the prospective `0844b637...` npm-free index. Rollback must guard preservation/restoration of main 00001=100% **plus the two existing tags**; **do not use `--to-latest`** as a generic rollback. Tagged URLs are callable even with zero main traffic. Prepared (not executed) R1 later remove **only new** `ownerreadv2` tag, R2 ensure original main routing/tags; both future writes require specific permission/authorization. No C1-C4 rework.
+
+**Current:** `C5_REVISION_PREIMAGE=PREPARED_NOT_RUN`, `C5_DEPLOYMENT=NOT_STARTED`; C3 local DSSE crypto PASS; C4 owner risk acceptance OPEN (frozen 1 Critical/5 High), G4 effective cross-database access OPEN, G8 all-provider spend stop OPEN, Step04 HOLD, production NO-GO.
+
 ## 21 Nov 2026 ~17:07 IST — G4 existing in-memory service IAM/default-OFF settings review COMPLETE (LATEST)
 
 **Actual owner screenshot** of a new **PowerShell-only in-memory** inspection of *already fetched* `$svc` and `$servicePolicy` from 17:03 cloud read; **NO additional GCP API calls, no mutation**:

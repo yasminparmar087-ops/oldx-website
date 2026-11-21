@@ -1,5 +1,60 @@
 # OLDX Step04 G2 A7 — owner approval recorded, S1 dedicated builder identity create prepared
 
+## 21 Nov 2026 ~20:03 IST — OWNER S1 STOP_UNEXPECTED_ERROR: CREATE STATE UNKNOWN (LATEST)
+
+Actual owner Windows PowerShell screenshot after one **approved A7 S1** attempted execution shows these lines at the bottom:
+
+```text
+G2_A7_S1_PREIMAGE=TARGET_ABSENT
+STOP_G2_A7_S1_NO_AUTOMATIC_RETRY
+REASON=A7_S1_UNEXPECTED_ERROR
+G2_A7_S1_CHECK_LIVE_ACCOUNT_BEFORE_ANY_NEW_WRITE
+PS C:\Users\Yasmin Parmar>
+```
+
+**Interpretation:** The fresh read-only prewrite target absence check succeeded; S1 entered the subsequent script section but **no `G2_A7_S1_CREATE_CLI=EXIT_ZERO` or `G2_A7_S1_ACCOUNT=CREATED_VERIFIED` was printed**. Whether the service-account create call ran or partially succeeded is **UNKNOWN**. The catcher normalized an unexpected PowerShell exception to `A7_S1_UNEXPECTED_ERROR`, losing its specific diagnostic. This output is NOT proof the account was created; it is also NOT proof it was absent after the attempted create. No IAM role grants, build, registry upload, deployment or credential-key commands were present in the S1 block. Treat `A7_S1=STOP_UNCERTAIN`, `A7_S2_S3_S4=BLOCKED_NOT_EXECUTED`. Do not rerun the original S1, do not create a second account, do not guess a cause for the exception, and do not proceed to S2 permissions until identity has been independently read.
+
+**Distinct one-time reconciliation (READ-ONLY, PREPARED NOT EXECUTED):** A targeted `gcloud.cmd iam service-accounts describe` **only on this exact builder identity**, as supported by Google's official CLI. Returns sanitized existence, not full metadata, unique ID, credentials, or broad listings. The Google CLI documentation cautions a describe failure can be due to a non-existent account OR lack of permission; therefore **failure is NOT labeled NOT_PRESENT**, and must STOP without retrying create or granting any role. If the exact identity is found enabled, this resolves existence (but not who created it), so S2 can then be separately guarded under the *already granted* owner A7 scope. If no verified identity, stop and design a different scoped read-only diagnostic; no new write.
+
+```powershell
+& {
+  try {
+    $email = 'oldx-step04-build@oldx-staging.iam.gserviceaccount.com'
+    $argsList = @(
+      'iam','service-accounts','describe',$email,
+      '--project=oldx-staging',
+      '--account=yasminparmar087@gmail.com',
+      '--format=json','--quiet'
+    )
+    $raw = & gcloud.cmd @argsList 2>$null
+    if ($LASTEXITCODE -ne 0 -or -not $raw) {
+      'G2_A7_S1_ACCOUNT=NOT_CONFIRMED_READ_FAILED'
+      'G2_A7_S1_CREATE_RETRY=PROHIBITED'
+      'G2_A7_S2_IAM_WRITES=BLOCKED'
+      return
+    }
+    $sa = $raw | Out-String | ConvertFrom-Json -ErrorAction Stop
+    if ([string]$sa.email -cne $email -or
+        [string]::IsNullOrWhiteSpace([string]$sa.uniqueId) -or
+        $sa.disabled -eq $true) {
+      throw 'IDENTITY_MISMATCH'
+    }
+    'G2_A7_S1_ACCOUNT=EXISTS_VERIFIED_AFTER_STOP'
+    'G2_A7_S1_CREATOR_AND_TIME=NOT_PROVEN'
+    'G2_A7_S1_CREATE_RETRY=PROHIBITED'
+    'G2_A7_S2_IAM_WRITES=NOT_STARTED'
+  } catch {
+    'STOP_G2_A7_S1_READ_ONLY_RECONCILIATION'
+    'G2_A7_S1_ACCOUNT=UNVERIFIED'
+    'G2_A7_S2_IAM_WRITES=BLOCKED'
+  }
+}
+```
+
+No Cloud command was executed by the assistant in recording this note. Do not claim `A7_S1_COMPLETE` until a screenshot of actual successful reconciliation. Preserve all already-completed A1–A6, C1–C5, B1/R1, G4, original Grype/CI/billing and current 15-step plan; G2 security/provenance and G4 other-DB gates remain open. `STEP04=HOLD`, `PRODUCTION=NO_GO`.
+
+---
+
 Date: 21 November 2026, `yasminparmar087-ops/oldx-website` branch `security-hardening-review`; staging project `oldx-staging`.
 
 ## Owner consent, EXACT scope

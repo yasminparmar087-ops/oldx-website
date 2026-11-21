@@ -1,5 +1,74 @@
 # OLDX Step04 — G2 post-R1 trusted-builder exit route (source-only, 21 Nov 2026)
 
+## G2 PRE-BUILD A1 — ONE READ-ONLY API/CONNECTION INVENTORY (NEW LATEST, NOT YET EXECUTED)
+
+**Reason to do this before drafting an executable build:** Current approved source-only route identifies a *future* attested Cloud Build from a **specific GitHub commit**. The repository does **not** prove that `oldx-staging` has the Cloud Build API enabled or a **2nd-generation GitHub connection** configured. Enabling Cloud Build/API, connecting a private GitHub repository, making a build service account, granting Registry writer, or running a build are **NEW actions**, not covered by previous private OFF-only B1/R1 approvals.
+
+**New technical detail from current official docs (21 Nov):** Cloud Build supports `connectedRepository.revision` pinned to a Git commit SHA; a local `gcloud builds submit .` can upload a local working directory governed by `.gcloudignore`, and is NOT by itself evidence of a GitHub-connected, exact fetched commit. `gcloud builds get-default-service-account` is an available read-only query, but DO NOT run yet: default builder account can be broad, and our chosen future direction is an explicitly reviewed **least-privilege dedicated builder account**. With a user-managed builder, logs must have an approved Cloud Logging or user-owned Cloud Storage configuration; this may entail previously unapproved rights/storage and costs. Docker `images` top-level + `requestedVerifyOption: VERIFIED` are necessary design checks, not a guarantee that a future *completed* provenance record is trustworthy. A fresh Build source commit pin, immutable target, service identity, project-region support, disk/billing and exact write approval remain separately pending.
+
+**Only A1 operator action proposed:** One `gcloud services list --enabled` read, and **only if the API is already enabled**, one regional `gcloud builds connections list --region=asia-south1` read. The latter is **region-only discovery**; 0 results here does not prove there is no connection in another region. No additional repo/identity lists, no IAM policy reads, no Cloud Build submissions, no API enable. Explicit Windows PowerShell `gcloud.cmd`, non-interactive `--quiet`, sanitized labels only. Never reuse the past B1/R1 commands or run this A1 repeatedly for status.
+
+### Prepared single guarded Windows PowerShell block — READS ONLY, NOT EXECUTED
+
+```powershell
+& {
+  try {
+    $common = @(
+      '--project=oldx-staging',
+      '--account=yasminparmar087@gmail.com',
+      '--quiet'
+    )
+
+    $names = @(& gcloud.cmd services list --enabled @common '--format=value(config.name)' 2>$null)
+    if ($LASTEXITCODE -ne 0 -or $names.Count -eq 0) {
+      throw 'G2_SERVICE_INVENTORY_FAILED'
+    }
+
+    if (@($names | Where-Object { $_ -ceq 'cloudbuild.googleapis.com' }).Count -ne 1) {
+      'G2_CLOUD_BUILD_API=NOT_ENABLED'
+      'G2_BUILD_PREFLIGHT=STOP_NO_API_ACTIVATION'
+      'G2_CLOUD_WRITES=NONE'
+      return
+    }
+
+    'G2_CLOUD_BUILD_API=ALREADY_ENABLED'
+
+    $raw = & gcloud.cmd builds connections list '--region=asia-south1' @common '--format=json' 2>$null
+    if ($LASTEXITCODE -ne 0 -or $null -eq $raw) {
+      throw 'G2_CONNECTION_READ_UNAVAILABLE'
+    }
+    $data = ($raw | Out-String | ConvertFrom-Json -ErrorAction Stop)
+    $all = @($data | Where-Object { $null -ne $_ })
+    $github = @($all | Where-Object { $null -ne $_.githubConfig })
+    "G2_CONNECTIONS_ASIA_SOUTH1_COUNT=$($all.Count)"
+    "G2_GITHUB_CONNECTIONS_ASIA_SOUTH1_COUNT=$($github.Count)"
+    'G2_GITHUB_REPO_PIN_AND_BUILDER_ACCOUNT=NOT_VERIFIED'
+    'G2_CONNECTED_SOURCE_OTHER_REGIONS=NOT_CHECKED'
+    'G2_BUILD_OR_DEPLOY=NOT_STARTED'
+    'G2_CLOUD_WRITES=NONE'
+  } catch {
+    'STOP_G2_READ_ONLY_PREFLIGHT_NO_AUTOMATIC_RETRY'
+    'G2_BUILD_READINESS=UNVERIFIED'
+    'G2_CLOUD_WRITES=NONE'
+  }
+}
+```
+
+**Interpretation:**
+- API `NOT_ENABLED`: STOP without enabling it. This is a new prerequisite, not a security finding; ask the owner for **separately scoped explicit enablement/cost/least-privilege approval** only if a trusted build is still chosen.
+- API `ALREADY_ENABLED` + GitHub connection count `0`: no **GitHub-type connection in the specific checked region**; source connected to another region or unconnected is still UNKNOWN. Next choice is one minimal *other region* discovery if justified or a separately approved setup, **not** a guessed repo ID.
+- Count greater than 0: confirms **connection resource existence only**, not OLDX's repository connected, installation usable or authorized code access; next can be one targeted repository listing for the named connection after scoping.
+- Any STOP: do not rerun automatically, change IAM or enable APIs. Record the exact sanitized output in GitHub and choose the next distinct action.
+- No result authorizes build submission; `G2_TRUSTED_ORIGINAL_BUILDER=UNKNOWN`; old image/C3/Grype/CVE count unchanged; `STEP04=HOLD`, production NO-GO.
+
+**Future new-build gate (not A1):** one approved Git SHA fetched by trusted Build source, exact already-reviewed Dockerfile/digest-pinned builder/base, separate limited build SA with source/Registry/logging privileges, approved single private output + monthly/one-shot expense guard, build machine/disk and timeout (earlier Cloud Shell 14 GiB scratch is NOT evidence that default Cloud Build disk is sufficient), provenance **actually** verified for builder/source/materials/new output and one new-image-only security/runtime assessment. No unreviewed automatic triggers. Preserve existing Cloud Run main traffic and all OLDX features.
+
+**Official references:** https://docs.cloud.google.com/sdk/gcloud/reference/services/list ; https://docs.cloud.google.com/sdk/gcloud/reference/builds/connections/list ; https://docs.cloud.google.com/build/docs/running-builds/submit-build-via-cli-api ; https://docs.cloud.google.com/build/docs/securing-builds/configure-user-specified-service-accounts ; https://docs.cloud.google.com/build/docs/securing-builds/generate-validate-build-provenance ; https://cloud.google.com/build/pricing .
+
+**Checkpoint now:** `G2_PRE_BUILD_A1=PREPARED_NOT_EXECUTED`, `G2_BUILD_API=UNVERIFIED`, `G2_GITHUB_CONNECTION=UNVERIFIED`, `G2_BUILD_EXECUTION=NOT_AUTHORIZED`, `G2_BUILDER_PROVENANCE=UNKNOWN`, `G2_SIX_CVE_SCANNER_CLEARANCE=NO`, `STEP04=HOLD`, `PRODUCTION=NO_GO`.
+
+---
+
 **Decision type:** new *execution architecture decision*, **not** a source-code fix, scanner pass, permission grant or build/deployment authorization.
 
 Owner-locked repository `yasminparmar087-ops/oldx-website`, work branch `security-hardening-review`. Read [current handoff](OLDX_CURRENT_HANDOFF.md), [single execution plan](OLDX_SINGLE_EXECUTION_PLAN_2026-11-13.md), [C4 six-severe risk packet](OLDX_STEP04_C4_RESIDUAL_RISK_DECISION_PACKET_2026-11-21.md), [C2/C3 custody evidence](OLDX_STEP04_NPMFREE_NO_REBUILD_CUSTODY_ROUTE_2026-11-21.md) first. This record supplements (does not silently amend) original Step04 release conditions.

@@ -1,5 +1,16 @@
 # OLDX Agent Instructions
 
+## 21 Nov 2026 — C4 six-CVE conditional decision matrix + G4/G8/C5 OFF-only gate card READY; NO deployment (LATEST)
+
+**Owner baseline, from actual 16:51 IST screenshot**: one-shot local frozen npm-free `sqlite3` / `ldd` 6-path probe `C4_EXACT_FROZEN_IMAGE=PASS`, `C4_CONTAINER_STARTED=NO`, all **six `NOT_CONFIRMED`**, receipt saved and stopped-container cleanup PASS. `NOT_CONFIRMED` is **not absence** or proof of CVE fix. Do not rerun C1/C2/C3/C4/Grype/build/scans.
+
+**New durable decision and next approval card:** [C4 residual-risk packet](docs/OLDX_STEP04_C4_RESIDUAL_RISK_DECISION_PACKET_2026-11-21.md), section `C4 bounded disposition and G4/G8 gated handoff`, written **source-only** on `security-hardening-review`: per-ID conditional CVE classification (glibc CRITICAL Red Hat NOTABUG/disputed, glibc `ldd` HIGH CLI-limited not excluded, glibc 2026-0861 outside advisory affected range, glibc 2026-19499 same-stream fixed-version candidate, glibc 2026-84243 exact fixed-version candidate, sqlite `.recover` CLI HIGH not demonstrated). Keep original scanner **1 CRITICAL+5 HIGH+12 MEDIUM+2 LOW**; **`C4_OWNER_RISK_ACCEPTANCE=NOT_GRANTED`**; do not mark scan fixed or G2 PASS.
+
+**G4/G8/C5 separation:** Existing owner G4 project Owner/Editor potential-invoker risk accepted ONLY for one future separately authorized private 0%-main tagged `ownerreadv2` **DEFAULT-OFF/503** B1, not effective exclusive IAM or permission to deploy. Firestore other-database effective deny proof **UNVERIFIED**; do not create DB just to check. Existing ₹100/month Cloud Run-only spend cap configured, other provider charges **NOT capped**; source `maxGrossPaise <=10000` is *planning* not actual enforcement. Proposed future one-trial 20-min, min0 max1, no real users/data routes, preimage/rollback R1/R2 and cost bounds are *NOT yet verified or approved*. Do not deploy or make GCP mutations until a fresh precisely scoped approval. Local Sigstore v3 DSSE exact index signature verified for `sha256:0844b637cf1bfedef60caa6a54ad515ebf9c0a937453b409101ad0d2ff254f79`; Registry referrer **NOT attached**, original independent SLSA unverified. C5 can only start after actual service/preimage/region/rollback evidence and owner sign-off for specific cloud/cost action. Production NO-GO.
+
+**Current status:** `C4_TECHNICAL_REVIEW_PREPARED`, `C4_OWNER_RESIDUAL_RISK_ACCEPTANCE=PENDING`, `G2=HOLD`, `G4_CROSS_DB=OPEN`, `G8_ALL_PROVIDER_HARD_STOP=OPEN`, `STEP04=HOLD`. No new code/CI/test/live/GCP operation was executed to produce this status packet. Next worthwhile task: obtain a single narrowly scoped owner approval for one current **read-only** Cloud Run/IAM/Cloud Billing config snapshot (no secrets, tokens, new paid resources) if genuinely required to assess a future B1; only after that decide whether B1 is safe to ask approval for. Existing G2 Security Watch/Development Monitoring automations already run; don't create duplicates.
+
+
 ## 21 Nov 2026 ~16:51 IST — C4 frozen npm-free CLI-path ONE-SHOT inspection COMPLETE; 6 paths NOT_CONFIRMED (LATEST)
 
 **Owner actual Windows PowerShell screenshot** of the pinned dedicated C4 one-shot script `scripts/step04-c4-npmfree-cli-presence-once-a1.py`, now run **once** in the correct `PS C:\Users\Yasmin Parmar>` shell:

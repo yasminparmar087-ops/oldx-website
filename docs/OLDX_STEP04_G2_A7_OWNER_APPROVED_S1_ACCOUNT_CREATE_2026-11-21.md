@@ -1,5 +1,23 @@
 # OLDX Step04 G2 A7 — owner approval recorded, S1 dedicated builder identity create prepared
 
+## 21 Nov 2026 ~20:07 IST — S1 ACCOUNT EXISTS VERIFIED AFTER STOP (NEW LATEST)
+
+The owner actually executed **one read-only, exact-target** `gcloud.cmd iam service-accounts describe oldx-step04-build@oldx-staging.iam.gserviceaccount.com --project=oldx-staging --account=yasminparmar087@gmail.com --format=json` reconciliation after the 20:03 S1 unexpected-stop. User's PowerShell screenshot shows no STOP and these actual result markers:
+
+```text
+G2_A7_S1_ACCOUNT=EXISTS_VERIFIED_AFTER_STOP
+G2_A7_S1_CREATOR_AND_TIME=NOT_PROVEN
+G2_A7_S1_CREATE_RETRY=PROHIBITED
+G2_A7_S2_IAM_WRITES=NOT_STARTED
+PS C:\Users\Yasmin Parmar>
+```
+
+The script verified exact `email`, nonempty `uniqueId`, and `disabled` not true before printing. Therefore the **identity exists, is enabled and is correctly scoped**, but this is not independent proof of the actor/time of creation; do not claim the earlier create CLI itself returned 0 or delete/recreate it. Record `A7_S1_TARGET_IDENTITY=EXISTS_VERIFIED_AFTER_STOP`; `A7_S1_CREATE_PROVENANCE=UNKNOWN`; `A7_S1_READ_ONLY_RECONCILIATION=COMPLETE`. **Never rerun S1 or its reconciliation.** IAM role grants have not started, and account existence is not build authority.
+
+**Next distinct A7 S2 under previously explicit owner consent:** grant only `roles/artifactregistry.writer` to `serviceAccount:oldx-step04-build@oldx-staging.iam.gserviceaccount.com` on repository `oldx-staging-images` in `asia-south1`. Requires targeted current policy preimage, a single additive `gcloud artifacts repositories add-iam-policy-binding` **only if truly absent**, and one scoped postcheck. STOP on unexpected conditional/drift/no permission, without retry or any project-wide IAM. See [new S2 guarded packet](OLDX_STEP04_G2_A7_S2_REPOSITORY_WRITER_GUARDED_2026-11-21.md). Neither the new S2 write nor S3/S4, build or deploy has been executed as of this checkpoint. `STEP04=HOLD`, `PRODUCTION=NO_GO`.
+
+---
+
 ## 21 Nov 2026 ~20:03 IST — OWNER S1 STOP_UNEXPECTED_ERROR: CREATE STATE UNKNOWN (LATEST)
 
 Actual owner Windows PowerShell screenshot after one **approved A7 S1** attempted execution shows these lines at the bottom:

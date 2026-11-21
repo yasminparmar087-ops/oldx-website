@@ -1,5 +1,18 @@
 # OLDX Agent Instructions
 
+## 21 Nov 2026 ~16:48 IST — C4 local files inventory CONFIRMS both ABSENT; CMD mistake did not create one-shot receipt (LATEST)
+
+**Owner screenshot in correctly opened Windows PowerShell `PS C:\Users\Yasmin Parmar>`** (launched via `powershell.exe -NoProfile` after original command was pasted in CMD) shows the exact two read-only Test-Path outputs:
+```text
+FILE=c4-npmfree-cli-presence-once-a1.py EXISTS=NO
+FILE=c4-npmfree-cli-presence-20261121-a1.json EXISTS=NO
+```
+Thus **no expected downloaded C4 script nor exclusive attempt receipt exists** in `D:\OLDX\G2`; earlier CMD syntax errors are not evidence C4 had been executed. Safe to propose the already prepared, pinned **first** local execution, but never rerun after a valid receipt or STOP. Rechecked remote script `scripts/step04-c4-npmfree-cli-presence-once-a1.py` at original immutable commit `7cba228f59bcb6903bb64c783231605b2ea3bf16`, Git blob `1bc7941c9cd2434493343d34b01f9d15d53ef3d1`, published commit-text SHA256 `270f8978c2b3a7345114f7e2522cbf7228ff6a6169c195437e84e2f56b8cec4e` as recorded previously. Do not alter source or pin after owner has prepared first attempt.
+
+**NEXT exactly one owner command (NOT YET RUN):** In current **PowerShell**, not CMD, first require the `D:\OLDX\G2` folder exists; require script path *and receipt* both still absent; `curl.exe` from pinned raw GitHub commit into exact script filename; **fail closed on any download error or PowerShell SHA256 mismatch**, and only if exact expected hash matches execute exactly one `wsl.exe -- python3 /mnt/d/OLDX/G2/c4-npmfree-cli-presence-once-a1.py`. If any STOP/error, leave existing files/receipt/container intact and assess before retry. No Docker build/scan/push, image process start, C1 upload, C3 re-sign, IAM, billing, Cloud Run, Firebase or prod.
+
+**Current gate:** `C3_LOCAL_SIGNED_INDEX=CRYPTOGRAPHIC_VERIFIED_PASS`, `C4_EXPECTED_SCRIPT_AND_RECEIPT=ABSENT`, `C4_ONE_SHOT=NOT_EXECUTED_AS_EVIDENCED`, `G2=HOLD`, `G4_CROSS_DB=OPEN`, `G8_PROVIDER_SPEND_STOP=OPEN`, Step04 HOLD, prod NO-GO.
+
 ## 21 Nov 2026 ~16:44 IST — C4 proposed PowerShell command accidentally pasted into Windows CMD; execute status UNKNOWN, inspect before retry (LATEST)
 
 **Owner screenshot:** prompt `C:\Users\Yasmin Parmar>` and window title `C:\Windows\system32\cmd.exe`, NOT a `PS ...>` PowerShell window. Previous C4 `$p=...`, `$url=...` and `Get-FileHash` script was pasted into CMD. Errors include `'$p' is not recognized`, `curl: (3) URL rejected: Bad hostname`, and bash syntax error. **No valid `C4_SOURCE_SHA256=PASS`, `C4_EXACT_FROZEN_IMAGE=PASS`, `C4_CONTAINER_STARTED=NO` or C4 receipt result was shown.** Therefore record `C4_ONE_SHOT_PROBE=NOT_VERIFIED_EXECUTED` (NOT success/failure), `C4_FILE_AND_RECEIPT_PRESENCE=UNKNOWN`. This error does not constitute a G2 or image-security failure; previous frozen C1/C2 and C3 local signing `Verified OK` remain intact.

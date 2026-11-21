@@ -1,5 +1,88 @@
 # OLDX Step04 G2 A7 S2 — repository-only Artifact Registry Writer (owner approved, PREPARED NOT EXECUTED)
 
+## 21 Nov 2026 ~20:12 IST — S2 attempted, STOP_UNEXPECTED_ERROR; LIVE REPO POLICY UNKNOWN (LATEST)
+
+The owner shared an actual Windows PowerShell screenshot from **ONE already approved A7 S2** attempt (not merely pasted script). Visible execution output ends:
+
+```text
+G2_A7_S2_PREIMAGE=TARGET_REPO_WRITER_ABSENT
+STOP_G2_A7_S2_NO_AUTOMATIC_RETRY
+REASON=S2_UNEXPECTED_ERROR
+G2_A7_S2_CONFIRM_LIVE_REPO_POLICY_BEFORE_ANY_NEW_WRITE
+PS C:\Users\Yasmin Parmar>
+```
+
+**Correct inference:** Fresh repository IAM read succeeded and showed no matching **direct** repository Writer binding at the preimage. There was **no** `G2_A7_S2_WRITE_CLI=EXIT_ZERO` and no `G2_A7_S2_REPO_WRITER=ADDED_VERIFIED`. The original catch mapped an unexpected PowerShell exception to a generic reason, losing its exact cause; the screenshot **does not determine** whether a write was attempted/partially committed. **Do not claim policy unchanged or role added.** It is equally unsafe to blindly rerun the S2 grant. All follow-on IAM writes **S3/S4 are BLOCKED until S2 state is reconciled**. Owner's original precisely scoped A7 authorization remains recorded but is not permission to auto-retry a partially unknown mutation.
+
+**Official Google check:** `gcloud artifacts repositories get-iam-policy REPOSITORY --location=REGION` is a scoped **read**; `add-iam-policy-binding --condition=None` is a supported form but this fact does not identify the earlier unexpected PowerShell exception. See https://docs.cloud.google.com/sdk/gcloud/reference/artifacts/repositories/get-iam-policy and https://docs.cloud.google.com/sdk/gcloud/reference/artifacts/repositories/add-iam-policy-binding .
+
+### One distinct *read-only* post-STOP reconciliation — PREPARED NOT EXECUTED
+
+The code makes exactly ONE repository IAM policy read for `oldx-staging-images` in `oldx-staging/asia-south1`, with Yasmin as explicit account. It outputs only direct target principal `roles/artifactregistry.writer` binding counts, separated by conditional/unconditional, and no raw IAM policy, identities, ETags or tokens. A `0` means **no direct repo binding at the time of this read**, NOT proof that the S2 CLI never submitted a write or that inherited permissions are absent. A successful direct unconditional match confirms its **current presence only**; absent a stored full preimage, it cannot assert all other bindings were preserved. An unexpected/multiple/conditional result means manual review before next write.
+
+```powershell
+& {
+  try {
+    $member = 'serviceAccount:oldx-step04-build@oldx-staging.iam.gserviceaccount.com'
+    $role = 'roles/artifactregistry.writer'
+    $argsList = @(
+      'artifacts','repositories','get-iam-policy','oldx-staging-images',
+      '--project=oldx-staging',
+      '--location=asia-south1',
+      '--account=yasminparmar087@gmail.com',
+      '--format=json','--quiet'
+    )
+    $raw = & gcloud.cmd @argsList 2>$null
+    if ($LASTEXITCODE -ne 0 -or -not $raw) {
+      throw 'REPOSITORY_POLICY_READ_FAILED'
+    }
+    $policy = $raw | Out-String | ConvertFrom-Json -ErrorAction Stop
+    if ($null -eq $policy -or $policy -isnot [psobject]) {
+      throw 'REPOSITORY_POLICY_SHAPE_UNKNOWN'
+    }
+    $unconditional = 0
+    $conditional = 0
+    foreach ($binding in @($policy.bindings)) {
+      if ($null -eq $binding) { continue }
+      if ([string]$binding.role -cne $role) { continue }
+      foreach ($principal in @($binding.members)) {
+        if ([string]$principal -cne $member) { continue }
+        if ($null -eq $binding.condition) {
+          $unconditional++
+        } else {
+          $conditional++
+        }
+      }
+    }
+    "G2_A7_S2_DIRECT_UNCONDITIONAL_COUNT=$unconditional"
+    "G2_A7_S2_DIRECT_CONDITIONAL_COUNT=$conditional"
+    if ($unconditional -eq 1 -and $conditional -eq 0) {
+      'G2_A7_S2_REPO_WRITER=PRESENT_VERIFIED_AFTER_STOP'
+    } elseif ($unconditional -eq 0 -and $conditional -eq 0) {
+      'G2_A7_S2_REPO_WRITER=NO_DIRECT_BINDING_AT_READ'
+    } else {
+      'G2_A7_S2_REPO_WRITER=AMBIGUOUS_BINDINGS_REVIEW'
+    }
+    'G2_A7_S2_CREATE_OR_GRANT_RETRY=PROHIBITED'
+    'G2_A7_S2_OTHER_BINDINGS_PRESERVED=NOT_INDEPENDENTLY_VERIFIED'
+    'G2_A7_S3_S4=NOT_STARTED'
+    'G2_A7_S2_CLOUD_WRITES=NONE_IN_RECONCILIATION'
+  } catch {
+    'STOP_G2_A7_S2_READ_ONLY_RECONCILIATION'
+    'G2_A7_S2_REPO_WRITER=UNVERIFIED'
+    'G2_A7_S3_S4=BLOCKED'
+  }
+}
+```
+
+- If `G2_A7_S2_REPO_WRITER=PRESENT_VERIFIED_AFTER_STOP`, log **S2 target binding present with limits**; DO NOT repeat the S2 add-binding command; only then consider already owner-approved S3 with its own exact prewrite IAM guards. `OTHER_BINDINGS_PRESERVED=NOT_INDEPENDENTLY_VERIFIED` remains truthful.
+- If `NO_DIRECT_BINDING_AT_READ`, do **not** immediately replay S2; instead inspect the *actual earlier CLI error* in a **new separate, read-only/local diagnostic** before designing a corrected write. A 0 can reflect no direct role but inherited grants were not checked.
+- On `AMBIGUOUS_BINDINGS_REVIEW` or any STOP: no IAM modifications or automatic retries; retain `STEP04=HOLD`.
+- This reconciliation does NOT run Cloud Build, change service-account keys, Registry image storage, any IAM role, Firebase, Cloud Run, GitHub workflow, spend or production settings.
+- Previous S1 identity is `EXISTS_VERIFIED_AFTER_STOP`, A1–A6/C1–C5/B1-R1/G4 consumed (never redo). G2 six severe scan findings and builder-origin provenance still unresolved. `PRODUCTION=NO_GO`.
+
+---
+
 Date 21 Nov 2026, after exact S1 identity confirmation at ~20:07 IST. Source branch: `security-hardening-review`, project `oldx-staging`.
 
 ## Live evidence consumed and boundary

@@ -1,5 +1,91 @@
 # OLDX Step04 — Post-R1 G4 distinct IAM allow-analysis gate (source-only)
 
+## 21 Nov 2026 ~18:59 IST — FIRST ANALYZER QUERY RAN, BUT OUTPUT PARSER IS WRONG (NEW LATEST)
+
+Owner's actual Windows PowerShell screenshot (not merely pasted code) shows `G4_ALLOW_ANALYZER_RESULT_COUNT=0`, `G4_ALLOW_ANALYZER_UNCONDITIONAL_MATCHES=0`, `G4_ALLOW_ANALYZER_CONDITIONAL_MATCHES=0`, `G4_ALLOW_ANALYZER=ALLOW_ONLY_QUERY_COMPLETE`, `G4_CROSS_DATABASE_NEGATIVE_DENIAL=UNVERIFIED`, `G4_IAM_DENY_AND_PAB_EFFECTIVE=UNVERIFIED`, `G4_PROVIDER_WRITES=NONE`, normal prompt, no STOP. The Cloud Asset request evidently returned with CLI exit zero and outer `fullyExplored` true. **However the results counts are INVALID** due to our PowerShell parser bug: it read `$r.analysisResults` and `$r.nonCriticalErrors` at the **wrong top-level fields**. Google's official `AnalyzeIamPolicyResponse` schema uses **`$r.mainAnalysis.analysisResults`**, **`$r.mainAnalysis.nonCriticalErrors`** and **`$r.mainAnalysis.fullyExplored`**. See https://docs.cloud.google.com/asset-inventory/docs/reference/rest/v1/TopLevel/analyzeIamPolicy#response-body. Thus 0 was an artifact of PowerShell's null-as-empty behavior, not verified absence of IAM grants. Previous actual one-doc positive access makes a security claim from these zeros particularly unsafe. Outer `fullyExplored` alone does NOT validate the nested analysis.
+
+**Corrected state:** `G4_ANALYZER_FIRST_REQUEST=SUCCESSFUL_RETURN_SCHEMA_MISPARSED`; `G4_ACTUAL_RESULT_COUNT=UNKNOWN`; `G4_ALLOW_MATCHES=UNKNOWN`; `G4_ALLOW_ANALYZER_PASS=NOT_ESTABLISHED`; no Cloud/Firestore/IAM writes. The original PowerShell block ran in a child scope (`& { ... }`) and did not save raw JSON, so there is no retained raw response in the supplied screenshot to reparse locally. **One correctly parsed duplicate of THIS OTHERWISE INCOMPLETE READ-ONLY QUERY is justified solely to repair the parser defect**. It is *not* a rerun of any completed C1–C5/G4A/B1/R1/Firestore tests or scans. Do not execute the old buggy block again, do not expand IAM privileges or enable services, no extra query retries if corrected one fails.
+
+### One corrected owner-run READ-ONLY query — prepared, NOT EXECUTED
+
+The corrected command below reads `mainAnalysis`, verifies project+principal+four permissions echoed by `analysisQuery`, requires both nested and outer `fullyExplored`, and checks nested errors. Only prints counts of unconditional, exact-default-db and other conditional bindings; no member, role, condition text, token or request URL is printed. **Counts are allow-policy observations, NOT effective Firestore isolation, IAM deny or PAB proof.** Even a true zero match needs reconciliation with previous positive runtime proof.
+
+```powershell
+& {
+  try {
+    $identity = 'serviceAccount:oldx-product-read-staging@oldx-staging.iam.gserviceaccount.com'
+    $perms = @('datastore.entities.get','datastore.entities.create',
+               'datastore.entities.update','datastore.entities.delete')
+    $argsList = @(
+      'asset','analyze-iam-policy','--project=oldx-staging',
+      "--identity=$identity",
+      ('--permissions=' + ($perms -join ',')),
+      '--expand-roles','--show-response','--format=json',
+      '--account=yasminparmar087@gmail.com','--quiet'
+    )
+    $raw = & gcloud.cmd @argsList 2>$null
+    if ($LASTEXITCODE -ne 0 -or -not $raw) { throw 'QUERY_FAILED' }
+    $r = $raw | Out-String | ConvertFrom-Json -ErrorAction Stop
+    $main = $r.mainAnalysis
+    if ($null -eq $main -or $null -eq $main.analysisQuery) {
+      throw 'MISSING_MAIN_ANALYSIS'
+    }
+    if ($r.fullyExplored -ne $true -or $main.fullyExplored -ne $true) {
+      throw 'INCOMPLETE_ANALYSIS'
+    }
+    $q = $main.analysisQuery
+    if ([string]$q.scope -cnotin @('projects/oldx-staging',
+                                   'projects/38472235077') -or
+        [string]$q.identitySelector.identity -cne $identity) {
+      throw 'QUERY_SCOPE_MISMATCH'
+    }
+    $expected = ($perms | Sort-Object -CaseSensitive) -join '|'
+    $actual = (@($q.accessSelector.permissions |
+      Where-Object { $_ } | Sort-Object -CaseSensitive) -join '|')
+    if ($actual -cne $expected) { throw 'QUERY_PERMISSIONS_MISMATCH' }
+    $items = @($main.analysisResults | Where-Object { $null -ne $_ })
+    $partial = @($items | Where-Object { $_.fullyExplored -ne $true }).Count
+    $errors = @($main.nonCriticalErrors | Where-Object { $null -ne $_ }).Count
+    if ($partial -ne 0 -or $errors -ne 0) { throw 'PARTIAL_RESULT' }
+    $unconditional = 0
+    $exact = 0
+    $otherConditional = 0
+    foreach ($item in $items) {
+      if ($null -eq $item.iamBinding) { throw 'BINDING_SHAPE_UNKNOWN' }
+      $expr = [string]$item.iamBinding.condition.expression
+      if ([string]::IsNullOrWhiteSpace($expr)) {
+        $unconditional++
+      } elseif ($expr -ceq 'resource.name == "projects/oldx-staging/databases/(default)"') {
+        $exact++
+      } else {
+        $otherConditional++
+      }
+    }
+    'G4_CORRECTED_SCHEMA=mainAnalysis.analysisResults'
+    "G4_ALLOW_ACTUAL_RESULT_COUNT=$($items.Count)"
+    "G4_ALLOW_UNCONDITIONAL=$unconditional"
+    "G4_ALLOW_EXACT_DEFAULT_DB_CONDITION=$exact"
+    "G4_ALLOW_OTHER_CONDITION=$otherConditional"
+    if ($items.Count -eq 0) {
+      'G4_ALLOW_RESULT=ZERO_MATCHES_NEEDS_RECONCILIATION'
+    } else {
+      'G4_ALLOW_RESULT=ALLOW_ONLY_ANALYSIS_WITH_LIMITS'
+    }
+    'G4_OTHER_DB_EFFECTIVE_DENY=UNVERIFIED'
+    'G4_DENY_AND_PAB_EFFECTIVE=UNVERIFIED'
+    'G4_CLOUD_WRITES=NONE'
+  } catch {
+    'STOP_G4_CORRECTED_QUERY_NO_AUTOMATIC_RETRY'
+    'G4_ALLOW_RESULT=UNVERIFIED'
+    'G4_CLOUD_WRITES=NONE'
+  }
+}
+```
+
+**STOP means no automatic rerun.** If `G4_ALLOW_RESULT=ALLOW_ONLY_ANALYSIS_WITH_LIMITS`, discuss exact conditional/unconditional categories before any new action; a returned `0` is `ZERO_MATCHES_NEEDS_RECONCILIATION`, not denial. After capturing one sanitized result, stop the analyzer phase and move to the remaining independent G4 effective isolation or G2 security/provenance issues without repeating successful old work.
+
+---
+
 Date: 21 Nov 2026, after owner screenshot verified R1 tag-only removal. Repository `yasminparmar087-ops/oldx-website`; branch `security-hardening-review`.
 
 ## Continuity / consumed work
@@ -21,44 +107,7 @@ A different query than the old project IAM snapshot or failed Policy Troubleshoo
 
 This new query is read-only, no stored token and no printed identity/member/condition text. Exactly one `gcloud.cmd asset analyze-iam-policy` request if run. `--show-response` ensures a structured API result; output prints only counts and completeness, not policies. The query intentionally does not expand groups or impersonation and therefore cannot establish exhaustive effective authority.
 
-```powershell
-& {
-  try {
-    $argsList = @(
-      'asset','analyze-iam-policy',
-      '--project=oldx-staging',
-      '--identity=serviceAccount:oldx-product-read-staging@oldx-staging.iam.gserviceaccount.com',
-      '--permissions=datastore.entities.get,datastore.entities.create,datastore.entities.update,datastore.entities.delete',
-      '--expand-roles','--show-response','--format=json',
-      '--account=yasminparmar087@gmail.com','--quiet'
-    )
-    $raw = & gcloud.cmd @argsList 2>$null
-    if ($LASTEXITCODE -ne 0 -or -not $raw) {
-      throw 'ALLOW_ANALYZER_UNAVAILABLE_OR_DENIED'
-    }
-    $r = $raw | Out-String | ConvertFrom-Json -ErrorAction Stop
-    if ($null -eq $r.fullyExplored) { throw 'ALLOW_ANALYZER_OUTPUT_SHAPE_UNKNOWN' }
-    $items = @($r.analysisResults | Where-Object { $null -ne $_ })
-    $incomplete = @($items | Where-Object { $_.fullyExplored -ne $true }).Count
-    $errors = @($r.nonCriticalErrors | Where-Object { $null -ne $_ }).Count
-    "G4_ALLOW_ANALYZER_RESULT_COUNT=$($items.Count)"
-    "G4_ALLOW_ANALYZER_UNCONDITIONAL_MATCHES=$(@($items | Where-Object { -not $_.iamBinding.condition }).Count)"
-    "G4_ALLOW_ANALYZER_CONDITIONAL_MATCHES=$(@($items | Where-Object { $_.iamBinding.condition }).Count)"
-    if ($r.fullyExplored -eq $true -and $incomplete -eq 0 -and $errors -eq 0) {
-      'G4_ALLOW_ANALYZER=ALLOW_ONLY_QUERY_COMPLETE'
-    } else {
-      'G4_ALLOW_ANALYZER=INCOMPLETE_NOT_A_PASS'
-    }
-    'G4_CROSS_DATABASE_NEGATIVE_DENIAL=UNVERIFIED'
-    'G4_IAM_DENY_AND_PAB_EFFECTIVE=UNVERIFIED'
-    'G4_PROVIDER_WRITES=NONE'
-  } catch {
-    'STOP_G4_ALLOW_ANALYZER_NO_RETRY'
-    'G4_ALLOW_ANALYZER=NOT_VERIFIED'
-    'G4_PROVIDER_WRITES=NONE'
-  }
-}
-```
+**DEPRECATED — DO NOT RUN:** The former script used wrong top-level result fields; it is superseded by the corrected one above.
 
 Run only once, and do not retry if it reports STOP, error or incomplete. A result with `UNCONDITIONAL_MATCHES > 0` is a **review trigger** and not automatically an exploitable broad grant. Zero matches is not proof of denial, especially without group/impersonation expansion and effective condition context. The presence of `DELETE` permission in a matched IAM role must be reconciled against previous 403 from the *actual* runtime principal and binding condition; no new DELETE operation.
 

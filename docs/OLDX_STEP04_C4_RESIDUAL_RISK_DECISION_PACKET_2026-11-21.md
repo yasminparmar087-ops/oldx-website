@@ -1,5 +1,16 @@
 # OLDX Step 04 — C4 source-only residual-risk decision packet
 
+## 21 Nov 2026 — OWNER C4 six-severe-CVE residual risk conditionally ACCEPTED, OFF-ONLY staging (NEW LATEST)
+
+**Owner's direct reply:** `ha svikaru chhu` to the explicit proposal to accept the six frozen residual vulnerabilities **ONLY for one future, separately approved, private DEFAULT-OFF/503, 0%-main `ownerreadv2` staging trial**, with no guest/user/product data plane. This acceptance follows the [C4 per-CVE matrix](docs/OLDX_STEP04_C4_RESIDUAL_RISK_DECISION_PACKET_2026-11-21.md) and frozen-source dual-flag guard review; not a claim of patching, signed VEX, qualified independent certificate, or zero remaining vulnerability. Findings remain **1 CRITICAL + 5 HIGH** (plus 12 MEDIUM, 2 LOW) in original Grype snapshot. Individual unresolved findings: `CVE-2019-1010022`, `CVE-2019-1010023`, `CVE-2026-0861`, `CVE-2026-19499`, `CVE-2026-84243`, `CVE-2026-119586`; retain each conditional vendor/exposure analysis and STOP trigger. 
+
+**Boundaries:** proposed future immutable npm-free image `sha256:0844b637cf1bfedef60caa6a54ad515ebf9c0a937453b409101ad0d2ff254f79`, local C3 cryptographic bundle verification, no activation flags, no Auth/Firestore calls, no public access, bounded short supervised trial, fresh no-drift service/traffic/IAM preflight preserving `00001-8kr=100%`, `healthcheck` and exact `step3rc14`, independently verified fallback R1/R2 and explicit separate B1, R1/R2 approvals. Earlier separate G8 cost risk acceptance is still limited, not whole-project hard cost containment. 
+
+**Ledger:** `C4_OWNER_OFF_ONLY_RESIDUAL_RISK_ACCEPTED_WITH_LIMITS=YES`; `C4_SIX_CVE_SCANNER_CLEARANCE=NO`; `C4_ENABLED_API_OR_PRODUCTION_ACCEPTANCE=NO`; `G2_INDEPENDENT_BUILDER_PROVENANCE=UNKNOWN`; `G4_EFFECTIVE_INHERITED_INVOCATION_AND_OTHER_DB=OPEN`; `G8_PROVIDER_WIDE_HARD_STOP=NOT_PROVEN`; `B1_R1_R2_AUTHORIZED=NO`; `C5_REVISION_READS=COMPLETE`; `STEP04=HOLD`; `PRODUCTION=NO_GO`. Old statements showing owner acceptance PENDING are historical; this dated record supersedes them for **OFF-only** scope, NOT broader release.
+
+**NEXT useful work:** G4 source-only least-privilege / no-data-plane isolation decision, then one narrowly scoped new effective IAM preflight if truly needed, followed by a separate B1/R1/R2 exact execution approval. Never repeat scans/builds/revision reads merely for status.
+
+
 ## 21 Nov 2026 — C4 source-fingerprint continuity CHECK COMPLETE; limited OFF-only decision (NEW LATEST)
 
 **Independent repository read-only source comparison**, pinned to owner-frozen npm-free build source `fcc96574b6388dc441a0b5d3eade48e79c7ebb24` versus current `security-hardening-review`. GitHub blob SHA matched exactly for:

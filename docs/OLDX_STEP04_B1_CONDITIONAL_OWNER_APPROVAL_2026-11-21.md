@@ -1,5 +1,12 @@
 # OLDX Step 04 — B1 conditional owner approval, NOT deployment
 
+## 21 Nov 2026 ~17:48 IST — G4-A fresh 3-GET read-only preflight PASS WITH LIMITS (NEW LATEST)
+
+**Actual owner PowerShell screenshot** captured returned prompt and complete sanitized output: `G4A_SERVICE_GET=PASS`, `G4A_SERVICE_IAM_GET=PASS`, `G4A_PROJECT_IAM_GET=PASS`, `G4A_PRIVATE_DIRECT_POLICY_GUARD=MATCH`, `G4A_TRAFFIC_PREIMAGE=MATCH`, main `oldx-owner-read-00001-8kr:100`, old tags **exact** `healthcheck,step3rc14`, latest service-template flags `EXACT_FALSE`, service named Invoker 1, project Owner 2 / Editor 1 / project direct Run Invoker 0. Ends **`G4A_READ_ONLY_PREB1=COMPLETE_WITH_LIMITS`** and **`G4A_DEPLOYMENT=NOT_STARTED`**, without STOP. Full sanitized receipt [G4-A owner-observed PASS](docs/OLDX_STEP04_G4A_PREFLIGHT_OBSERVED_PASS_2026-11-21.md). **The 3-read script is CONSUMED; DO NOT REPEAT.** This is only as-of-time direct service/project IAM preimage and existing template/traffic identity; `PARENT_INHERITED_IAM=NOT_VERIFIED`, `OTHER_DATABASE_EFFECTIVE_DENIAL=NOT_VERIFIED`, `EXCLUSIVE_OWNER_INVOCATION=NOT_PROVEN`; older 100%-traffic revision flags were MISSING. No hosted invocation, build, Registry operation or deployment.
+
+Owner's **conditional B1 approval** and **C4/G8 OFF-only risk acceptances** remain in force only within their stated narrow limits. **B1 has NOT been deployed**. Next is to source-only finalize an exact one-shot B1/R1/R2 execution+rollback packet and obtain specific owner R1/R2 consent. Current screenshot will be historical if deployment occurs later; fresh immediate pre-write service-state guard still required, not another full old scan/C5/three-GET replay. G2 independent original-builder provenance still UNKNOWN. `STEP04=HOLD`, `PRODUCTION=NO_GO`.
+
+
 ## 21 Nov 2026 — OWNER CONDITIONAL B1 CONSENT (NEW LATEST)
 
 **Direct owner answer:** `ha manjuri chhe` to the explicit question: *Approve one private DEFAULT-OFF/503, 0%-main-traffic `ownerreadv2` B1 staging deployment **only if** all G4-A preflight requirements are satisfied and the remaining security limitations are reviewed; not production or Product API activation.* This is **conditional, single-scope owner B1 consent**, NOT an assertion that prerequisites pass, NOT unconditional authorization to issue `gcloud run deploy` now, and NOT permission for an open-ended rollout, rerun, IAM/billing changes, application calls, or database modifications.

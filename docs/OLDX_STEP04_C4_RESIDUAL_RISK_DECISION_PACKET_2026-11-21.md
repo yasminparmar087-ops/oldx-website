@@ -1,5 +1,24 @@
 # OLDX Step 04 — C4 source-only residual-risk decision packet
 
+## 21 Nov 2026 — C4 source-fingerprint continuity CHECK COMPLETE; limited OFF-only decision (NEW LATEST)
+
+**Independent repository read-only source comparison**, pinned to owner-frozen npm-free build source `fcc96574b6388dc441a0b5d3eade48e79c7ebb24` versus current `security-hardening-review`. GitHub blob SHA matched exactly for:
+
+| File | Frozen-commit blob SHA = review-branch blob SHA |
+| --- | --- |
+| `functions/staging-marketplace/product-read-server.mjs` | `135e43d064c479a59a6f4b91a001c2bae9fb83f4` |
+| `functions/staging-marketplace/runtime.mjs` | `749f4259068c4d9dd2f46706222c7a43ba47fb59` |
+| `Dockerfile.product-read.bellsoft-npm-free` | `c833e8372324cbdf80f6497bf3968ac421cadfc4` |
+
+**Exact code semantics actually inspected:** `main(env)` only attempts staging initialization when `OLDX_PRODUCT_READ_ACTIVATE_STAGING==='true'`; `createStagingProductReadServer` separately requires `OLDX_PRODUCT_READ_STAGING_ADC==='true'` before Admin initialization. In the otherwise-disabled path, `createProductReadServer({enabled:false})` returns `503 ENFORCEMENT_UNAVAILABLE` on the exact product route; health routes can still return 200. Thus source-level **two-key fail-closed behavior** is supported on the pinned build source and today's review-branch text. This is not an actual hosted-new-revision measurement: the future target image's deployment/image provenance and actual env, old 100%-traffic revision code, IAM identity and any non-product endpoints require separate checks. In particular, missing flags on old C5 revisions do NOT prove those older revisions have identical source behavior.
+
+**C4 risk scope remains unchanged:** The six frozen severe scanner findings remain **1 CRITICAL + 5 HIGH**, with individual proposed dispositions preserved below; `C4_RISK_ACCEPTANCE=NOT_YET_GIVEN`. There was no new Grype scan, Docker command, local binary inspection, repo build, Google Cloud call or staging request in this comparison. Current repository source fingerprint equality is a *scoped build-source continuity check*, not signed original-builder SLSA, image byte equivalence, a new vendor VEX, or a proof that all transitive/native paths are unexploitable.
+
+**Narrow next OWNER decision, not implied by `ok aagal vadho`:** Owner may explicitly **accept only the residual six-CVE risk for one future, separately authorized, private `DEFAULT-OFF/503` 0%-main tagged `ownerreadv2` staging trial** after reviewing the six per-CVE matrix and compensating controls, with no Firebase/Auth data-plane access, no guest/public traffic, pin `sha256:0844b637...`, local C3 bundle validation, owner-supervised short window, exact fresh preflight, G4 controls and independently approved rollback. Acceptance does NOT mark the scanner fixed, does NOT guarantee nonexploitation, does NOT authorize B1/R1/R2, and does NOT apply to enabled product features or production. If owner declines or qualified assessment detects an actual reachable severe attack chain, maintain HOLD and remediate or change trial scope. Existing G8 owner-accepted **financial** exposure is separate from this **technical** risk acceptance.
+
+**Next statuses:** `C4_PINNED_SOURCE_CONTINUITY=PASS_3_FILES`; `C4_TWO_FLAG_DEFAULT_OFF_SOURCE_GUARD=VERIFIED_WITH_LIMITS`; `C4_SIX_SEVERE_SCANNER_FINDINGS=UNCHANGED`; `C4_OFF_ONLY_OWNER_TECHNICAL_RISK_ACCEPTANCE=PENDING`; `G4_EFFECTIVE_OTHER_DB=OPEN`; `G8_OFF_ONLY_FINANCIAL_RISK_ACCEPTED=YES_WITH_LIMITS`; `B1_R1_R2=NOT_AUTHORIZED`; `STEP04=HOLD`; `PRODUCTION=NO_GO`.
+
+
 ## 21 Nov 2026 — C5 read-only three-revision preimage/rollback preparation READY; owner has not executed (LATEST)
 
 **New canonical C5 source-only gate document:** [OLDX_STEP04_C5_REVISION_PREIMAGE_READ_ONLY_2026-11-21.md](docs/OLDX_STEP04_C5_REVISION_PREIMAGE_READ_ONLY_2026-11-21.md) created after reading latest AGENTS/current handoff/C4 packet and Google [Cloud Run revision](https://docs.cloud.google.com/run/docs/managing/revisions) + [rollbacks/traffic](https://docs.cloud.google.com/run/docs/rollouts-rollbacks-traffic-migration) documentation. No new GCP call or deployment. It contains a **single runnable native PowerShell block** requiring the **already loaded $svc read-only snapshot** to guard exact three expected revisions and current observed main traffic, then **only three new `gcloud run revisions describe` READs** to print sanitized old revision digest, concurrency, CPU, memory, timeout, min/max annotations and two exact feature env flag statuses; no raw secret values, no repeats of the existing service/IAM/Billing reads. Owner has NOT executed. Stop if $svc missing, drift, read errors or unexpected shape; no automatic retry.

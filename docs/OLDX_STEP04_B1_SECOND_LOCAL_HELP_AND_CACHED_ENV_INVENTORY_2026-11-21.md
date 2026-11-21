@@ -1,5 +1,10 @@
 # OLDX Step 04 — B1 SDK 593 secondary local flags PASS and cached-env inspection gate
 
+## 21 Nov 2026 ~18:04 IST — cached B1 env inspection PASSED: exactly 2 false flags, 0 secrets (NEW LATEST)
+
+Actual owner's Windows PowerShell screenshot shows **`B1_ENV_FROM_CACHED_SERVICE=YES_HISTORICAL`**, **`B1_ENV_NAME_COUNT=2`**, `B1_ENV_OTHER_NAMES=` (empty), **`B1_ENV_SECRET_REFERENCE_COUNT=0`**, **`B1_ENV_FLAGS=EXACT_FALSE`**, `B1_ENV_VALUES_OR_SECRETS_PRINTED=NO`, `B1_ENV_LOCAL_INSPECTION=COMPLETE`. All values from pre-existing `$svc` **cached historical latest service template**, **no new Cloud GET**, no deployment; **do NOT rerun**. Exact two keys are `OLDX_PRODUCT_READ_ACTIVATE_STAGING` and `OLDX_PRODUCT_READ_STAGING_ADC`. [Owner-observed env proof, nonexecuting digest-pinned B1 command draft, remaining STOPs](docs/OLDX_STEP04_B1_HISTORICAL_ENV_EXACT_TWO_FALSE_2026-11-21.md). Old 100%-main revision's flags MISSING, not proven false. The proposed `--set-env-vars` with precisely these two literal false values will only be safe if **fresh immediate prewrite** current service env/secret/volume/traffic guard matches; image pinned `sha256:0844b637...`, **`--no-traffic --tag=ownerreadv2`**, `--no-deploy-health-check`, `--cpu-throttling`, min0/max1, old main/tags preserved, no public IAM change; R1 tag-only/R2 conditional traffic approvals previously recorded. No direct deploy has been issued. **Next distinct read-only issue:** G4 parent organization/folder ancestry verification (`gcloud projects describe`, new metadata, not a repeated old G4 IAM policy GET); then prepare exact final pre-mutation drift guard. G4 parent inherited/other-DB still UNVERIFIED, independent builder provenance UNKNOWN, G2 HOLD, Step04 HOLD and production NO-GO.
+
+
 Date: 21 November 2026 ~18:00 IST. Branch `security-hardening-review`. **SOURCE ONLY; no Cloud Run deployment or billing mutation**.
 
 ## New owner screenshot: actual second local help PASS

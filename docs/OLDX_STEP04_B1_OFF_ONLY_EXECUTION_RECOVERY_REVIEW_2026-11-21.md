@@ -1,5 +1,10 @@
 # OLDX Step 04 — B1 OFF-only deploy and recovery operator review (SOURCE-ONLY)
 
+## 21 Nov 2026 — OWNER R1 + R2 narrow conditional execution approvals RECORDED (NEW LATEST)
+
+User expressly replied `ha manjuri chhe` to **two separate specific rollback scopes**: **R1** remove *only* future `ownerreadv2` tag after it is created, leaving `healthcheck` and `step3rc14` intact; **R2** restore original `oldx-owner-read-00001-8kr=100%` main only if unexpected traffic drift is established and a fresh exact-state safety review permits it; R2 is **NO-OP** when old 100% main/tags remain. [Owner R1/R2 consent packet](docs/OLDX_STEP04_R1_R2_OWNER_CONDITIONAL_APPROVAL_2026-11-21.md). `R1_OWNER_CONDITIONAL_CONSENT=YES`, `R2_OWNER_CONDITIONAL_CONSENT=YES`, prior `B1_OWNER_CONDITIONAL_CONSENT=YES`. **Still NOT permission for immediate blind cloud execution**: fresh immediate pre-write service-state guard, exact final B1 CLI flags, environment/identity/secret diff, inherited IAM scope review, no public invocation, source digest, post-state/recovery plan needed. R1 tag removal does **not** revert latest template/revision. G4-A three GET snapshot ~17:48 `PASS_WITH_LIMITS` **consumed; do not rerun for status**. C4/G8 OFF-only risk accepted with limits; G2 independent builder provenance UNKNOWN, G4 other-db/exclusive invocation NOT PROVEN. `B1_R1_R2_EXECUTED=NO`, `STEP04=HOLD`, production NO-GO.
+
+
 Date: 21 Nov 2026. **DO NOT EXECUTE THIS AS A SCRIPT.** The owner gave conditional B1 scope consent, C4 narrow risk acceptance, G8 narrow financial risk acceptance; a fresh G4-A three-GET check just **PASSED WITH LIMITS** at ~17:48 IST. Its single read-only run is **CONSUMED**. See [sanitized G4-A receipt](OLDX_STEP04_G4A_PREFLIGHT_OBSERVED_PASS_2026-11-21.md).
 
 ## Exact target and immutable checkpoint

@@ -1,5 +1,24 @@
 # OLDX Agent Instructions
 
+## 21 Nov 2026 ~17:16 IST — C5 local guard diagnosis isolates mismatch to EXACT step3 tag, no live drift proven (LATEST)
+
+**Owner actual PowerShell screenshot**, after previous cached in-memory preimage guard `STOP_C5_REVISION_PREIMAGE / REASON=C5_TRAFFIC_PREIMAGE_CHANGED`, shows **local-only** diagnostic (no `gcloud` call):
+```text
+MAIN_COUNT=1
+HEALTH_COUNT=1
+STEP3_COUNT=1
+MAIN_PERCENT_100=True
+MAIN_TAG_EMPTY=True
+HEALTH_TAG_OK=True
+STEP3_TAG_OK=False
+C5_DIAGNOSIS_COMPLETE
+```
+The `$svc.status.traffic` snapshot already held in PowerShell has exactly one each `00001-8kr`, `00002-tid`, `00003-nus`; original main **100%** and untagged, `00002-tid` tag exactly `healthcheck`. The only failed hard-coded comparison is **`$s[0].tag -eq 'step3-rc14'`**. **Actual tag string has NOT been printed** in this diagnostic, so do not invent its name; possible formatting/name mismatch, NOT proof of live traffic changes. Previous C5 three-new-`gcloud run revisions describe` GET loop **never began**; Cloud Run/ IAM/ Billing unchanged. Existing source-only C5 plan hardcoded `step3-rc14`; do not blindly bypass this guard or rerun entire failing command.
+
+**NEXT minimum step (NOT YET EXECUTED):** One pure PowerShell local in-memory read of the actual cached `$svc.status.traffic` `revisionName='oldx-owner-read-00003-nus'` tag, print **only** tag value or sanitized character count and exact match, not any principals, URLs or env/secrets. Once actual tag established, fix documentation and preserve *actual observed* 3-revision traffic preimage and prepare only the new 3-revision read stage (without repeating earlier G4/G8 GETs or C1–C4 one-shots). If in-memory `$svc` is lost, STOP and reassess scope before any new cloud requests.
+
+**Status:** `C5_LOCAL_DIAGNOSIS=COMPLETE`, `C5_STEP3_TAG_EXPECTATION_MISMATCH=TRUE`, `C5_ACTUAL_STEP3_TAG=UNKNOWN`, `C5_NEW_REVISION_GETS=ZERO`, `C5_DEPLOYMENT=NOT_STARTED`. Frozen C3 local Sigstore crypto PASS; C4 owner six-CVE risk acceptance OPEN; G2 HOLD, G4 effective cross-DB OPEN, G8 all-provider spend hard-stop OPEN; Step04 HOLD, production NO-GO.
+
 ## 21 Nov 2026 ~17:12 IST — C5 revision preimage guard STOP before any revision GET; mismatch is local-check result, NOT proven live drift (LATEST)
 
 **Actual owner's native PowerShell screenshot:** After pasting the planned C5 first-read script in the same `PS C:\Users\Yasmin Parmar>` shell, the only **result** lines were:

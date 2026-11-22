@@ -1,0 +1,27 @@
+# OLDX Step 04 G2 trusted-builder candidate; SOURCE-ONLY, NOT AUTHORIZED TO RUN.
+# Only one explicit Yasmin-approved, SHA-pinned public GitSource build may use this.
+# _IMAGE is deliberately REQUIRED at submission; no default image or deploy target.
+# The application Dockerfile and its Dockerfile-specific .dockerignore are unchanged.
+steps:
+  - name: 'gcr.io/cloud-builders/docker'
+    id: 'build-exact-bellsoft-npm-free-amd64'
+    args:
+      - 'build'
+      - '--platform=linux/amd64'
+      - '--pull'
+      - '--file=Dockerfile.product-read.bellsoft-npm-free'
+      - '--tag=${_IMAGE}'
+      - '.'
+images:
+  - '${_IMAGE}'
+serviceAccount: 'projects/oldx-staging/serviceAccounts/oldx-step04-build@oldx-staging.iam.gserviceaccount.com'
+options:
+  machineType: 'E2_STANDARD_2'
+  diskSizeGb: '100'
+  logging: 'CLOUD_LOGGING_ONLY'
+  requestedVerifyOption: 'VERIFIED'
+timeout: '1200s'
+queueTtl: '600s'
+tags:
+  - 'oldx-step04'
+  - 'g2-trusted-source'

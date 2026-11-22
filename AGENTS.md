@@ -1,5 +1,11 @@
 # OLDX Agent Instructions
 
+## 22 Nov 2026 — NEW LATEST A8 provenance exact digest verified, TWO metadata entries; prior signature zero from WRONG JSON PATH — local correction NEXT
+
+Owner's actual PowerShell screenshot for `gcloud artifacts docker images describe` of exact private A8 immutable `@sha256:6ecd02bdd409a40673e28560f9fa77a642fee898a038d0133aea6f3a6a31cacc`: `A8_REGISTRY_EXACT_DIGEST=VERIFIED_AT_READ`, `A8_PROVENANCE_LOCAL_RECEIPT=SAVED_PRIVATE`, `A8_PROVENANCE_ENTRY_COUNT=2`, `A8_SIGNATURE_FIELDS_COUNT=0`, `A8_SIGNATURE_CRYPTOGRAPHIC_VERIFICATION=NOT_YET_DONE`, `A8_IMAGE_SPECIFIC_SECURITY_SCAN=NOT_YET_DONE`, `A8_CLOUD_WRITES=NONE`. No STOP and normal PowerShell prompt. **ZERO is NOT evidence of unsigned provenance**: earlier script incorrectly counted `$item.build.inTotoSlsaProvenanceV1.envelope.signatures`, but official Google Cloud Build guide states signature path `.provenance_summary.provenance[].envelope.signatures`. Preserve original screenshot and command as history; do not re-fetch the same remote receipt just for this mistake.
+
+**Next distinct owner command PREPARED (NOT RUN)** at [A8 exact private JSON local-only shape reconciliation](docs/OLDX_STEP04_G2_A8_PROVENANCE_ENVELOPE_LOCAL_CORRECTION_2026-11-22.md): ONE PowerShell local `Get-Content -Raw | ConvertFrom-Json` of existing private `%USERPROFILE%\oldx-a8-provenance-2506826f.json`, exact image digest check, 2 entries, per-entry `envelope.signatures` counts, SLSA v1/v0.1 category, payload-presence, resourceUri matches. No Cloud read or write, no raw JSON/secrets output. If fields present, **still need independent cryptographic `slsa-verifier verify-image`**, pinned installer/trusted binary and exact source/builder/digest; after that one new-image-specific CVE scan and runtime guard check under existing owner A8 permission. Do not label G2 passed before these. **A8 build/source/digest proof consumed; never rebuild, rerun prior Cloud Build list/describe or registry check, delete marker, or repeat old Grype/CI.** G4 other-DB/invoker and G8 gross spend still OPEN. `STEP04=HOLD`; `PRODUCTION=NO_GO`.
+
 ## 22 Nov 2026 — NEW LATEST A8 Cloud Build API SUCCESS, SOURCE SHA EXACT, NEW DIGEST VERIFIED; provenance metadata read next
 
 Owner's actual screenshot from one private `gcloud builds list/describe` result (one-shot build consumed):

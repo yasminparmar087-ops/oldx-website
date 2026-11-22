@@ -1,5 +1,23 @@
 # OLDX Agent Instructions
 
+## 22 Nov 2026 — NEW LATEST A8 Cloud Build API SUCCESS, SOURCE SHA EXACT, NEW DIGEST VERIFIED; provenance metadata read next
+
+Owner's actual screenshot from one private `gcloud builds list/describe` result (one-shot build consumed):
+```text
+A8_BUILD_ID=2506826f-ab8d-41a6-a60c-3f2ea3e74bd5
+A8_BUILD_STATUS=SUCCESS
+A8_DECLARED_GIT_SOURCE=EXACT_SHA_MATCH
+A8_RESOLVED_GIT_SHA=MATCH
+A8_RESULT_IMAGE_DIGEST=sha256:6ecd02bdd409a40673e28560f9fa77a642fee898a038d0133aea6f3a6a31cacc
+A8_SIGNED_PROVENANCE=NOT_YET_INDEPENDENTLY_VERIFIED
+A8_NEW_IMAGE_VULNERABILITY_SCAN=NOT_YET_VERIFIED
+A8_READ_ONLY_CHECK_WRITES=NONE
+A8_BUILD_RETRY=PROHIBITED
+```
+The Build API read authenticated one `SUCCESS` job using declared and resolved GitHub source SHA `31888e7a6c3e402ea55fb7dc5ff5b70a0ddecc71`; exact new private image `asia-south1-docker.pkg.dev/oldx-staging/oldx-staging-images/oldx-step04-g2-cloudbuild-20261122-a1@sha256:6ecd02bdd409a40673e28560f9fa77a642fee898a038d0133aea6f3a6a31cacc`. This is distinct from both historic private Registry V2 and prior owner-local npm-free image/Grype report. **A8 one owner-approved build is FINISHED, never rerun it, delete the attempt marker, overwrite target or repeat older checks.** No Cloud Run deploy via A8 script; no current Cloud Run traffic proof from this check. Original one-shot private CLI log stays private.
+
+[NEW canonical actual A8 receipt + ONE READ-ONLY provenance metadata command](docs/OLDX_STEP04_G2_A8_BUILD_SUCCESS_DIGEST_PROVENANCE_NEXT_2026-11-22.md) prepared **NOT RUN**: owner reads `gcloud artifacts docker images describe` with immutable `@sha256:6ecd02...` and `--show-provenance --format=json`, confirms returned image summary matches, creates one local private JSON receipt for later SLSA verifier, displays only provenance entry/signature-field counts. Presence of signature fields is NOT cryptographic verification. Next after this is independently validate SLSA verifier with exact image digest, GitHub URI and trusted GoogleHostedWorker builder ID, plus one new-image-specific vulnerability and runtime/default-DB guard assessment (not historical scan). G2 provenance/signature and severe-CVE acceptance, G4 other-DB/invoker, G8 all-service gross-cost STOP remain OPEN. `STEP04=HOLD`, `PRODUCTION=NO_GO`. Owner authorization covers A8 follow-up verification, not new build/Cloud Run/IAM/billing/Firebase changes.
+
 ## 22 Nov 2026 — NEW LATEST A8 ONE OWNER-APPROVED CLOUD BUILD RETURNED EXIT ZERO; READ-ONLY DIGEST/SOURCE RECONCILIATION NEXT
 
 Owner's ACTUAL PowerShell screenshot (device taskbar reads 21 Nov ~23:07; cloud timestamp not independently observed) shows all one-shot guards and `A8_PINNED_CONFIG_SHA256=PASS`, `A8_REQUIRED_APIS=ENABLED_READ_ONLY`, `A8_EXACT_NEW_REGISTRY_PACKAGE=ABSENT_HTTP404`, `A8_ATTEMPT_MARKER=CREATED_NO_AUTOMATIC_RETRY`, `A8_GCLOUD_EXIT_CODE=0`, `A8_BUILD_CLI=EXIT_ZERO`, `A8_PROVENANCE_AND_SECURITY=NOT_YET_VERIFIED`, `A8_CLOUD_RUN_DEPLOY=NONE`, `A8_DO_NOT_REPEAT_BUILD`. CLI local log at `C:\Users\Yasmin Parmar\oldx-a8-20261122-build.log` (PRIVATE; don't paste raw log). A8 originally approved full immutable public source SHA `31888e7a6c3e402ea55fb7dc5ff5b70a0ddecc71`, dedicated builder and unique private `oldx-step04-g2-cloudbuild-20261122-a1:one-shot`. **A8 ONE BUILD ATTEMPT CONSUMED. NEVER RE-RUN OR DELETE MARKER**, even if next reads fail. No evidence of independent remote status, resolved SHA, image digest, signed builder provenance, scan or runtime yet. CLI success is NOT G2 PASS; Cloud Run not deployed by this command. NO other IAM/API/billing/Firebase/production change authorized.

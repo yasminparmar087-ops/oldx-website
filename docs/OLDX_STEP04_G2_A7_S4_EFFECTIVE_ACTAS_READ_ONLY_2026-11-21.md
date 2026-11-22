@@ -1,3 +1,22 @@
+## 21 Nov 2026 ~22:05 IST — S4 ACTUAL OWNER SCREENSHOT: EFFECTIVE VERIFIED (NEW LATEST)
+
+Owner executed the previously prepared S4 PowerShell within `PS C:\Users\Yasmin Parmar>`. Actual printed result:
+
+```text
+G2_A7_S4_OWNER_ACTAS=EFFECTIVE_VERIFIED
+G2_A7_S4_NEW_IAM_GRANT=NOT_NEEDED
+G2_A7_S4_CLOUD_IAM_WRITES=NONE
+G2_A7_S4_BUILD_DEPLOY=NONE
+```
+
+The authenticated owner `yasminparmar087@gmail.com`'s request to Google IAM `projects.serviceAccounts.testIamPermissions` for exact resource `projects/oldx-staging/serviceAccounts/oldx-step04-build@oldx-staging.iam.gserviceaccount.com` returned `iam.serviceAccounts.actAs`. This is effective permission at check time, **not necessarily a direct resource binding**, not authority to conclude which inherited role provided the permission. **No new `roles/iam.serviceAccountUser` grant is required and it MUST NOT be added redundantly.** The read-only permission request was a POST and printed no token. No Cloud Build/Registry/Cloud Run/deploy was performed.
+
+**A7 S1–S4 CHECKPOINT:** S1 exact account EXISTS_VERIFIED_AFTER_STOP (original creation actor/time unknown); S2 repository Writer direct unconditional PRESENT_WITH_LIMITS (original write delta/actor unknown); S3 project Logging Writer direct unconditional PRESENT_WITH_LIMITS (original write delta/actor unknown); S4 owner actAs EFFECTIVE_VERIFIED, NO IAM GRANT. Mark `A7=IAM_SETUP_COMPLETE_WITH_EVIDENCE_LIMITS`; ALL four substeps **CONSUMED, NEVER RERUN**, do not recreate keys, adjust IAM or recheck permissions just for reassurance.
+
+**Remaining G2 Step04:** user-managed builder permissions alone do NOT create a new trusted image, establish actual Cloud Build provenance or clear prior frozen image scan findings (1 CRITICAL + 5 HIGH), G4 runtime/default-DB/Cloud Run invoker and G8 all-service costs/STOP remain unresolved. Next is source-only freeze of one exact Dockerfile/commit SHA, build parameters/cost envelope and provenance acceptance then separately scoped owner approval **before one new Cloud Build job / private Artifact Registry image**. Existing A4 direct accessible public GitSource route is supported only as proposal, NOT attempted. No mutable branch/ref, fallback identity, auto-retry, deploy, production.
+
+---
+
 # OLDX Step04 G2 A7 S4 — owner effective actAs read-only check (prepared 21 Nov 2026)
 
 ## Current exact consumed state

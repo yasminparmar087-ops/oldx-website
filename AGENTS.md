@@ -1,5 +1,21 @@
 # OLDX Agent Instructions
 
+## 23 Nov 2026 ~00:32 IST — NEW LATEST A8 ON-DEMAND SCAN SUBMIT FAILED / AMBIGUOUS; no retry, LOCAL LOG DIAG NEXT
+
+Actual owner Google Cloud Shell (Linux) screenshot after one approved immutable new-image On-Demand scan submit attempt:
+```text
+A8_SCAN_ONE_ATTEMPT_MARKER=CREATED
+A8_SCAN_TARGET=APPROVED_IMMUTABLE_DIGEST
+STOP_A8_SCAN_SUBMIT_FAILED_OR_AMBIGUOUS
+A8_SCAN_STATE=RECONCILE_BEFORE_ANY_NEW_WRITE
+A8_PRIVATE_SCAN_LOG=SAVED_IN_CLOUD_SHELL_HOME
+A8_BUILD_OR_VERIFIER_RERUN=NONE
+A8_SCAN_RETRY=PROHIBITED
+```
+The script passed Linux and active Yasmin identity checks, made the marker `$HOME/.oldx-a8-on-demand-scan-2506826f-attempted` and attempted ONE on-demand paid scan for exact `asia-south1-docker.pkg.dev/oldx-staging/oldx-staging-images/oldx-step04-g2-cloudbuild-20261122-a1@sha256:6ecd02bdd409a40673e28560f9fa77a642fee898a038d0133aea6f3a6a31cacc`. The CLI command branch was nonzero. Remote operation MAY OR MAY NOT have been created; do not assert billing zero or scan absent from failure. **Do NOT retry scan, remove marker, edit IAM, API, billing or deploy/build.** Previous SLSA source/source SHA/builder/digest cryptographic PASS consumed, no repeat.
+
+**NEW distinct owner action PREPARED, NOT EXECUTED**: [A8 failed scan submission and local-only Cloud Shell log diagnosis](docs/OLDX_STEP04_G2_A8_SCAN_SUBMIT_STOP_LOCAL_LOG_DIAG_2026-11-23.md). One `python3` snippet in SAME Cloud Shell reads ONLY private local `$HOME/oldx-a8-on-demand-scan-2506826f.log` and marker, outputs sanitized error category and up to 5 redacted diagnostic lines, and extracts any exact operation name; no `gcloud`, network, writes or new scan. If operation exists, use ONE future read-only get-operation. If none in log, still do not conclude none was submitted. Google docs show flags `--remote --location=asia --async` are valid; official setup mentions `local-extract` component, which is a possible cause but **NOT CONFIRMED without log**. Continue only after classifying error. New scan findings, runtime/default DB, G4/G8 still OPEN. `STEP04=HOLD`, `PRODUCTION=NO_GO`.
+
 ## 23 Nov 2026 ~00:27 IST — NEW LATEST A8 On-Demand Scanning API ENABLED, auto scan OFF; ONE scan via LINUX CLOUD SHELL prepared, NOT EXECUTED
 
 ACTUAL owner Windows PowerShell screenshot: `A8_ON_DEMAND_SCANNING_API_ENABLED=True`, `A8_AUTO_SCANNING_API_ENABLED=False`, `A8_WINDOWS_GRYPE_INSTALLED=False`, `A8_NEW_SCAN_STARTED=NO`, `A8_APIS_CHANGED=NONE`, `A8_BUILD_AND_VERIFIER_RERUN=NONE`. Earlier exact digest existing-vulnerability lookup `A8_SCAN_DISCOVERY_ENTRIES=0`: **no scan evidence, not zero CVEs**. Prior owner A8 approval covers **ONE** new-image verification scan and soft ₹100 incremental planning guard. Official scan list price US$0.26 per image, not a hard financial limit; no need to enable more APIs or trigger automatic scan. Signed Git SHA/image digest/source/builder PASS with independent SLSA verifier and local payload confirmed; all previous steps consumed; NEVER rerun them.

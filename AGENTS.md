@@ -1,5 +1,13 @@
 # OLDX Agent Instructions
 
+## 23 Nov 2026 ~00:35 IST — NEW LATEST A8 Google On-Demand SCAN STOP: BellSoft Hardened Containers OS UNSUPPORTED; Grype route next
+
+ACTUAL owner Google Cloud Shell **local-only original-log** diagnostic showed `A8_MARKER_PRESENT=True`, `A8_PRIVATE_LOG_READ=PASS`, `A8_OPERATION_COUNT=0`, `A8_ERROR_CATEGORIES=UNCLASSIFIED`, and exact decisive line `ERROR: (gcloud.artifacts.docker.images.scan) Extraction failed: operating system BellSoft Hardened Containers is not supported for On-Demand Scanning`. Log also showed `Locally extracting packages and versions from remote container image...`, `Failed.` This is the Google scanner's **unsupported OS/platform**, NOT evidence the new image is vulnerable or CVE-free. One attempt marker/log retained in Cloud Shell HOME; **NEVER rerun or delete marker**, do not assume zero billing/remote operation merely from 0 operation names. No change to existing G2 A8 source SHA/signature/digest trusted results; new-image vulnerability scan STILL NOT DONE.
+
+**NEXT new distinct owner action PREPARED NOT EXECUTED** [exact root cause and one read-only Grype capability preflight](docs/OLDX_STEP04_G2_A8_ODSCAN_UNSUPPORTED_BELLSOFT_GRYPE_PREFLIGHT_2026-11-23.md). In SAME Cloud Shell Linux, one tiny shell check for `grype`, `syft`, Google credential helpers, `$HOME/.docker/config.json` existence, free disk MiB; no gcloud/network/Cloud writes. Historical owner WSL Grype on a DIFFERENT earlier BellSoft local image successfully produced 1 CRITICAL / 5 HIGH / 12 MEDIUM / 2 LOW; **NOT** new-image security proof, but Grype likely supports BellSoft package extraction. Anchore official docs support `grype registry:IMAGE@sha256:...` and private registry credential helpers. Prefer one new-digest Grype report privately and a bound DB date; avoid old scanner reruns or public raw vulnerability docs.
+
+Exact new A8 image `asia-south1-docker.pkg.dev/oldx-staging/oldx-staging-images/oldx-step04-g2-cloudbuild-20261122-a1@sha256:6ecd02bdd409a40673e28560f9fa77a642fee898a038d0133aea6f3a6a31cacc`; already Build SUCCESS source SHA `31888e7a6c3e402ea55fb7dc5ff5b70a0ddecc71`, cryptographically signed SLSA source/subject/builder all PASS. NO build, SLSA verifier, IAM, Container Scan, Registry, Firebase, Billing, Cloud Run or production retries. Remaining new-image CVE/fixability, focused nonroot runtime/default DB guard, G4 other-DB/Cloud Run invoker, G8 gross cost control, explicit launch decision. `STEP04=HOLD`, `PRODUCTION=NO_GO`.
+
 ## 23 Nov 2026 ~00:32 IST — NEW LATEST A8 ON-DEMAND SCAN SUBMIT FAILED / AMBIGUOUS; no retry, LOCAL LOG DIAG NEXT
 
 Actual owner Google Cloud Shell (Linux) screenshot after one approved immutable new-image On-Demand scan submit attempt:

@@ -34,3 +34,25 @@ If the owner explicitly accepts **THIS** statement, record only `G8_OWNER_CURREN
 - AFTER an explicit scoped acceptance, at most: owner **G8 bounded-planning risk disposition complete with limits**; provider-wide hard STOP **still NOT PROVEN**, fixed monthly cost guarantee **still UNAVAILABLE**. Under original owner-locked Step04 technical exit, `STEP04=ACTIVE_HOLD` until genuinely required technical access/hosted/cost gates are satisfied or owner separately approves an administrative decision-only handoff that carries ALL such requirements forward intact. **A signed owner risk acceptance is a decision, not an assertion of impossible cloud capabilities.**
 
 **No redoing of A8 Build/SLSA/Grype/local runtime, B1/postwrite/R1, G4 corrected Cloud Asset analyzer, default-DB inventory, old billing reads or CI.** This doc creates no cloud operations.
+
+
+## 24 November 2026 — ACTUAL OWNER APPROVAL OF G8 FINITE-BUDGET PLAN: ACCEPTED_WITH_LIMITS
+
+The owner explicitly replied **"ha svikaru chhu"** (“Yes, I accept”) immediately after the assistant asked whether to accept the **specific G8 post-A8 DEFAULT-OFF staging financial risk** under the documented thresholds. This directly authorizes the following **risk disposition and planning controls only**, and **nothing operational**:
+1. Existing scoped Cloud Run service-specific spend cap (historically observed ~₹100/month) and older ₹2,000 billing budget alerts **do NOT guarantee** an all-Google-provider/project spending ceiling. Cloud Billing reporting/enforcement latency, Firestore/Auth/Storage/Artifact Registry/Logging/networking and already existing usage can create charges beyond the goal. The user accepts this **residual uncertainty for the current post-A8 DEFAULT-OFF configuration only**.
+2. **₹1,000/month** is an owner-adopted **manual review/STOP-before-new-paid-operation trigger**, not an automatic Cloud Billing cap, stop of ongoing usage, or a verified current balance. **₹2,000/month** is the owner's **risk-budget goal**, not a guaranteed or technically enforced hard stop.
+3. Before ANY new paid Cloud trial, operator must scope exact project/service/image/accounts, predicted *gross* all-provider charges (including registry/logs/networking), finite calls/time/synthetic resources/cleanup and rollback, observe actual recent billing including lag, and ask fresh explicit owner release consent. If projected or actual spend approaches the review trigger, pause **new paid actions** pending owner review. Do not assume trial credits or alerts guarantee free usage.
+4. The owner's acceptance **does not authorize** billing/spend-cap/alert edits, service deployment/re-tag/routing or revision deletion, Firebase/ADC/Data-plane activation, IAM/Rules change, a hosted request, a new database, Step05, production/website launch or automatic billing shutdown. No new cloud provider action is executed in this documentation update.
+
+**Final narrow owner decision status (supersedes earlier PROPOSED heading for this same exact scope):**
+- `G8_OWNER_CURRENT_DEFAULT_OFF_FINANCIAL_RESIDUAL_RISK=ACCEPTED_WITH_LIMITS`
+- `G8_OWNER_GROSS_COST_STOP_PLAN=ADOPTED_AS_MANUAL_PLANNING_CONTROL`
+- `G8_OWNER_DECISION_FOR_THIS_SCOPE=COMPLETE`
+- `G8_UNIVERSAL_2000_INR_HARD_CAP=NOT_PROVEN_AND_NOT_PROMISED`
+- `G8_CURRENT_ACTUAL_MONTH_SPEND=NOT_FRESHLY_VERIFIED`
+- `G8_FUTURE_ENABLED_OR_PRODUCTION_RISK=NOT_AUTHORIZED`
+- `G2_OWNER_CURRENT_A8_OFF_ONLY=ACCEPTED_WITH_LIMITS`, `G4_OWNER_CURRENT_A8_OFF_ONLY=ACCEPTED_WITH_LIMITS`
+- `G4_EFFECTIVE_INVOKER_EXCLUSIVITY=UNVERIFIED`, `G4_NONDEFAULT_DB_NEGATIVE_DENIAL=UNVERIFIED`
+- `STEP04_ORIGINAL_TECHNICAL_EXIT=ACTIVE_HOLD`, `STEP05=NOT_AUTHORIZED`, `PRODUCTION=NO_GO`
+
+The previously completed A8 private signed immutable `00012-vib` B1/postwrite/R1 remains **CONSUMED**; `a8off23nov` tag removed, original `00001-8kr=100%` main and old tags preserved, A8 latest template/revision remains, no hosted HTTP or enabled Firestore test. This G8 decision **does not retroactively establish** the missing original technical gross-cost hard-stop guarantee or release all other technical gates. **No old billing/IAM/DB observations, scans, builds, SLSA or A8 Cloud Run commands were repeated.**

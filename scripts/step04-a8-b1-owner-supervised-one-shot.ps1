@@ -80,7 +80,7 @@
       [System.IO.FileAccess]::Write,[System.IO.FileShare]::None)
     $file.Dispose()
 
-    $args = @('run','deploy',$service,
+    $deployArgs = @('run','deploy',$service,
       "--project=$project","--region=$region","--account=$account",
       "--image=$a8Image","--service-account=$sa",
       '--no-traffic',"--tag=$tag",
@@ -88,7 +88,7 @@
       '--cpu=1','--memory=512Mi','--concurrency=1',
       '--timeout=30','--min-instances=0','--max-instances=1',
       '--set-env-vars=OLDX_PRODUCT_READ_ACTIVATE_STAGING=false,OLDX_PRODUCT_READ_STAGING_ADC=false')
-    & gcloud.cmd @args
+    & gcloud.cmd @deployArgs
     if ($LASTEXITCODE -ne 0) { throw 'DEPLOY_CLI_FAILED_OUTCOME_UNKNOWN' }
     'A8_B1_DEPLOY_CLI=EXIT_ZERO_POSTCHECK_REQUIRED'
     'A8_B1_NEW_TAG=a8off23nov_NOT_YET_VERIFIED'

@@ -1,5 +1,10 @@
 # OLDX — One consolidated launch execution plan (13 November 2026)
 
+
+## 24 Nov 2026 — G4 CURRENT DEFAULT-OFF risk acceptance DRAFT, awaiting express owner decision
+
+Reused consumed 21-Nov Cloud Run direct IAM/project IAM (2 Owners/1 Editor/1 direct Invoker), corrected default-only 4-permission Cloud Asset allow-analysis, 23-Nov `(default)` DB-only inventory, 24-Nov new A8 postwrite private 0%-main exact image and R1 tag-only cleanup; **no requery, Firestore test DB or role changes**. Direct no-public IAM and default-db-only conditional allow are limited evidence, not effective exclusive invoker or hypothetical other-db DENY. Google Cloud Run basic Owners/Editors may invoke, Firestore server SDK bypasses Rules. [Exact G4 scoped owner choice (PROPOSAL NOT YET ACCEPTED)](OLDX_STEP04_G4_DEFAULT_OFF_IAM_OWNER_DECISION_PROPOSAL_2026-11-24.md); if owner agrees, count only `G4_OWNER_CURRENT_A8_DEFAULT_OFF_RISK=ACCEPTED_WITH_LIMITS`, **do NOT** mark `G4_TECHNICAL_PASS` or change original Step04 exit. G2 owner OFF-only acceptance separately recorded; G8 project-wide guaranteed hard stop unresolved, Step04 HOLD, Step05 not authorized, production NO-GO.
+
 **Purpose:** Review every material workstream and release gate once, then execute the existing approved product/design/architecture with minimum repeated Codex work, fastest responsible path to a secure complete website, then Android via Capacitor. This is an **execution consolidation, not a new architecture, design reset, feature reduction, or cloud approval**.
 
 Repository: `yasminparmar087-ops/oldx-website`; only code-work branch: `security-hardening-review`.

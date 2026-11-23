@@ -58,3 +58,12 @@ For next separately authorized enabled staging:
 | Production | **NO-GO** | No rollout/website live enablement under any OFF-only acceptance |
 
 **This packet itself adds NO new Cloud action, test, image, scan, IAM/billing/firebase change or production approval.** Save/checkpoint now, use it to avoid repeat work in any later chat.
+
+
+## 24 Nov 2026 — NEW OWNER G2 DECISION: LIMITED RISK ACCEPTANCE GRANTED FOR CURRENT PRIVATE DEFAULT-OFF A8
+
+In the next user turn **after** being presented the exact 15-severe-ID categories and the narrow consent text, the owner explicitly replied **"ha manjuri aapu chhu"**. This is the direct approval of **only** Step04 A8 **private, default-OFF** residual G2 risk with mandatory controls; it **does not** mean 15 CVEs fixed, no OpenSSL vendor exposure, complete no-reachability proof, unconditional staging enabled API or production release approval. **Canonical detailed signed-image/15-ID scope ledger**: [OLDX_STEP04_G2_OWNER_LIMITED_RISK_ACCEPTANCE_2026-11-24.md](OLDX_STEP04_G2_OWNER_LIMITED_RISK_ACCEPTANCE_2026-11-24.md). This new dated owner decision **supersedes any earlier sentence in this document that says owner G2 decision is still pending for the current OFF-only scope**; those earlier paragraphs are preserved as historical investigation and potential *future enabled-scope* requirements.
+
+`G2_OWNER_CURRENT_A8_OFF_ONLY_RISK_DECISION=ACCEPTED_WITH_LIMITS`, `G2_SCANNER_15_DISTINCT_SEVERE=UNCHANGED`, `G2_FIVE_OPENSSL_VENDOR_AFFECTED=OPEN`, `G2_COMPLETE_NATIVE_REACHABILITY=UNPROVEN`, `G2_ENABLED_OR_PRODUCTION_SCOPE_ACCEPTANCE=NOT_GRANTED`, `G4_EFFECTIVE_INVOCATION_AND_OTHER_DB_DENY=UNVERIFIED`, `G8_HARD_PROJECT_WIDE_2000_INR_STOP=NOT_PROVEN`, `STEP04_ORIGINAL_TECHNICAL_EXIT=HOLD`, `PRODUCTION=NO_GO`.
+
+No cloud action, code change, build, new security scan, SLSA, deployment, hosted request, IAM/billing/Rules write or production change occurred as a consequence of recording this decision. Do not replay prior A8 B1/R1 or broad past tests. **Next remaining Step04 work:** G4 effective inherited invoker scope and practical non-default database policy response; G8 realistic bounded-cost STOP and recovery. Both need their own scoped outcome/approval.

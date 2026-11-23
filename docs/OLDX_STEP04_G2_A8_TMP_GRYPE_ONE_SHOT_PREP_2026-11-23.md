@@ -1,4 +1,6 @@
-NaN scratch Grype one-shot (PREPARED, NOT EXECUTED)
+# OLDX Step04 G2 A8 — /tmp scratch Grype one-shot (HISTORICAL: COMPLETED 23 Nov 2026 ~20:20 IST)
+
+**Status update:** this command was executed once and returned PASS with a complete new-digest scan. Read [actual result and next triage](OLDX_STEP04_G2_A8_NEW_IMAGE_GRYPE_SCAN_46_MATCHES_TRIAGE_2026-11-23.md); DO NOT run the one-shot command in this older prep document again.
 
 ## Actual owner Cloud Shell screenshot — 23 November 2026 ~20:08–20:09 IST
 

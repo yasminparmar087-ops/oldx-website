@@ -64,3 +64,15 @@ test('streaming oversized handler response is stopped before buffering unlimited
   assert.equal(r.headers.get('cache-control'),'private, no-store');
  });
 });
+
+
+test('new buyer paths dispatch only explicitly supplied inactive-host handlers',async()=>{
+ const seen=[],handlers=Object.fromEntries(['list','detail'].map(operation=>[operation,{async fetch(request){
+  seen.push(operation);assert.equal(await request.text(),'{}');return Response.json({ok:true});
+ }}]));
+ await withHost(createCloudRunMarketplaceListener({enabled:true,handlers}),async base=>{
+  for(const op of ['list','detail'])assert.equal((await fetch(base+'/api/staging/marketplace/'+op,{method:'POST',headers:{'content-type':'application/json'},body:'{}'})).status,200);
+  assert.equal((await fetch(base+'/api/staging/marketplace/list?ownerUid=forged',{method:'POST',body:'{}'})).status,404);
+ });
+ assert.deepEqual(seen,['list','detail']);
+});

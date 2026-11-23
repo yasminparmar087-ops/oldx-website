@@ -1,3 +1,4 @@
+import {createMarketplaceHttpTransport} from './http-transport.mjs';
 import {createAuthenticatedPhotoClient} from '../media/authenticated-photo-client.mjs';
 import {createProviderFirebaseSessionPorts} from '../service-providers/firebase-session-ports.mjs';
 import {createAuthenticatedMarketplaceCommands} from './authenticated-command-client.mjs';
@@ -56,4 +57,15 @@ export function createFirebaseMarketplaceIntegration({enabled=false,auth,sendCom
   async getAdminIdToken(){const scope=session&&{...session};if(destroyed||!scope)throw Error('AUTH_REQUIRED');return (await getToken(scope)).token;},
   destroy(){destroyed=true;provider.destroy();session=null;}
  });
+}
+
+
+
+// Optional source-only wiring for a future approved host. Explicit opt-in,
+// Firebase session lifecycle and existing DTO/receipt checks remain mandatory.
+// This does not mount UI, enable publication or create Cloud Run IAM credentials.
+export function createFirebaseMarketplaceHttpIntegration({enabled=false,origin,fetchRequest,...options}={}){
+ const transport=createMarketplaceHttpTransport({enabled,origin,fetchRequest});
+ return createFirebaseMarketplaceIntegration({...options,enabled,
+  sendCommand:transport.sendCommand,sendRead:transport.sendRead});
 }

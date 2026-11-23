@@ -5,7 +5,9 @@ import {Readable} from 'node:stream';
 const routes = new Set([
   '/api/staging/marketplace/save',
   '/api/staging/marketplace/owner',
-  '/api/staging/marketplace/archive'
+  '/api/staging/marketplace/archive',
+  '/api/staging/marketplace/list',
+  '/api/staging/marketplace/detail'
 ]);
 const error = (res, status, code) => {
   if (res.headersSent || res.destroyed) return;
@@ -68,3 +70,4 @@ export function createCloudRunMarketplaceListener({enabled=false, handlers={}}={
     finally { req.off('aborted',onAbort);res.off('close',onClose); }
   };
 }
+

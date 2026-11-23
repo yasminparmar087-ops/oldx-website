@@ -112,3 +112,28 @@ After A8 prewrite and exact action-level approvals, source-review one A8-specifi
 **Do NOT** create second Firestore DB or run obsolete A1–A8 build/sign/scan/runtime/B1/R1/CI/Rules/billing snapshots. No enablement of Product API, ADC, public access, Firebase data, production, or rollout via alternate console. **`STEP04=ACTIVE/HOLD`, `A8_RISK_SCOPE_OWNER_CONSENT=YES`, `A8_PREWRITE=PREPARED_NOT_RUN`, `A8_B1_R1_R2_EXACT_RELEASE=AWAITING_DISTINCT_APPROVAL_AND_FRESH_PREWRITE`, `PRODUCTION=NO_GO`.**
 
 References: [Original Step04 master exit](OLDX_SINGLE_EXECUTION_PLAN_2026-11-13.md), [A8 isolated runtime observed](OLDX_STEP04_G2_A8_ISOLATED_RUNTIME_PASS_G4_G8_NEXT_2026-11-23.md), [historic R1 tag removal](OLDX_STEP04_R1_TAG_ONLY_COMPLETE_2026-11-21.md), [current G4/G8 decision packet](OLDX_STEP04_G4_G8_BOUNDARIES_AFTER_SINGLE_DB_2026-11-23.md), and current Google [Cloud Run CLI flags](https://docs.cloud.google.com/sdk/gcloud/reference/run/deploy) / [traffic+tags](https://docs.cloud.google.com/run/docs/rollouts-rollbacks-traffic-migration).
+
+
+## 24 November 2026 ~00:25 IST — OWNER ACTUAL PREWRITE RESULT: PASS_WITH_LIMITS, CONSUMED
+
+**Actual screenshot supplied in the continuing conversation:** Owner ran exact Section 3 Windows PowerShell read-only service+direct service IAM check. Console returned to prompt, with no STOP/exception; visible printed result at bottom:
+
+A8_PREWRITE_SERVICE_AND_TRAFFIC=PASS
+A8_PREWRITE_EXISTING_LATEST=00010_ZUD
+A8_PREWRITE_OLD_ROOT_AND_TAGS=PRESERVED
+A8_PREWRITE_NEW_TAG=a8off23nov_ABSENT
+A8_PREWRITE_DIRECT_IAM=NO_PUBLIC_ONE_NAMED_INVOKER
+A8_PREWRITE_INHERITED_IAM=UNVERIFIED
+A8_PREWRITE_EFFECTIVE_OTHER_DB_DENIAL=UNVERIFIED
+A8_PREWRITE=PASS_WITH_LIMITS
+A8_NEW_CLOUD_RUN_DEPLOY=NONE
+
+**Evidence scope:** One as-of-00:25 owner-operated point-in-time check confirmed service identity, existing 00010-zud latest template matching historic npm-free image, expected runtime service account, two literal FALSE flags, no secret/volume drift, 00001-8kr=100% main with healthcheck/step3rc14 tags intact, new A8 tag ABSENT, zero public direct IAM members and one direct Invoker. This is NOT a lock against concurrent service edits, does not prove inherited exclusive IAM or actual cross-database denial. Known 15 distinct severe A8 scanner CVE IDs remain in risk register. No A8 Cloud Run deploy or hosted invocation. STEP04=ACTIVE_HOLD; PRODUCTION=NO_GO.
+
+**Do not repeat this prewrite for reassurance:** Mark Section 3 read-only attempt CONSUMED. If actual deploy is substantially delayed or drift suspected, a same-window limited immediate prewrite drift guard may be separately justified, not a repeat of the entire past security check. Never redo previous A8 build/SLSA/Grype/local runtime, historic B1/R1, G4 inventory/allow analyzer or budget snapshots.
+
+**Exact next action-level consents needed:** Existing A8 owner risk/trial-scope permission was granted, but no separate NEW A8 B1/R1/R2 write release yet. Request one unambiguous combined consent addressing these distinct operations:
+(1) ONE supervised PRIVATE / default-OFF / 0%-main A8 immutable image deploy with new tag a8off23nov, false/false flags, CPU1/512Mi/concurrency1/30sec/min0/max1 and at-most 20 minutes supervision;
+(2) R1 guarded remove ONLY new a8off23nov tag after image/revision and old traffic state independently confirmed (tag removal does not restore template or delete revision);
+(3) R2 remains NO-OP if old main/tags preserved; on unexpected traffic change STOP and seek fresh incident-specific consent before any traffic restoration.
+No Firebase Auth/Firestore/Storage/data-plane, IAM/Rules, billing, hosted URL invocation, broader template restoration or production authorization. After exact B1/R1/R2 consent, prepare actual **new A8-specific** Cloud Run guarded deploy and postcheck command; never reuse the consumed older immutable image or ownerreadv2 tag.

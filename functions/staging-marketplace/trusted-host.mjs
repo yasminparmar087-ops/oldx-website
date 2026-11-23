@@ -4,6 +4,10 @@ import {createStagingMarketplaceRuntime} from './runtime.mjs';
 import {createSecureStagingMarketplacePublicRuntime} from './public-runtime.mjs';
 const commands=new Set(['save','owner','archive']),reads=new Set(['list','detail']);
 const jwt=v=>typeof v==='string'&&v.length<=8192&&/^[-\w]+\.[-\w]+\.[-\w]+$/.test(v);
+// Cloud Run strips the X-Serverless-Authorization signature before forwarding.
+// Validate ONLY bounded transport syntax, never JWT claims/signature/markers.
+// This value provides NO independent proof of IAM enforcement or principal.
+const forwardedIam=v=>typeof v==='string'&&v.length<=8199&&/^Bearer [A-Za-z0-9_.-]+$/.test(v);
 const origin=v=>{try{const u=new URL(v);return u.protocol==='https:'&&!u.username&&!u.password&&u.pathname==='/'&&!u.search&&!u.hash?u.origin:null;}catch{return null;}};
 const route=url=>{try{const u=new URL(url),op=u.pathname.split('/').at(-1);return !u.search&&!u.hash&&u.pathname==='/api/staging/marketplace/'+op&&(commands.has(op)||reads.has(op))?op:null;}catch{return null;}};
 const fail=(status=503,code='ENFORCEMENT_UNAVAILABLE')=>Response.json({ok:false,error:{code}},{status,headers:{'cache-control':'private, no-store','x-content-type-options':'nosniff'}});
@@ -27,6 +31,9 @@ async function bytes(stream,max,ctx){
 }
 // Private backend contract. verifyInvoker MUST use independently authenticated
 // platform/cryptographic evidence, not parse caller-supplied claims/headers.
+// In particular, a stripped IAM token/marker cannot implement verifyInvoker.
+// Without an independently authenticated platform/principal proof provider the
+// host MUST remain blocked; no fallback verifier or public bypass exists here.
 // No SDK loading/token minting/HTTP calls; no active entrypoint or port.
 export function createTrustedMarketplaceBackend({enabled=false,audience,gatewayServiceAccount,verifyInvoker,commandRuntime,publicRuntime,timeoutMs=5000,now=Date.now}={}){
  const base=origin(audience),ready=enabled===true&&base===audience&&identity(gatewayServiceAccount)&&typeof verifyInvoker==='function'&&typeof commandRuntime?.handle==='function'&&typeof publicRuntime?.handle==='function'&&Number.isInteger(timeoutMs)&&timeoutMs>=1&&timeoutMs<=5000;
@@ -44,7 +51,7 @@ export function createTrustedMarketplaceBackend({enabled=false,audience,gatewayS
    const clock=now();
    if(!Number.isSafeInteger(clock)||clock<0||proof?.audience!==base||proof?.principal!==gatewayServiceAccount||proof?.verified!==true||!Number.isSafeInteger(proof.expiresAtMs)||proof.expiresAtMs<=clock)return fail(403,'DENIED');
    const firebase=request.headers.get('authorization'),iam=request.headers.get('x-serverless-authorization');
-   if(!iam?.startsWith('Bearer ')||!jwt(iam.slice(7)))return fail(403,'DENIED');
+   if(!forwardedIam(iam))return fail(403,'DENIED');
    if(commands.has(op)&&(!firebase?.startsWith('Bearer ')||!jwt(firebase.slice(7))||firebase===iam))return fail(401,'AUTH_REQUIRED');
    if(reads.has(op)&&firebase!==null)return fail(403,'DENIED');
    // Remove privileged hop credential before passing to Firebase/runtime code.

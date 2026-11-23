@@ -28,3 +28,33 @@ One actual screenshot on **24 Nov ~00:25 IST** showed `A8_PREWRITE_SERVICE_AND_T
 **No new cloud action as part of this documentation.** `A8_OWNER_RISK_SCOPE=APPROVED`; `A8_B1_R1_R2_NARROW_ACTION_APPROVAL=YES`; `A8_B1_SCRIPT=PREPARED_NOT_RUN`; `A8_B1_DEPLOY=NOT_EXECUTED`; `A8_R1=NOT_EXECUTED`; `A8_R2=NO_OP_UNLESS_NEW_INCIDENT_CONSENT`; `STEP04=ACTIVE_HOLD_ORIGINAL_EXIT`; `STEP05=NOT_AUTHORIZED`; `PRODUCTION=NO_GO`.
 
 Official CLI sources reviewed 24 Nov 2026: https://docs.cloud.google.com/sdk/gcloud/reference/run/deploy and https://docs.cloud.google.com/run/docs/rollouts-rollbacks-traffic-migration .
+
+
+## 24 Nov 2026 ~00:37 IST — ACTUAL owner new A8 B1 one-shot CLI SUCCESS (NO R1 YET)
+
+**Direct user screenshot from Windows PowerShell, observed text at bottom after shell prompt returned:**
+
+```text
+A8_B1_IMMEDIATE_PREWRITE=PASS_WITH_LIMITS
+A8_B1_INHERITED_IAM=OWNER_ACCEPTED_LIMIT_NOT_PROVEN
+A8_B1_A8_IMAGE=EXACT_PINNED_NEW_DIGEST
+A8_B1_OLD_MAIN_AND_TAGS=PREWRITE_PRESERVED
+A8_B1_ONE_SHOT_DEPLOY=BEGINNING
+Deploying container to Cloud Run service [oldx-owner-read] in project [oldx-staging] region [asia-south1]
+OK Deploying... Done.
+  OK Creating Revision...
+Done.
+Service [oldx-owner-read] revision [oldx-owner-read-00012-vib] has been deployed and is serving 0 percent of traffic.
+A8_B1_DEPLOY_CLI=EXIT_ZERO_POSTCHECK_REQUIRED
+A8_B1_NEW_TAG=a8off23nov_NOT_YET_VERIFIED
+A8_B1_POSTWRITE_TRAFFIC_AND_IMAGE=NOT_YET_VERIFIED
+A8_B1_HOSTED_HTTP=NOT_INVOKED
+A8_B1_R1_TAG_CLEANUP=NOT_EXECUTED
+A8_B1_R2=NO_OP_UNLESS_DRIFT
+A8_B1_NO_AUTOMATIC_RETRY=TRUE
+PS C:\Users\Yasmin Parmar>
+```
+
+**Judgment:** The new immutable A8 image was submitted in the exactly approved one-shot command after its immediate service/direct-IAM drift guard passed; Google Cloud Run CLI completed zero-exit and reported **NEW revision `oldx-owner-read-00012-vib`, 0% main**. Console printed a reachable tagged URL `a8off23nov`; **do not reproduce public URL**, and its presence is not a hosted HTTP invocation or proof of public anonymous access. Service/revision/traffic/IAM postwrite metadata is **NOT YET independently verified**. No new A8 host URL invoke or Firebase data-plane test occurred; tag R1 and conditional R2 have NOT run. Private local one-shot marker was created by guarded script; DO NOT delete or rerun B1. This is a **NEW A8 distinct deployment**, NOT repeat of old 21 Nov `00010-zud` B1.
+
+**Next minimum work:** ONE fresh owner-operated Cloud Run postwrite service describe + **exact NEW revision `00012-vib` describe** + direct service IAM read to verify root `00001-8kr=100%`, both old tags and new `a8off23nov` on `00012-vib` 0%-main, service A8 immutable image identity, revision's resolved image (may be child manifest vs index and must not mislabel mismatch), exact two false flags, runtime SA, no volume/secrets, CPU/RAM/timeout/concurrency/scaling, no direct public IAM. Only after those independent checks and fresh exact state does authorized R1 remove **just** `a8off23nov` tag once, with one post-R1 service state check. R2 NO-OP unless main unexpectedly drifts; then STOP and require new incident-specific authorization before traffic restore. No repeated B1, SLSA, Grype, Build, local runtime or database/old IAM snapshot. `STEP04=ACTIVE_HOLD_ORIGINAL_EXIT`, `PRODUCTION=NO_GO`.

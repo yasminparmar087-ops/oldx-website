@@ -67,3 +67,43 @@ Owner-screenshot B1 CLI success for `oldx-owner-read-00012-vib` is already recor
 **Only if all checks pass**, script prints the preimage gates, creates one local exclusive R1 attempt marker, executes ONE owner-approved `gcloud run services update-traffic oldx-owner-read --remove-tags=a8off23nov`, and verifies fresh service traffic now consists of the original 100% main and precisely the old `healthcheck` / `step3rc14` tags. R2 remains **NO-OP** absent drift; old `00010-zud`/old `ownerreadv2` never touched. On any STOP, do **not** re-run script or delete marker; reconcile actual current state. R1 cannot delete latest revision/template or guarantee cost=0. No tagged URL is invoked, no ADC/data-plane, IAM, billing, Rules, Artifact Registry, Grype or build operations. It is intended for the already authorized single supervised trial, and **the operator must run it explicitly; nothing has been automatically sent to Cloud Run by GitHub**.
 
 Current: `A8_B1_DEPLOY_CLI=SUCCESS_ONCE`; `A8_POSTWRITE=PREPARED_NOT_EXECUTED`; `A8_R1=PREPARED_NOT_EXECUTED`; `A8_R2=NO_OP_UNLESS_DRIFT`; `STEP04=ACTIVE_HOLD`; `PRODUCTION=NO_GO`.
+
+
+## 24 November 2026 ~00:44 IST — ACTUAL A8 00012-vib postwrite PASS and guarded R1 tag-only cleanup COMPLETE_WITH_LIMITS
+
+**Evidence:** actual user-provided Windows PowerShell screenshot, not a simulated or repeat cloud call by this document. Owner ran the EXACT NEW A8 one-shot `scripts/step04-a8-postcheck-and-r1-cleanup-once-20261124.ps1`. Console visibly returned to `PS C:\Users\Yasmin Parmar>`, with no STOP after the output lines:
+
+```text
+A8_POST_SERVICE_REVISION_IAM=PASS_WITH_LIMITS
+A8_POST_NEW_REVISION=00012_VIB
+A8_POST_SERVICE_IMAGE=EXACT_SIGNED_A8_INDEX
+A8_POST_REVISION_IMAGE=EXACT_A8_DIGEST
+A8_POST_NEW_TAG_0_PERCENT=VERIFIED
+A8_POST_OLD_ROOT_AND_TAGS=VERIFIED
+A8_POST_BOTH_FLAGS=EXACT_FALSE
+A8_POST_DIRECT_IAM=NO_PUBLIC_ONE_NAMED_INVOKER
+A8_POST_INHERITED_IAM=UNVERIFIED
+A8_POST_OTHER_DB_DENIAL=UNVERIFIED
+A8_POST_HOSTED_HTTP=NOT_INVOKED
+A8_R1_EXACT_PREIMAGE=PASS
+A8_R1_REMOVE_ONLY_TAG=a8off23nov
+OK Updating traffic... Done.
+OK Routing traffic...
+Done.
+A8_R1_WRITE_CLI=EXIT_ZERO
+A8_R1_NEW_TAG=ABSENT
+A8_R1_OLD_100_PERCENT_MAIN_AND_TAGS=PRESERVED
+A8_R1_TAG_ONLY_CLEANUP=COMPLETE_WITH_LIMITS
+A8_R2_TRAFFIC_RESTORE=NO_OP_NOT_REQUIRED
+A8_NEW_REVISION_AND_LATEST_TEMPLATE=RETAINED_NOT_ROLLED_BACK
+A8_STEP04=HOLD_PENDING_G2_G4_G8
+A8_DEPLOY_R1_RETRY=PROHIBITED
+```
+
+**Verified actual new A8 B1+postcheck+R1 cumulative outcome:** the owner-deployed `oldx-owner-read-00012-vib` uses the exact *new* signed A8 private index `sha256:6ecd02bdd409a40673e28560f9fa77a642fee898a038d0133aea6f3a6a31cacc`; new revision metadata's image matches the exact A8 digest (no child/index discrepancy for this observation). Two feature flags are EXACT FALSE, expected resources/scaling, no secret volumes; direct IAM has no public principal and one direct Invoker; **not** evidence that inherited effective IAM exclusivity is proven. Before R1, `a8off23nov` was on new revision at 0%-main and original `oldx-owner-read-00001-8kr=100%`, `healthcheck`/`step3rc14` intact. One owner-approved `update-traffic --remove-tags=a8off23nov` command exited 0 and one post-R1 service read verified **only old root 100% and two old tags remain**. `R2=NO_OP_NOT_REQUIRED`. The CLI printed URLs; this is not evidence the owner invoked an HTTP endpoint and URLs/tokens are intentionally not recorded here.
+
+**Important limits:** R1 is tag-only cleanup. **A8 `00012-vib` revision and new latest service template still exist**, although trial tag is absent, and no automatic full template rollback or deletion was authorized/executed. Fresh private HTTP 503 response **NOT tested**, nor authenticated runtime IAM/Firestore data-plane. Current inherited invoker model, hypothetical other-database negative denial (no existing second DB), 15 severe Grype CVE risk disposition and whole-provider hard INR cost stop are still UNVERIFIED or unresolved. Acceptances were scoped to this now **consumed** private default-OFF trial; do not transfer to enabled product or production.
+
+**Strong NO REPEAT checkpoint:** `A8_B1_DEPLOY=CLI_SUCCESS_ONCE`; `A8_POSTCHECK=PASS_WITH_LIMITS_CONSUMED`; `A8_R1_TAG_ONLY=COMPLETE_WITH_LIMITS_CONSUMED`; `A8_R2=NO_OP`; `A8_HOSTED_REQUEST=NONE`; `A8_REVISION_TEMPLATE_RETAINED=YES`; `A8_LOCAL_ONE_SHOT_MARKERS=RETAIN_DO_NOT_DELETE`; `STEP04=ACTIVE_HOLD_ORIGINAL_EXIT`; `STEP05=NOT_AUTHORIZED`; `PRODUCTION=NO_GO`. **Do not** rerun Cloud Build, SLSA, Grype, local runtime, prewrite, B1, A8 postwrite, R1 or old G4/DB/billing reads just to collect equivalent evidence.
+
+**Next material Step 04 decision:** The narrow OFF-only hosted *metadata/trial* is finished. What remains is the explicit disposition of G2 15 severe CVEs, effective G4 inherited invoker and Firestore permissions/other-db limitation, and G8 bounded spending/STOP/rollback. Consider either formally risk-accepted **original Step04 technical exit with quantified remaining limitations** only if independent requirements are genuinely met, or the separately owner-approved decision-only administrative handoff without pretending any security clearance. Neither route is yet approved here. Fresh hosted HTTP, enabled API, IAM/billing and production actions require distinct approval and do not follow automatically from this complete R1.

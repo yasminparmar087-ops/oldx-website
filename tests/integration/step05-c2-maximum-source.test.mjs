@@ -28,7 +28,9 @@ test('NEW H1 compiled-OFF server health, exact routes, headers and no activation
   }
   for(const path of ['/healthz','/health?x=1','/api/staging/marketplace/list?x=1','/api/staging/marketplace/%6cist','https://evil.invalid/health'])assert.equal((await call(path)).status,404);
   assert.equal((await call('/api/staging/marketplace/list')).status,405);
-  assert.equal((await call('/health',{headers:{authorization:'Bearer NEVER_LEAK_THIS'}})).status,403);
+  const iamHealth=await call('/health',{headers:{authorization:'Bearer STRIPPED_IAM_VALUE','x-serverless-authorization':'Bearer STRIPPED_IAM_VALUE'}});
+  assert.equal(iamHealth.status,200);assert.ok(!iamHealth.body.includes('STRIPPED_IAM_VALUE'));
+  assert.equal((await call('/api/staging/marketplace/owner',{method:'POST',headers:{'x-serverless-authorization':'Bearer STRIPPED_IAM_VALUE'}})).status,503);
   const denied=await call('/api/staging/marketplace/list',{method:'POST',headers:{origin:'https://evil.invalid','x-oldx-gateway-request-proof':'NEVER_LEAK_THIS'}});
   assert.equal(denied.status,403);assert.ok(!denied.body.includes('NEVER_LEAK_THIS'));
  });

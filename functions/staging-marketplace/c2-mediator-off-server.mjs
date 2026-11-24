@@ -13,7 +13,9 @@ export function createC2OffMediatorServer(){
   const path=req.url??'',health=path==='/health';
   let status=404,code='NOT_FOUND';
   const names=req.rawHeaders.filter((_,i)=>i%2===0).map(x=>x.toLowerCase());
-  const forbidden=['cookie','authorization','x-serverless-authorization','x-oldx-gateway-attestation',
+  // IAM headers may be forwarded by Cloud Run. Ignore them; this OFF-only
+  // binary exposes no identity/data and never authenticates from their bytes.
+  const forbidden=['cookie','x-oldx-gateway-attestation',
    'x-oldx-gateway-request-proof','x-oldx-mediated-website-origin','x-oldx-gateway-nonce'];
   if(names.some(x=>forbidden.includes(x))){status=403;code='DENIED';}
   else if(names.length>40||new Set(names).size!==names.length){status=400;code='INVALID_HEADERS';}

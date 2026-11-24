@@ -58,3 +58,22 @@ gcloud projects describe oldx-staging --format="value(projectNumber)" & gcloud i
 Expected project number `38472235077` and two **explicit NOT_FOUND** outputs. `&` is intentional to display all three independent read-only statuses; NOT an all-pass detector. If any exact new resource EXISTS or results are PERMISSION_DENIED/ambiguous, **STOP**. Check screenshot before creating B1. Avoid repeating P0, builder, scanner, Cosign, old service/IAM/Registry/Billing checks.
 
 Current: `P0=PASS`, `P1_NEW_RESOURCE_COLLISION=AWAITING_OWNER_OUTPUT`, `B1/B2/B3=NOT_EXECUTED`, `C1B/C2/PRODUCTION=NO_GO`.
+
+
+## 24 Nov 2026 ~22:27 IST — Owner CMD actual P1 JIT exact new resource name/number checks PASS
+
+New screenshot from owner CMD shows exactly:
+- `gcloud projects describe oldx-staging --format="value(projectNumber)"` => `38472235077`, matching original approved project number.
+- `gcloud iam service-accounts describe oldx-step05-gateway@oldx-staging.iam.gserviceaccount.com --project=oldx-staging --format="value(uniqueId)"` => `NOT_FOUND: Unknown service account` with current intended owner identity. This is explicit absence at lookup, **not** a 403 permission-denied.
+- `gcloud run services describe oldx-step05-gateway --project=oldx-staging --region=asia-south1 --format="value(metadata.name)"` => `Cannot find service [oldx-step05-gateway]`. This is explicit absence at lookup, **not** a 403 permission-denied.
+
+**No service account creation, Registry push, Cloud Run deploy, IAM grants, Cloud-hosted request, Firebase/Rules or production action performed as part of this screenshot.** These checks establish `P1_PROJECT_NUMBER=PASS`, `P1_NEW_SA_NAME=NOT_FOUND_CONFIRMED_AT_CHECK`, `P1_NEW_RUN_SERVICE=NOT_FOUND_CONFIRMED_AT_CHECK`. Exact P0 owner/project/WSL existing image ID/amd64/nonroot had already passed; do not rerun P0/P1 just for reassurance. Historic 84 tests, build/scan, parent Cosign and old project audit are consumed.
+
+**NEXT authorized B1 — ONE write, then targeted readback ONLY:**
+```cmd
+gcloud iam service-accounts create oldx-step05-gateway --project=oldx-staging --display-name="OLDX Step05 OFF-only Gateway" && gcloud iam service-accounts describe oldx-step05-gateway@oldx-staging.iam.gserviceaccount.com --project=oldx-staging --format="value(email,uniqueId)"
+```
+
+The last `describe` is read-only and executes only after creation command succeeds. Google IAM docs note newly created service-account read visibility can lag; if create returns success but immediate describe reports NOT_FOUND, **DO NOT re-create**. Freeze and inspect single creation result, with later one precisely scoped readback if necessary. If create returns `ALREADY_EXISTS` or `PERMISSION_DENIED`, **STOP/no retry**. No `roles/` assignment, `keys create`, project IAM, Firebase, Artifact Registry or Cloud Run write under B1. B2 image push and B3 new private Cloud Run remain separately sequenced within the already approved Stage B scope and require actual B1 receipt to proceed.
+
+**Actual status here**: `P0=PASS`, `P1=PASS`, `B1_SA_CREATE=OWNER_APPROVED_AWAITING_EXECUTION`, `B2_IMAGE_PUSH=NOT_EXECUTED`, `B3_RUN_CREATE=NOT_EXECUTED`, `C1B/C2/PRODUCTION=NO_GO`.

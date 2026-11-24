@@ -47,3 +47,32 @@ printf '\n=== BUILD ERRORS (IF ANY) ===\n'; grep -Ei 'error|fail|warning' "$OUT/
 Inspect output before any new action or download. Note that the original Syft stderr was not explicitly redirected to a retained log in the one-shot script, so the exact exit reason might be unavailable; do not infer it. Preserve `summary.txt`, `node24-runtime.txt`, `off-scenario.txt`, `shutdown.txt`, `build.log` and any partial SBOM without exposing credentials. **Next consent scope:** if evidence cannot resolve failure, propose a minimal scan-only recovery or distinct one-time new build based on whether an immutable locally accessible image remains. No Cloud Build, Registry push or deploy automatically.
 
 **Status:** `C1A_LOCAL_NEW_IMAGE_BUILD=PASS_WITH_LIMITS`; `LINUX_NODE24_OFF_SMOKE=PASS`; `SYFT_SBOM=FAILED`; `GRYPE_NOT_RUN`; `C1A_IMAGE_SECURITY=BLOCKED`; `STEP05_HOSTED=BLOCKED`; `PRODUCTION=NO_GO`.
+
+
+## 24 Nov 2026 — SECOND owner screenshot: saved evidence inspected, 0-byte SBOM, no Syft stderr
+
+Owner ran the requested **READ-ONLY** Cloud Shell evidence inspection; second screenshot confirms:
+- Evidence directory `/home/yasminparmar087/oldx-step05-gateway-evidence-20261124T111007Z` exists; summary shows `STATUS=ATTEMPT_STARTED`, exact historical HEAD `10a486e27a75fa79d0c90fbea7c7017cfb15a020`, `PLATFORM=linux/amd64`, `USER=65532:65532`, and a locally derived Docker image ID. The screenshot does NOT show a completed image/scan summary.
+- Saved files: `build.log` (~18 KiB), `node24-runtime.txt`, `off-scenario.txt`, `shutdown.txt`, `summary.txt` and **`sbom.cdx.json` (0 bytes)**. No `grype-report.json`, `report-sha256.txt` or saved Syft error log. Build warnings grep reports only `1 warning found (use docker --debug to expand)`, not a build failure.
+- Previous screenshot already showed Linux Node24 NONROOT READONLY, OFF-only container and SIGTERM all PASS, then successful Syft tarball SHA256 check and `STOP: New image SBOM failed`. **The cause of Syft's nonzero exit is UNKNOWN** from retained artifacts: no stderr was saved. A zero-byte SBOM is NOT a security report; Grype never ran.
+- The one-shot script has a cleanup trap that attempts to remove the new locally tagged image on failure. The status of the exact image ID **has not yet been checked**. Do not assume it exists or assert Docker cached image layers can reconstruct an immutable derivation.
+- No older 84 Node tests, A8 image build, Dockerfile review, Vercel or IAM checks were rerun. The one-shot approval remains consumed. No cloud resource/IAM/billing/deploy has changed.
+
+**NEXT ONE READ-ONLY CHECK:** derive the image ID from the saved summary and inspect it without rebuilding, plus display scratch availability:
+
+```bash
+OUT="$HOME/oldx-step05-gateway-evidence-20261124T111007Z"
+ID=$(sed -n 's/^DERIVED_LOCAL_IMAGE_ID=//p' "$OUT/summary.txt" | head -n 1)
+if [ -z "$ID" ]; then
+  echo "IMAGE_ID_MISSING_FROM_SAVED_SUMMARY"
+elif docker image inspect "$ID" --format 'IMAGE_STILL_PRESENT={{.Id}} SIZE_BYTES={{.Size}}' 2>/dev/null; then
+  echo "SCAN_ONLY_RECOVERY_MAY_BE_POSSIBLE_AFTER_REVIEW"
+else
+  echo "IMAGE_REMOVED_BY_CLEANUP_OR_UNAVAILABLE"
+fi
+df -h /tmp "$HOME"
+```
+
+This is read-only and uses no network/cloud. **If image still present**, consider a separately scoped **scan-only** diagnostic with Syft stderr preserved (no new image build). **If image absent**, STOP: first decide a separate new image build+scan approval after source-only repair/plan; do not rerun automatically or use a mutable base. If disk is depleted, do not delete any unknown Cloud Shell home files without user's approval. Security evidence remains BLOCKED until actual new-image SBOM/Grype plus publisher/provenance review.
+
+`STEP05_IMAGE_BUILD=PASS_WITH_LIMITS`; `OFF_ONLY_LINUX_SMOKE=PASS`; `SYFT_SBOM=FAILED_0_BYTES_CAUSE_UNKNOWN`; `GRYPE=NOT_RUN`; `C1A/C1B=NOT_APPROVED`; `PRODUCTION=NO_GO`.

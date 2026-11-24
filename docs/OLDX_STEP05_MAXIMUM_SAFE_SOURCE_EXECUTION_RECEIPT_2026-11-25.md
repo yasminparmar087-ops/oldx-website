@@ -1,5 +1,27 @@
 # OLDX Step05 — maximum safe source-only execution receipt
 
+## 25 Nov 2026 — actual owner-WSL ONE raw-manifest diagnostic: exact original pin MATCH
+
+Start remote HEAD `702afc500ba34b9b31947cf7ac3ec071cd9d8d9b`. Verified diagnostic Git blob `fc1c2c552073eeb711057e734d5bbef68efda652` plus all three approved source blobs against exact local bytes: Dockerfile `ec36707fce197150e3f5f1b4bd1d0f30d8cbf7fa`, ignore `fc1944d7165bccc1bef5c06901841792724f751d`, server `68e65e2e1cdce5994780a5588c8a02da3e1f4be7`. Isolated minimal source snapshot used; dirty owner Handoff/untracked.firebaserc untouched.
+
+Dedicated marker `/root/.oldx-h1a-base-raw-manifest-once-20261125` was ABSENT before execution. Ran exactly ONCE approved script under owner's existing `OLDX-Ubuntu-24.04`; exit0, `RAW_SHA256_MATCH`. Marker now PRESENT/consumed; never remove or rerun. Only ONE unauthenticated raw HTTPS GET for SAME pinned public manifest. No redirect/auth retries, token, layer/config blob download or different digest.
+
+Actual saved response:
+- HTTP **200**.
+- Content-Type `application/vnd.oci.image.manifest.v1+json`.
+- Content-Length/raw bytes **4639**; Content-Encoding absent (identity request), API registry/2.0.
+- Docker-Content-Digest **`sha256:49559f4ee6632a11a13a7e198183efee1226de7a8f437df83c180b01bd8253ec`**.
+- SHA256 of raw body **`sha256:49559f4ee6632a11a13a7e198183efee1226de7a8f437df83c180b01bd8253ec`**.
+- Raw bytes match exact original pin **TRUE**; response digest header matches **TRUE**.
+- No network/auth/redirect/TLS error occurred in THIS request; no configured HTTP(S) proxy observed. No claim about unseen infrastructure or every other client path.
+- UTC2026-11-24T19:41:59.234004–19:42:02.847248 = **25Nov2026 01:11:59–01:12:02 IST**.
+- Private WSL evidence `/root/oldx-h1a-base-manifest-diagnostic-20261124T194159Z`: `raw-manifest.bin` and `receipt.json`; receipt SHA256 **`f301f77236a1af5ac5ee14ef426e3ff1226aa49ec0955fc33d7cea622203b704`**. Only bounded status/public header/hash summary saved in GitHub, no full private report/raw manifest/credentials uploaded.
+
+**Meaning/limits:** exact original OCI manifest bytes are consistent with the approved digest in this independent raw-GET path. Historical pin is not disproved by the earlier Docker CLI error. This does **NOT** explain/fix Docker29.10 manifest-client verification, validate layer/config content or platform/runtime, prove publisher signature/derived provenance/CVEs, or grant build readiness. Original failed Docker command and full H1A runner NOT rerun. Build0/SBOM0/Grype0/runtime0 unchanged; no image created, no code/Dockerfile/pin/checks altered. No test/scanner/CI/push/deploy/IAM/cloud-write/resource operations.
+
+**H1A remains BLOCKED before build** pending separately scoped resolution of the Docker-client verification discrepancy; no automatic build retry or digest-check bypass. Next bounded source-only decision is design an integrity-preserving preflight correction using this receipt, without additional network/image execution in this diagnostic authority. H1B/H2 NOT AUTHORIZED; Step05 NOT DONE; production NO-GO. C1A unchanged retained through28Nov2026 23:19IST; no auto cleanup/extension. Final pushed/read-back SHA recorded in accompanying Issue17 checkpoint and this receipt's containing commit.
+
+
 ## 25 Nov 2026 — H1A STOP preserved; ONE new raw public OCI manifest read-only diagnostic PREPARED, NOT RUN IN OWNER WSL
 
 Source-of-truth after verified H1A preflight: local Docker/Syft/Grype + approved three H1 blobs/disk/RAM passed; the **single** `docker manifest inspect --verbose` on `gcr.io/distroless/nodejs24-debian13:nonroot@sha256:49559f4ee6632a11a13a7e198183efee1226de7a8f437df83c180b01bd8253ec` failed `manifest verification failed for digest`. **H1A=BLOCKED_BEFORE_BUILD**; build0, Syft0, Grype0, runtime0, image0, build-marker absent. Historical base pin has NOT been proven wrong, no automatic repin/verification bypass/retry allowed. User reported private WSL receipt SHA256 `cc7834527299c37547cdc99de800e4cd26a3ba4670b2412a56b08cb87b83dd28`. Owner explicitly identified the next ONE action as raw-manifest SHA256/header diagnostic for EXACT same pin, without build/scan retries.

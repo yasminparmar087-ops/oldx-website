@@ -1,5 +1,7 @@
 # OLDX Step05 H1B — isolated native-Linux Google Cloud CLI setup plan
 
+> **25 Nov 2026 LATEST S1 OWNER DECISION:** Owner has NOW explicitly authorized **S1 ONLY** (one official archive download, fresh dual-document version/checksum verification, safe tar inspection and isolated WSL Linux extraction). The older statements below saying S1 "NOT APPROVED" record the **historical S0 proposal**, not current consent. Actual owner-local S1 execution **NOT YET VERIFIED**. The exact immutable one-shot source/test hashes, safe one-line owner-WSL command, result/STOP markers and S2/S3/W1–W6 separate restrictions are in [the current S1 approved handoff](OLDX_STEP05_H1B_NATIVE_LINUX_GCLOUD_S1_OWNER_APPROVED_SOURCE_RECEIPT_2026-11-25.md). No gcloud, auth, Cloud writes or old probe retries are authorized by S1.
+
 **25 November 2026, source-only PLAN PREPARED. No download, install, login, auth retry, project read, IAM, image, Cloud write, or H1B deployment is authorized or executed by this document.**
 
 ## 1. Established local evidence and purpose

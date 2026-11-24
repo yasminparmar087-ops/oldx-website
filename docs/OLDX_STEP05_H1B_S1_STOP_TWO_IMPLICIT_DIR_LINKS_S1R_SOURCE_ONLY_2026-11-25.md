@@ -1,5 +1,20 @@
 # OLDX Step05 H1B S1 STOP — two implicit directory symlinks; S1R offline recovery source ready
 
+> **25 Nov 2026 — LATEST OWNER APPROVAL: ONE S1R OFFLINE RECOVERY ONLY.** The owner explicitly replied **"ha manjuri chhe"** after being asked to authorize exactly one S1R guarded extraction of the retained checksum-verified local archive; the preceding “not approved” statements are historic source-preparation status. **Execution in the owner's WSL has NOT been observed; no PASS may be inferred.** The S1R runner is immutable at first-containing commit `e237de69206170112a202d466cb7b2f59c8eee81`, Git blob `c162c38e1281e83dd2abb6fd75020d3d48178b97`, independently verified on 25 Nov against actual GitHub file bytes SHA256 `34af0511c08093d7a402f86641f44d82306c3b4fefa13837b37775b44954344c`. **S1R operator command, in existing OLDX-Ubuntu-24.04 root WSL terminal, one paste ONLY:**
+
+```bash
+(
+  set -euo pipefail
+  umask 077
+  d="$(mktemp -d /root/oldx-h1b-s1r-source.XXXXXXXX)"
+  curl --fail --silent --show-error --retry 0 --max-redirs 0 --max-time 40 --proto '=https' --output "$d/s1r.py" 'https://raw.githubusercontent.com/yasminparmar087-ops/oldx-website/e237de69206170112a202d466cb7b2f59c8eee81/scripts/step05-h1b-s1r-offline-extract-once-20261125.py'
+  printf '%s  %s\n' '34af0511c08093d7a402f86641f44d82306c3b4fefa13837b37775b44954344c' "$d/s1r.py" | sha256sum --check --status
+  python3 -B "$d/s1r.py" --recover-existing-archive-once
+)
+```
+
+> The bootstrap fetches only immutable source from GitHub; the runner **does NOT download any new Google SDK/archive, authenticate, run gcloud, access Cloud, modify Windows SDK/PATH or reuse the consumed original S1 marker**. It checks original S1 marker/receipt, recomputes the retained archive's checksum, inspects exactly 36,776 entries and only two known implicit parent-directory symlinks, extracts privately once with a **new distinct one-shot marker**. A STOP consumes S1R marker; **do not rerun or delete marker**, and do not automatically modify archive/source or invoke S2. Return only `S1R_RESULT` and `S1R_STOP_REASON`/screenshot. S1R success establishes local extraction only; **S2 `gcloud --version`, S3 target/account checks, H1B Cloud W1–W6, H2 and production are NOT authorized**. Original C1A OFF-only service remains retained only through 28 Nov 2026 23:19 IST; no auto cleanup/extension.
+
 **25 Nov 2026 IST.** Source-only recovery preparation. Read [original approved S1 packet](OLDX_STEP05_H1B_NATIVE_LINUX_GCLOUD_S1_OWNER_APPROVED_SOURCE_RECEIPT_2026-11-25.md), actual user terminal screenshots and canonical Issue #17. Branch `security-hardening-review`. **Original S1 is STOP/CONSUMED. S1R is NOT YET APPROVED OR EXECUTED on owner WSL.**
 
 ## Actual owner screenshots (no inference of SDK startup)

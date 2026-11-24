@@ -222,3 +222,21 @@ Evaluate live metadata for exact revision `oldx-step05-gateway-00001-thd`, immut
 - The existing Cloud Run Gateway has already been proved C1A `PASS_WITH_LIMITS` by source, digest, service config and no direct service public IAM bindings. C1B actual hosted outcomes **remain unknown until owner executes**. C1B approval does NOT extend 12 HIGH CVE limited risk into production or approve using this gateway for buyer traffic.
 
 **Status after consent:** `C1B_OWNER_CONSENT=APPROVED_MAX_6_HTTP_20_MIN`; `C1B_HTTP_REQUESTS_ACTUALLY_SENT=0_OBSERVED`; `C1B_HOSTED_AUTH_200_API_503_ANON_401_403=NOT_YET_VERIFIED`; `B1/B2/B3_CLOUD_WRITES=ALREADY_COMPLETED_DO_NOT_REPEAT`; `C2/PRODUCTION=NO_GO`. A single new source-only fail-closed one-shot WSL probe script may be prepared/committed and run only once from the already cloned owner checkout; no need for old tests, old build/scan, Cosign or cloud re-audit.
+
+
+## 24 Nov 2026 — C1B owner approval recorded; 3-request one-shot script SAVED (NOT EXECUTED)
+
+Owner explicitly said `ha manjuri chhe` to the earlier C1B proposal: at most SIX PRIVATE hosted OFF-only requests within 20 minutes; no retries; IAM, Firebase, old backend, Product activation, C2/production unchanged. **This is a distinct authorization from C1A Stage B and does not authorize new resource writes or a public launch.**
+
+**Source-only script:** [`scripts/step05-c1b-private-off-http-once-20261124.sh`](../scripts/step05-c1b-private-off-http-once-20261124.sh) (`git blob 5ae169af7be95d9fbe686475c680e99b6f33aa16` at creation). It checks the stable existing branch and immutable OFF server blob `25d2679bd4ea970c8b8a32a778fb26eb347bcdd6`, requires a token passed by stdin, never prints/saves the token, creates a one-attempt marker **before** the first HTTP call, requires HTTPS/TLS, disables redirects and retries, sets max 20s per request and 20-minute overall window. Sends only these THREE calls to the known NEW Gateway URL: anonymous GET `/healthz` expect 401 or 403; Owner-authenticated GET `/healthz` expect 200; Owner-authenticated POST `/api/staging/marketplace/owner` body `{}` expect 503. It stops immediately on any unexpected code/timeout. Remaining authorized 3 calls are intentionally **unused**, not automatic backup or retry. Logs only numbered request statuses, no token, response body or credentials to `$HOME/oldx-step05-c1b-off-hosted-result-20261124.txt`. **Not run at GitHub source creation; no live hosted result exists yet.**
+
+**Fastest two CMD steps using already cloned WSL repo** (first only updates small source and syntax checks; second actually sends bounded hosted HTTP):
+
+```cmd
+wsl -d OLDX-Ubuntu-24.04 -- bash -lc "cd ~/oldx-c1a-proof-stable-20261124 && git pull --ff-only && bash -n scripts/step05-c1b-private-off-http-once-20261124.sh"
+gcloud auth print-identity-token | wsl -d OLDX-Ubuntu-24.04 -- bash -lc "cd ~/oldx-c1a-proof-stable-20261124 && bash scripts/step05-c1b-private-off-http-once-20261124.sh"
+```
+
+If first fails, DO NOT run the second. Second command requires installed existing Windows gcloud with correct Owner account and WSL curl, uses Google-recommended short-lived developer user identity token for Cloud Run (https://docs.cloud.google.com/run/docs/authenticating/developers). No `gcloud auth login`, IAM token creator grants, service-account impersonation or IAM change. **Do not repeat the second command even on error**, because the one-shot marker may already have been created; read only saved report and screenshot. No attempts to invoke other services, no old tests, no deployment.
+
+**Status:** `C1B_OWNER_CONSENT=YES`; `C1B_SCRIPT=PREPARED_NOT_RUN`; `C1B_HOSTED_HTTP_RESULT=UNKNOWN`; `C1A=PASS_WITH_LIMITS_CONSUMED`; `C2=HOLD`; `PRODUCTION=NO_GO`; `NEW_ONLY_CLEANUP=SEPARATELY_PREVIOUSLY_APPROVED_EXACT_UID_GUARDED_NOT_AUTOMATIC`.

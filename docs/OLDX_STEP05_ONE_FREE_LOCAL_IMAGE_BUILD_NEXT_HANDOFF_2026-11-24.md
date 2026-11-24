@@ -117,3 +117,18 @@ wsl -d OLDX-Ubuntu-24.04 -- bash -lc 'd=$(mktemp -d /tmp/oldx-step05-wsl.XXXXXX)
 Send **summary.txt**, not private credentials, and the last concise `STOP` line. If the new attempt fails, **do not repeat the one-shot**; next action will inspect retained scan error log and local image without another build. If Grype reports HIGH/CRITICAL IDs, that is a documented security disposition blocker, not automatic failure of syntax and not launch authorization. Initial C1A Cloud deployment and C1B/C2 real-host tests remain separately unapproved with IAM, full gross spend, publisher verification, media and prior severe-CVE enabled-scope gates unchanged.
 
 **Status at time of this document:** `STEP05_WSL_BUILD=OWNER_APPROVED_ONE_ATTEMPT_SCRIPT_PREPARED_NOT_RUN`; `STEP05_OLD_CLOUD_SHELL_BUILD=PASS_WITH_LIMITS`; `OLD_CLOUD_SHELL_SYFT=FAILED_0_BYTES`; `NEW_WSL_SBOM/GRYPE=NOT_EXECUTED`; `C1A/C1B/C2=NOT_APPROVED`; `PRODUCTION=NO_GO`.
+
+
+## 24 Nov 2026 — WSL first invocation STOPPED BEFORE SCRIPT: clone/checkout file mismatch
+
+Owner's local Windows PowerShell screenshot after authorized WSL command shows the exact error `bash: scripts/step05-gateway-off-wsl-one-shot.sh: No such file or directory`. The preceding command used `git clone --quiet --depth 1 --single-branch --branch security-hardening-review`, then `cd "$d"`, then `bash scripts/step05-gateway-off-wsl-one-shot.sh`. There is no new build/scan/script output; the NEW WSL-only one-shot itself **DID NOT START**, the per-WSL approval marker was not set by that script, no derived image/scan created and no old cases rerun. This is a clone/checkout/path problem, **not evidence of a Docker/Syft failure**.
+
+GitHub connector independently verified at the time of this screenshot that current remote branch HEAD is `05cb784a8cf7ad757b7ae73f92805a68cd701f14` and the required exact file **DOES exist** on branch: `scripts/step05-gateway-off-wsl-one-shot.sh`, Git blob `4487b23109c77ca8b4c6f23e131cde3c2bb7fb5b`, size 10865 bytes. Do not assume why local clone lacks it until reading local clone branch/HEAD/tree.
+
+**NEXT ONE READ-ONLY WSL action** from PowerShell, inspect the already cloned repo(s) without another clone or build:
+
+```powershell
+wsl -d OLDX-Ubuntu-24.04 -- bash -lc 'for d in /tmp/oldx-step05-wsl.*; do [ -d "$d/.git" ] || continue; echo "=== $d ==="; git -C "$d" branch --show-current; git -C "$d" rev-parse HEAD; git -C "$d" ls-files scripts/step05-gateway-off-wsl-one-shot.sh; ls -l "$d/scripts/step05-gateway-off-wsl-one-shot.sh" 2>&1; done'
+```
+
+Do not rerun the whole command until the precise local checkout mismatch is understood; no cloud actions/deployment/paid build. `STEP05_WSL_ONE_SHOT=NOT_STARTED`; `STEP05_OLD_CLOUD_SHELL_LOCAL_IMAGE=PASS_WITH_LIMITS_AND_IMAGE_REMOVED`; `NEW_WSL_SBOM_GRYPE=NOT_RUN`; `C1A/C1B/C2=UNAPPROVED`; `PRODUCTION=NO_GO`.

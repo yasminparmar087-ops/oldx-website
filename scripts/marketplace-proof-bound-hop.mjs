@@ -14,7 +14,8 @@ function context(parent,ms){
  const controller=new AbortController(),abort=()=>controller.abort();
  parent?.addEventListener('abort',abort,{once:true});if(parent?.aborted)abort();
  const timer=setTimeout(abort,ms);
- return {signal:controller.signal,close(){clearTimeout(timer);parent?.removeEventListener('abort',abort);}};
+ const stopped=new Promise((_,reject)=>{controller.signal.addEventListener('abort',()=>reject(Error('Stopped')),{once:true});if(controller.signal.aborted)reject(Error('Stopped'));});stopped.catch(()=>{});
+ return {signal:controller.signal,run:operation=>Promise.race([Promise.resolve().then(()=>{if(controller.signal.aborted)throw Error('Stopped');return operation();}),stopped]),close(){clearTimeout(timer);parent?.removeEventListener('abort',abort);}};
 }
 async function readBounded(stream,max,signal){
  if(signal.aborted)throw Error('Stopped');
@@ -38,16 +39,16 @@ export function createProofBoundGatewayHop({enabled=false,backendOrigin,signRequ
   if(!ready)throw Error('Proof hop unavailable');
   const path=pathFor(url,backendOrigin),headers=new Headers(init.headers);
   if(!path||init.method!=='POST'||!(init.body instanceof Uint8Array)||init.body.byteLength>(path.endsWith('/list')||path.endsWith('/detail')?4096:32768)||headers.has(MARKETPLACE_REQUEST_PROOF_HEADER)||headers.has('origin')||headers.has('cookie')||!googleHop(headers.get('x-serverless-authorization'))||!/^[-\w]+\.[-\w]+\.[-\w]+$/.test(headers.get(IDENTITY_HEADER)??''))throw Error('Proof hop invalid request');
-  const ctx=context(init.signal,timeoutMs);
+  const ctx=context(init.signal,timeoutMs),data=new Uint8Array(init.body);
   try{
-   const proof=await signRequestProof({method:'POST',path,body:init.body,authorization:headers.get('authorization'),attestationToken:headers.get(IDENTITY_HEADER),signal:ctx.signal});
+   const proof=await ctx.run(()=>signRequestProof({method:'POST',path,body:data,authorization:headers.get('authorization'),attestationToken:headers.get(IDENTITY_HEADER),signal:ctx.signal}));
    if(!signedProof(proof)||ctx.signal.aborted)throw Error('Signing failed');
    headers.set(MARKETPLACE_REQUEST_PROOF_HEADER,proof);
-   const response=await fetchBackend(url,{...init,headers,signal:ctx.signal,redirect:'error',credentials:'omit',cache:'no-store'});
+   const response=await ctx.run(()=>fetchBackend(url,{...init,body:data,headers,signal:ctx.signal,redirect:'error',credentials:'omit',cache:'no-store'}));
    if(!(response instanceof Response)||response.redirected||response.status<200||response.status>=600)throw Error('Backend response failed');
    const body=await readBounded(response.body,65536,ctx.signal);
    const decoded=new TextDecoder('utf-8',{fatal:true}).decode(body);
-   if(decoded.includes(proof))throw Error('Proof echoed');
+   if(JSON.stringify(JSON.parse(decoded)).includes(proof))throw Error('Proof echoed');
    // Never propagate upstream response headers or credential echoes directly.
    return new Response(body,{status:response.status,headers:{'content-type':'application/json; charset=utf-8','cache-control':'private, no-store','x-content-type-options':'nosniff'}});
   }finally{ctx.close();}
@@ -67,17 +68,17 @@ export function createProofBoundBackendHop({enabled=false,audience,gatewayServic
   if(!path)return error(404,'NOT_FOUND');
   if(request.method!=='POST')return error(405,'METHOD_NOT_ALLOWED');
   if(request.headers.has('origin')||request.headers.has('cookie')||!googleHop(request.headers.get('x-serverless-authorization'))||!signedProof(request.headers.get(MARKETPLACE_REQUEST_PROOF_HEADER)))return error(403,'DENIED');
-  const ctx=context(request.signal,timeoutMs);
+  const ctx=context(request.signal,timeoutMs);let dispatched=false;
   try{
-   const identity=await verifyAttestation(request,{audience,signal:ctx.signal});
+   const identity=await ctx.run(()=>verifyAttestation(request,{audience,signal:ctx.signal}));
    if(identity?.verified!==true||identity.principal!==gatewayServiceAccount||identity.audience!==audience||!Number.isSafeInteger(identity.expiresAtMs)||identity.expiresAtMs<=now()||ctx.signal.aborted)return error(403,'DENIED');
    const data=await readBounded(request.body,path.endsWith('/list')||path.endsWith('/detail')?4096:32768,ctx.signal);
-   const allowed=await verifyRequestProof({proof:request.headers.get(MARKETPLACE_REQUEST_PROOF_HEADER),method:'POST',path,body:data,authorization:request.headers.get('authorization'),attestationToken:request.headers.get(IDENTITY_HEADER),signal:ctx.signal});
-   if(allowed!==true||ctx.signal.aborted)return error(403,'DENIED');
+   const allowed=await ctx.run(()=>verifyRequestProof({proof:request.headers.get(MARKETPLACE_REQUEST_PROOF_HEADER),method:'POST',path,body:data,authorization:request.headers.get('authorization'),attestationToken:request.headers.get(IDENTITY_HEADER),signal:ctx.signal}));
+   if(allowed!==true||ctx.signal.aborted||!Number.isSafeInteger(now())||now()>=identity.expiresAtMs)return error(403,'DENIED');
    const headers=new Headers(request.headers);headers.delete(MARKETPLACE_REQUEST_PROOF_HEADER);
    const safe=new Request(request.url,{method:'POST',headers,body:data,signal:ctx.signal});
-   return await backend.fetch(safe);
-  }catch{return error(503,'ENFORCEMENT_UNAVAILABLE');}
+   return await ctx.run(()=>{dispatched=true;return backend.fetch(safe);});
+  }catch{return dispatched&&['save','archive'].includes(path.split('/').at(-1))?Response.json({ok:false,error:{code:'OUTCOME_UNKNOWN'},retrySameRequest:true},{status:202}):error(503,'ENFORCEMENT_UNAVAILABLE');}
   finally{ctx.close();}
  }});
 }

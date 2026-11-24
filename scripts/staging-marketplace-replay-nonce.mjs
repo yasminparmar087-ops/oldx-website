@@ -6,14 +6,15 @@ const validTime=value=>Number.isSafeInteger(value)&&value>=0;
 // Standalone transaction core with no SDK initialization. Atomic, durable
 // consume-once semantics are required; process memory is not suitable in host.
 export async function consumeAtomicMarketplaceReplayNonce({sdk,db,nonceRef,expiresAtMs,signal,now=Date.now,retentionMs=300000}={}){
- const check=()=>{if(signal?.aborted||!validTime(now())||now()>=expiresAtMs)throw Error('Replay nonce deadline');};
+ const check=()=>{const time=now();if(signal?.aborted||!validTime(time)||time>=expiresAtMs)throw Error('Replay nonce deadline');};
  const clock=now();
  if(typeof sdk?.runTransaction!=='function'||typeof nonceRef?.path!=='string'||!validTime(clock)||!validTime(expiresAtMs)||expiresAtMs<=clock||expiresAtMs-clock>30000||!validTime(retentionMs)||retentionMs<30000||retentionMs>86400000||!validTime(expiresAtMs+retentionMs))throw Error('Replay nonce configuration denied');
  check();
  return sdk.runTransaction(db,async tx=>{
   check();const snapshot=await tx.get(nonceRef);check();
   if(typeof snapshot?.exists!=='function')throw Error('Replay snapshot unavailable');
-  if(snapshot.exists())return {allowed:false};
+  const exists=snapshot.exists();if(typeof exists!=='boolean')throw Error('Replay snapshot unavailable');
+  if(exists)return {allowed:false};
   tx.set(nonceRef,{count:1,expiresAtMs:expiresAtMs+retentionMs});
   check();return {allowed:true};
  },{maxAttempts:3});

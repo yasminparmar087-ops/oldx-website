@@ -1,0 +1,58 @@
+import {createAttestedMarketplaceGateway,createTrustedMarketplaceBackend} from './trusted-host.mjs';
+import {createStagingMarketplaceRuntime} from './runtime.mjs';
+import {createSecureStagingMarketplacePublicRuntime} from './public-runtime.mjs';
+import {createGoogleGatewayPublicKeyResolver} from '../../scripts/google-gateway-public-keys.mjs';
+import {createGatewayAttestationVerifier} from '../../scripts/gateway-attestation.mjs';
+import {createMarketplaceRequestProofSigner,createMarketplaceRequestProofVerifier} from '../../scripts/marketplace-gateway-request-proof.mjs';
+import {createProofBoundGatewayHop,createProofBoundBackendHop} from '../../scripts/marketplace-proof-bound-hop.mjs';
+import {createStagingMarketplaceBinding} from '../../scripts/staging-marketplace-context.mjs';
+import {createStagingMarketplaceReplayNonce} from '../../scripts/staging-marketplace-replay-nonce.mjs';
+import {createStagingMarketplaceEnforcement} from '../../scripts/provider-enforcement-adapters.mjs';
+import {createStagingMarketplaceRate} from '../../scripts/staging-marketplace-rate.mjs';
+import {createStagingMarketplaceGuestRate} from '../../scripts/staging-marketplace-guest-rate.mjs';
+import {createMarketplacePublicCursor} from '../../scripts/marketplace-public-cursor.mjs';
+import {createStagingMarketplaceMedia} from '../../scripts/staging-marketplace-media.mjs';
+// Source-only factories, no listener, environment, SDK init, token mint or fetch.
+// Trusted host explicitly supplies all providers. Browser controls NONE of them.
+export function createStep05Gateway({enabled=false,requestSigning={},fetchBackend,now=Date.now,...options}={}){
+ if(enabled!==true||typeof fetchBackend!=='function')return createAttestedMarketplaceGateway();
+ const signer=createMarketplaceRequestProofSigner({...requestSigning,enabled:true,now});
+ if(typeof signer!=='function')return createAttestedMarketplaceGateway();
+ const hop=createProofBoundGatewayHop({enabled:true,backendOrigin:options.backendOrigin,signRequestProof:signer,fetchBackend});
+ return createAttestedMarketplaceGateway({...options,enabled:true,now,fetchBackend:hop});
+}
+export function createStep05Backend({enabled=false,audience,gatewayServiceAccount,googleIdentity={},requestVerification={},runtimeOptions={},guestPolicy,cursorKey,nonceRetentionMs=300000,now=Date.now}={}){
+ const off=()=>createTrustedMarketplaceBackend();
+ if(enabled!==true)return off();
+ try{
+  const options={...runtimeOptions,now};
+  if(options.adminAuth?.app?.options?.projectId!=='oldx-staging'||typeof options.adminAuth.verifyIdToken!=='function')return off();
+  const binding=createStagingMarketplaceBinding(options);
+  // Validate quota/cursor configuration without any reads or writes.
+  createStagingMarketplaceRate({binding,policy:options.ratePolicy,now});
+  createStagingMarketplaceGuestRate({enabled:true,binding,policy:guestPolicy,now});
+  createMarketplacePublicCursor({key:cursorKey,now});
+  const googleKeys=createGoogleGatewayPublicKeyResolver({enabled:true,issuer:googleIdentity.issuer,fetchRequest:googleIdentity.fetchRequest,now});
+  if(typeof googleKeys!=='function'||typeof requestVerification.resolvePublicKey!=='function')return off();
+  // Google OAuth keys verify ONLY the identity assertion. The independent
+  // request signer MUST supply its matching public keys through the other port.
+  const verifyIdentity=createGatewayAttestationVerifier({...googleIdentity,enabled:true,
+   resolvePublicKey:googleKeys,iamAudience:audience,expectedPrincipal:gatewayServiceAccount,now});
+  if(typeof verifyIdentity!=='function')return off();
+  const consumeNonce=createStagingMarketplaceReplayNonce({enabled:true,binding,retentionMs:nonceRetentionMs,now});
+  const auth=createStagingMarketplaceEnforcement({enabled:true,adminAuth:options.adminAuth,now});
+  const authorizeBeforeNonce=async({path,authorization},{signal})=>{
+   if(path.endsWith('/list')||path.endsWith('/detail'))return authorization===null;
+   if(typeof authorization!=='string'||!authorization.startsWith('Bearer '))return false;
+   try{return !!await auth.verifyFirebaseToken(authorization.slice(7),{checkRevoked:true,signal});}catch{return false;}
+  };
+  const proof=createMarketplaceRequestProofVerifier({...requestVerification,enabled:true,consumeNonce,authorizeBeforeNonce,now});
+  if(typeof proof!=='function')return off();
+  const commandRuntime=createStagingMarketplaceRuntime({...options,enabled:true,publicationEnabled:false,
+   createMediaBindings:options.createMediaBindings??(b=>createStagingMarketplaceMedia({enabled:true,binding:b}))});
+  const publicRuntime=createSecureStagingMarketplacePublicRuntime({...options,enabled:true,guestPolicy,cursorKey});
+  const inner=createTrustedMarketplaceBackend({enabled:true,audience,gatewayServiceAccount,
+   verifyInvoker:verifyIdentity,commandRuntime,publicRuntime,now});
+  return createProofBoundBackendHop({enabled:true,audience,gatewayServiceAccount,verifyAttestation:verifyIdentity,verifyRequestProof:proof,backend:inner,now});
+ }catch{return off();}
+}

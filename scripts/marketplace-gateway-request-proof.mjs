@@ -45,7 +45,7 @@ export function createMarketplaceRequestProofSigner({enabled=false,kid,signMessa
    const payload={v:purpose,kid,method:'POST',path,bodyHash:hex(body),authHash:hex(auth??''),attestationHash:hex(attestationToken),nonce,issuedAtMs:clock,expiresAtMs:clock+lifeMs};
    const bytes=message(payload);
    const signature=await bounded(sig=>signMessage(bytes,{signal:sig,kid}),signal,timeoutMs);
-   if(!(signature instanceof Uint8Array)||signature.length<256||signature.length>512||stopped(signal))return null;
+   if(!(signature instanceof Uint8Array)||signature.length<256||signature.length>512||stopped(signal)||!number(now())||now()>=payload.expiresAtMs)return null;
    const proof=b64(bytes)+'.'+b64(signature);
    return proof.length<=2048?proof:null;
   }catch{return null;}
@@ -56,23 +56,29 @@ export function createMarketplaceRequestProofSigner({enabled=false,kid,signMessa
 // attestation and Cloud Run IAM checks, before the marketplace operation starts.
 // consumeNonce must be transactional/durable across instances; in-memory maps
 // are suitable ONLY for local synthetic tests, never a hosted binding.
-export function createMarketplaceRequestProofVerifier({enabled=false,resolvePublicKey,consumeNonce,now=Date.now,maxAgeMs=15000,skewMs=2000,timeoutMs=1000}={}){
- if(enabled!==true||typeof resolvePublicKey!=='function'||typeof consumeNonce!=='function'||typeof now!=='function'||!Number.isInteger(maxAgeMs)||maxAgeMs<1000||maxAgeMs>30000||!Number.isInteger(skewMs)||skewMs<0||skewMs>3000||!Number.isInteger(timeoutMs)||timeoutMs<1||timeoutMs>1000)return null;
+export function createMarketplaceRequestProofVerifier({enabled=false,resolvePublicKey,consumeNonce,authorizeBeforeNonce,now=Date.now,maxAgeMs=15000,skewMs=2000,timeoutMs=1000}={}){
+ if(enabled!==true||typeof resolvePublicKey!=='function'||typeof consumeNonce!=='function'||authorizeBeforeNonce!==undefined&&typeof authorizeBeforeNonce!=='function'||typeof now!=='function'||!Number.isInteger(maxAgeMs)||maxAgeMs<1000||maxAgeMs>30000||!Number.isInteger(skewMs)||skewMs<0||skewMs>3000||!Number.isInteger(timeoutMs)||timeoutMs<1||timeoutMs>1000)return null;
  return async({proof,method,path,body,authorization:auth=null,attestationToken,signal}={})=>{
   try{
    if(method!=='POST'||typeof proof!=='string'||proof.length>2048||!bodyBytes(body)||!validPath(path,body)||!authorization(auth)||!attestation(attestationToken)||stopped(signal))return false;
    const parts=proof.split('.');if(parts.length!==2||!parts.every(s=>/^[A-Za-z0-9_-]+$/.test(s)))return false;
    const payloadBytes=Buffer.from(parts[0],'base64url'),signature=Buffer.from(parts[1],'base64url');
-   if(payloadBytes.length>512||payloadBytes.toString('base64url')!==parts[0]||signature.length<256||signature.length>512||signature.toString('base64url')!==parts[1])return false;
-   const data=payloadBytes.toString('utf8');if(Buffer.from(data).length!==payloadBytes.length)return false;
+   if(payloadBytes.length>768||payloadBytes.toString('base64url')!==parts[0]||signature.length<256||signature.length>512||signature.toString('base64url')!==parts[1])return false;
+   const data=new TextDecoder('utf-8',{fatal:true}).decode(payloadBytes);
    const payload=JSON.parse(data);if(!validatePayload(payload)||JSON.stringify(payload)!==data||payload.path!==path||payload.bodyHash!==hex(body)||payload.authHash!==hex(auth??'')||payload.attestationHash!==hex(attestationToken))return false;
    const clock=now();if(!number(clock)||payload.issuedAtMs>clock+skewMs||clock-payload.issuedAtMs>maxAgeMs||payload.expiresAtMs<=clock)return false;
    const key=await bounded(sig=>resolvePublicKey({kid:payload.kid,signal:sig}),signal,timeoutMs);
    if(!pubkey(key)||signature.length!==Math.ceil(key.asymmetricKeyDetails.modulusLength/8)||!verify('RSA-SHA256',payloadBytes,{key,padding:constants.RSA_PKCS1_PADDING},signature)||stopped(signal))return false;
+   const fresh=()=>{const t=now();return number(t)&&payload.issuedAtMs<=t+skewMs&&t-payload.issuedAtMs<=maxAgeMs&&payload.expiresAtMs>t;};
+   if(!fresh())return false;
+   // Optional trusted authentication gate AFTER signature, BEFORE nonce writes.
+   // Pass immutable strings only, not mutable body/proof objects.
+   if(authorizeBeforeNonce!==undefined&&await bounded(sig=>authorizeBeforeNonce({method,path,authorization:auth},{signal:sig}),signal,timeoutMs)!==true)return false;
+   if(!fresh()||stopped(signal))return false;
    // Never persist the raw nonce, signed header, Firebase bearer, body or ID JWT.
    const nonceHash=hex(JSON.stringify([purpose,payload.kid,payload.nonce]));
    const decision=await bounded(sig=>consumeNonce({nonceHash,expiresAtMs:payload.expiresAtMs,signal:sig}),signal,timeoutMs);
-   return decision?.allowed===true&&!stopped(signal);
+   return decision?.allowed===true&&!stopped(signal)&&fresh();
   }catch{return false;}
  };
 }

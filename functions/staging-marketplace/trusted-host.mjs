@@ -1,3 +1,4 @@
+import {MARKETPLACE_REQUEST_PROOF_HEADER} from '../../scripts/marketplace-gateway-request-proof.mjs';
 import {createGatewayAttestationVerifier,GATEWAY_ATTESTATION_HEADER} from '../../scripts/gateway-attestation.mjs';
 import {createCloudRunMarketplaceListener} from './cloud-run-http.mjs';
 import {createMarketplaceFetchHandler} from './vercel-handler.mjs';
@@ -103,7 +104,7 @@ export function createMarketplaceGateway({enabled=false,backendOrigin,gatewaySer
    return new Response(null,{status:204,headers:{'access-control-allow-origin':caller,'access-control-allow-methods':'POST','access-control-allow-headers':commands.has(op)?'content-type, authorization':'content-type','vary':'Origin, Access-Control-Request-Method, Access-Control-Request-Headers','cache-control':'no-store'}});
   }
   if(request.method!=='POST')return cors(fail(405,'METHOD_NOT_ALLOWED'),caller);
-  if(request.headers.has('x-serverless-authorization')||request.headers.has(GATEWAY_ATTESTATION_HEADER)||request.headers.has('cookie'))return cors(fail(403,'DENIED'),caller);
+  if(request.headers.has('x-serverless-authorization')||request.headers.has(GATEWAY_ATTESTATION_HEADER)||request.headers.has(MARKETPLACE_REQUEST_PROOF_HEADER)||request.headers.has('cookie'))return cors(fail(403,'DENIED'),caller);
   const firebase=request.headers.get('authorization');
   if(commands.has(op)&&(!firebase?.startsWith('Bearer ')||!jwt(firebase.slice(7))))return cors(fail(401,'AUTH_REQUIRED'),caller);
   if(reads.has(op)&&firebase!==null)return cors(fail(403,'DENIED'),caller);

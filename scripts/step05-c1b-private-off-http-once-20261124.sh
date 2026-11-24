@@ -53,7 +53,7 @@ call_anon(){
   code="$(curl --silent --show-error --proto '=https' --tlsv1.2 --connect-timeout 10 --max-time 20 --retry 0 --max-redirs 0 --output /dev/null --write-out '%{http_code}' --request GET --url "$TARGET/healthz")" || fail "ANON_TRANSPORT_OR_TLS_FAILURE_NO_RETRY"
   printf 'HTTP_%s_CODE=%s\n' "$N" "$code" >> "$OUT"
   if [[ "$code" != "401" && "$code" != "403" ]]; then
-    fail "ANONYMOUS_UNEXPECTED_HTTP_$code_NO_FURTHER_REQUESTS"
+    fail "ANONYMOUS_UNEXPECTED_HTTP_${code}_NO_FURTHER_REQUESTS"
   fi
   echo "ANONYMOUS_GET_HEALTHZ=$code PASS"
 }
@@ -81,7 +81,7 @@ call_owner(){
         --request GET --url "$TARGET$path")" || fail "$label TRANSPORT_OR_TLS_FAILURE_NO_RETRY"
   fi
   printf 'HTTP_%s_CODE=%s\n' "$N" "$code" >> "$OUT"
-  [[ "$code" == "$expected" ]] || fail "$label EXPECTED_$expected_GOT_$code_NO_FURTHER_REQUESTS"
+  [[ "$code" == "$expected" ]] || fail "${label}_EXPECTED_${expected}_GOT_${code}_NO_FURTHER_REQUESTS"
   echo "$label=$code PASS"
 }
 call_anon

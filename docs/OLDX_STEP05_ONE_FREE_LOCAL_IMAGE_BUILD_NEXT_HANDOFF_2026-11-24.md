@@ -153,3 +153,15 @@ cat "$OUT/summary.txt"
 ```
 
 No retries, downloads, builds, installs, deletes, scans, cloud actions or paid operations in this read-only command. If the asset failed due to a network/SSL/release URL or desktop proxy problem, plan a separately scoped **scan-only recovery** on the **SAME saved local image**, with trusted pinned release asset checksum and retained stderr; seek approval if download/network/install changes are needed. Do not attempt another build; do not delete local Docker state. `STEP05_WSL_BUILD=PASS_WITH_LIMITS`; `STEP05_WSL_NODE24_OFF=PASS`; `STEP05_WSL_SYFT_DOWNLOAD=FAILED_REASON_PENDING_LOG`; `STEP05_WSL_SBOM_GRYPE=NOT_EXECUTED`; `C1A/C1B/C2=NOT_APPROVED`; `PRODUCTION=NO_GO`.
+
+
+## 24 Nov 2026 — WSL Syft download root cause confirmed: 120-second transfer timeout, retained image
+
+Owner's next screenshot (read-only inspection from root Ubuntu shell) independently shows **`curl: (28) Operation timed out after 119351 milliseconds with 2882408 out of 31432061 bytes received`** in `/root/oldx-step05-laptop-evidence-20261124T115031Z/syft-download.stderr.log`. This conclusively explains failure of the **Syft release archive download** at the prior scripted `--max-time 120`; it does **not** establish permanent internet failure or prove that an archive checksum would pass. **No Syft binary executed, no SBOM and no Grype scan** in this WSL attempt.
+
+The same screenshot shows the NEW locally derived Gateway image **still in Docker**:
+`sha256:612f3c02806a93d991127f87e34391646edf9bad251bb2b8aace90a434bc30a`; tag `oldx-step05-gateway-off:wsl-once-20261124-801`; size shown **215 MB**. It is a **local Docker image ID**, not a pushed registry digest or publisher signature. Linux Node24 nonroot/readonly, OFF-only HTTP and SIGTERM had passed earlier and are preserved without replay. The prior script removed its temporary scanner tarball on failure; no claim that partial 2.88MB download remains.
+
+**Next authorized action status:** the **one-shot build was executed and consumed**. Do NOT rebuild it, rerun the one-shot, delete the image, or rerun old 84 tests/A8/Cloud scans. A narrow **scan-only recovery** using this existing immutable identified local image, longer bounded release download with official SHA256 verification and saved Syft/Grype stderr, followed by SBOM+Grype, is the smallest sensible next step; seek action-specific owner approval before doing any new network/download/install/scan. It can leave all existing Docker images/volumes untouched, no Cloud Build/Registry push/deploy/IAM/Firebase. A timestamped report directory should be preserved for future chat. Avoid treating successful local scan as C1A/production GO.
+
+**Status:** `STEP05_NEW_LOCAL_IMAGE_BUILD=PASS_WITH_LIMITS`; `EXACT_IMAGE=RETAINED_215MB`; `DOWNLOAD_FAILURE=OFFICIAL_SYFT_RELEASE_120S_TIMEOUT`; `SYFT_SBOM=NOT_RUN`; `GRYPE=NOT_RUN`; `NEW_BUILD_PERMISSION=CONSUMED`; `C1A/C1B/C2=UNAPPROVED`; `PRODUCTION=NO_GO`.

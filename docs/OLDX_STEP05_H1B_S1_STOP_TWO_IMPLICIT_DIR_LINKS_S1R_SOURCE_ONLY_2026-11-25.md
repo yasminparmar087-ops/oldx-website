@@ -1,5 +1,17 @@
 # OLDX Step05 H1B S1 STOP — two implicit directory symlinks; S1R offline recovery source ready
 
+> **25 Nov 2026 — LATEST ACTUAL OWNER-WSL S1R RESULT: SUCCESS, OFFLINE EXTRACTION ONLY.** Screenshot after owner-approved one-shot exact S1R script printed:
+>
+> ```
+> S1R_RESULT=S1R_COMPLETE_NO_CLI_EXECUTION
+> S1R_STOP_REASON=NONE
+> S1R_NO_DOWNLOAD_NO_GCLOUD_NO_CLOUD=TRUE
+> ```
+>
+> This is successful **native-Linux SDK extraction, NOT working `gcloud` proof**. Script's exact guarded destination is `/root/oldx-tools/native-gcloud-594.0.1`; no user account/project/IAM/Registry/Cloud Run knowledge follows. Original S1 and distinct S1R markers are both **CONSUMED**, no rerun. A separate leading pasted `^M(` and trailing literal `)` each caused shell syntax errors but occurred outside the actual Python runner; the runner's printed S1R success stands. Screenshot returned to `C:\Users\Yasmin Parmar>` CMD after WSL exit. S1R's private receipt is its marker; public evidence is owner screenshot, no independent hosted audit.
+>
+> **NEXT owner authorization needed: S2 only**, one bounded absolute-path `gcloud --version` with separately isolated config; no account/auth/resource commands; do NOT infer any permission from S1R success. S3, H1B Cloud W1–W6, H2, production remain NO-GO. Existing C1A OFF-only retention ends 28 Nov 2026 23:19 IST unless separately decided.
+
 > **25 Nov 2026 — LATEST OWNER APPROVAL: ONE S1R OFFLINE RECOVERY ONLY.** The owner explicitly replied **"ha manjuri chhe"** after being asked to authorize exactly one S1R guarded extraction of the retained checksum-verified local archive; the preceding “not approved” statements are historic source-preparation status. **Execution in the owner's WSL has NOT been observed; no PASS may be inferred.** The S1R runner is immutable at first-containing commit `e237de69206170112a202d466cb7b2f59c8eee81`, Git blob `c162c38e1281e83dd2abb6fd75020d3d48178b97`, independently verified on 25 Nov against actual GitHub file bytes SHA256 `34af0511c08093d7a402f86641f44d82306c3b4fefa13837b37775b44954344c`. **S1R operator command, in existing OLDX-Ubuntu-24.04 root WSL terminal, one paste ONLY:**
 
 ```bash

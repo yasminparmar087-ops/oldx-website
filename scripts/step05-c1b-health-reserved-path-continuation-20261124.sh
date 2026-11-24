@@ -30,7 +30,7 @@ now="$(date +%s)"
 (( now >= prior_epoch && now - prior_epoch < 1200 )) || fail ORIGINAL_20MIN_WINDOW_EXPIRED
 # Token from owner Windows gcloud stdin, never echoed or written.
 [[ ! -t 0 ]] || fail TOKEN_STDIN_REQUIRED
-IFS= read -r -t 40 ID_TOKEN || [[ -n "$ID_TOKEN" ]] || fail TOKEN_NOT_RECEIVED
+IFS= read -r -t 40 ID_TOKEN || [[ -n "${ID_TOKEN:-}" ]] || fail TOKEN_NOT_RECEIVED
 ID_TOKEN="${ID_TOKEN%$'\r'}"
 [[ "$ID_TOKEN" =~ ^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$ ]] || fail INVALID_ID_TOKEN
 # One-use lock BEFORE new HTTP calls. Do NOT erase/retry on any outcome.

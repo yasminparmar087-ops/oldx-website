@@ -1,5 +1,18 @@
 # OLDX — One consolidated launch execution plan (13 November 2026)
 
+## 25 Nov 2026 — ACTUAL S3 OFFLINE SAVED STDERR CONFIRMS EXACT "Cannot find service"; parser mismatch, no extra Cloud call
+
+Owner's latest Google Cloud Shell screenshot after the original S3 STOP and **separate offline-only saved-evidence inspection** shows:
+```text
+SERVICE_EXIT= 1
+SERVICE_ERROR_CLASS= OTHER_ERROR
+ERROR_DETAIL= ERROR: (gcloud.run.services.describe) Cannot find service [oldx-c2-website-mediator]
+DIAGNOSIS=OFFLINE_ONLY
+```
+This is the **previously saved** `new-service.stderr` and `new-service.exit`, not a fresh API request; code had no gcloud command. The exact native CLI message is *negative resource-lookup evidence* for the proposed new service in the previously verified `oldx-staging/asia-south1` context. The earlier S3 `target_state` classifier recognizes only literal `NOT_FOUND` or `404` on nonzero exits; its generic `UNRESOLVED_ERROR_NOT_PROVEN_ABSENT` and the offline diagnostic's `OTHER_ERROR` are explained by the different literal wording **`Cannot find service`**. This is a **confirmed local classification mismatch**, not proof of IAM failure or new SDK failure. The screen contains **no raw HTTP status**, so do not recast it as an HTTP404 or prove definitive collision freedom. S3's original `S3_RESULT=STOP` must remain recorded, not retroactively rewritten to PASS. The proposed NEW SA remains `API_NOT_FOUND_REPORTED_REVIEW_REQUIRED`, independent pre-write verification pending. Existing owner, exact project number and Docker registry already PASS in original S3 and MUST NOT be replayed casually.
+
+Original S3 one-shot marker CONSUMED; do not delete, rerun S3 or old WSL/SDK/image tests. **No Cloud write has been authorized or performed.** If owner approves a **new separate narrow read-only collision confirmation**, check exact candidate service+SA once under supervised Owner Cloud Shell with a new receipt/marker, and distinguish actual list/describe success, 403 and negative response; never treat errors as automatic absence. Further independent IAM/registry digest/cost/rollback consent remains necessary before H1B W1–W6 (not authorized). Existing C1A private OFF retention ends 28 Nov 2026 23:19 IST, no automatic extension/cleanup.
+
 ## 25 Nov 2026 — ACTUAL S3 CLOUD SHELL OWNER/PROJECT/REGISTRY PASS; NEW-SERVICE UNRESOLVED STOP
 
 Owner's latest actual Google Cloud Shell screenshot (prompt `yasminparmar087@cloudshell:~ (oldx-staging)$`) confirms the original approved S3 pinned read-only script was executed once. Exact printed evidence:

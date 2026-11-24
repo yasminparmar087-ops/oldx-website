@@ -154,3 +154,27 @@ gcloud --quiet run services describe oldx-step05-gateway --project=oldx-staging 
 This retries ONLY the sole failed lookup, purposely requests **name only** to avoid printing potentially sensitive service details, and displays the exact Cloud SDK error to classify the earlier inconclusive result. It does not create, enable, deploy, grant IAM, or invoke HTTP. **Do not** attempt enabling APIs or changing roles if error suggests it. User should share the short command output; if any private account information appears in an error, redact before sharing. One repeat of the FAILED lookup for diagnostic clarity is distinct from repeating previously completed successful checks. No other GCP command needed now.
 
 **Frozen current status:** `C1A_READONLY_PREFLIGHT=PARTIAL_PASS`; `C1A_NEW_SERVICE_COLLISION=UNKNOWN_STOP`; `C1A_SA=NOT_FOUND_REPORTED`; `ARTIFACT_REGISTRY=EXISTS_DOCKER_ASIA_SOUTH1`; `BILLING_LINK=TRUE_GROSS_INR_UNKNOWN`; `DIRECT_OPERATOR_ROLE=OWNER_EFFECTIVE_IAM_UNKNOWN`; `12_HIGH_CVE_RISK_ACCEPTANCE=NO`; `C1A_DEPLOYMENT=NOT_APPROVED`; `C1B/C2=NOT_APPROVED`; `PRODUCTION=NO_GO`.
+
+
+## 24 Nov 2026 — Exact service collision CLARIFIED: Cloud Run reports Cannot find service
+
+Owner ran **ONLY** the formerly inconclusive exact target read-only lookup in their `oldx-staging` Cloud Shell (none of the other five successful preflight probes repeated):
+
+```bash
+gcloud --quiet run services describe oldx-step05-gateway --project=oldx-staging --region=asia-south1 --format='value(metadata.name)' 2>&1
+```
+
+**Exact actual CLI output:** `ERROR: (gcloud.run.services.describe) Cannot find service [oldx-step05-gateway]`. This resolves the earlier `NEW_GATEWAY_SERVICE_QUERY=UNVERIFIED_OTHER_ERROR` / `C1A_SERVICE_NAME_COLLISION=UNKNOWN_STOP` as a targeted **NOT_FOUND_REPORTED** for that exact service in this project and region *at that moment*. It does not imply the name cannot be taken later, that IAM eligibility is verified, or that creating the service is authorized. Before any future approved create, perform only a fresh **just-in-time** name collision precheck, not a repeat of entire preflight.
+
+**Root cause of the original misclassification:** `scripts/step05-c1a-read-only-cloud-preflight.sh` matches `not found|NOT_FOUND|does not exist` in stderr, but Cloud SDK actually says **`Cannot find service`**. Updated only the read-only script's classifier regex to also recognize `cannot find service`, source-only commit `e3ea4fb517b2c4e7ecafee79c370c782943b8b73`. **No script re-run**, no additional gcloud calls, no service/image/SA created, no IAM/Billing/old backend touched, no cost/spend verification, and no old 84/Syft/Grype/A8 repeat.
+
+### Current precise C1A gate ledger
+
+- `PROJECT_ACTIVE=CONFIRMED_AT_PREFLIGHT`; `REGION=asia-south1`; `EXISTING_DOCKER_REGISTRY=CONFIRMED`; `BILLING_ACCOUNT_LINK=ENABLED`; `DIRECT_OPERATOR_ROLE_HINT=roles/owner`.
+- `NEW_SERVICE_NAME=NOT_FOUND_REPORTED_TARGETED` (previous accidental `UNKNOWN_STOP` specifically resolved); `NEW_RUNTIME_SA_NAME=NOT_FOUND_REPORTED`; neither is a guaranteed future vacant name.
+- `DIRECT_PROJECT_BINDINGS=2_OWNERS_1_EDITOR`; `EFFECTIVE_INVOCATION_AND_INHERITED_IAM=UNVERIFIED`; `EXACT_TESTER_IDENTITY=UNSELECTED`.
+- `ACTUAL_GROSS_ACCOUNT_PROVIDER_SPEND_INR=UNVERIFIED`; `PRECISE_REGIONAL_TOTAL_COST_AND_TAX_INR=UNVERIFIED`; `APPROVED_NEW_GROSS_SPEND_LIMIT=NONE`.
+- `LOCAL_IMAGE_BUILD/SYFT/GRYPE=COMPLETE_WITH_12_DISTINCT_HIGH_IDS`; `REMOTE_PUBLISHED_MANIFEST_DIGEST_AND_PUBLISHER_SIGNATURE=NOT_VERIFIED`; `C1A_OWNER_NEW_IMAGE_12_CVE_LIMITED_RISK=NOT_ACCEPTED`.
+- `C1A_CLOUD_WRITES/DEPLOYMENT=NOT_AUTHORIZED`; `C1B/C2=NOT_AUTHORIZED`; `STEP05_HOSTED=BLOCKED`; `PRODUCTION=NO_GO`.
+
+**Next non-repeat step:** finish source-only limited C1A owner risk/price/operator proposal using existing facts, then obtain explicit approval for any new cost/IAM validation or write actions. The service existence question itself is **CLOSED** for the 24 Nov 2026 read-only check; **DO NOT run it again now**.

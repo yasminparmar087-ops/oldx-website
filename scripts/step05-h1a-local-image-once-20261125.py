@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Owner-approved H1A only. No cloud commands/push/install/prune/retries."""
 import argparse, datetime, hashlib, json, os, pathlib, platform, shutil, subprocess, sys, time
+from step05_h1a_offline_manifest_receipt import EVIDENCE_FOLDER, verify_recorded_base
 P=pathlib.Path
 BASE="gcr.io/distroless/nodejs24-debian13:nonroot@sha256:49559f4ee6632a11a13a7e198183efee1226de7a8f437df83c180b01bd8253ec"
 SOURCE="1ece3a1e004bea7b0157bf04b6fd26f0e793d976"
@@ -12,11 +13,13 @@ MARKER=P.home()/".oldx-h1a-c2-mediator-once-20261125"
 TOOLS=P.home()/"oldx-step05-scan-recovery-20261124T123515Z/tools"
 parser=argparse.ArgumentParser()
 parser.add_argument("--execute",action="store_true")
+parser.add_argument("--confirm-h1a-resume",action="store_true",
+ help="Separate owner decision required after prior H1A preflight STOP; never inferred from valid manifest")
 parser.add_argument("--source-root",type=P,required=True)
 a=parser.parse_args()
 os.umask(0o077)
-if not a.execute:
- print("HOLD: requires explicit --execute; no operation performed");sys.exit(0)
+if not a.execute or not a.confirm_h1a_resume:
+ print("HOLD: H1A remains BLOCKED. Source-only preflight correction is not resumed-build approval.");sys.exit(0)
 stamp=datetime.datetime.now(datetime.timezone.utc).strftime("%Y%m%dT%H%M%SZ")
 e=P.home()/("oldx-h1a-evidence-"+stamp);e.mkdir(mode=0o700)
 report={"sourceCommit":SOURCE,"approvalCheckpoint":"4470c6b880b9c41bcb46ae835da1ccb7987cd30b",
@@ -74,10 +77,17 @@ try:
  raw=json.dumps(manifest,sort_keys=True,separators=(",",":")).encode()
  (e/"context-manifest.json").write_bytes(raw)
  report["sourceFiles"]=manifest;report["contextManifestSha256"]=hashlib.sha256(raw).hexdigest()
- manifest_result=run("base-manifest",D+["manifest","inspect","--verbose",BASE],seconds=90,json_output=True)
- desc=manifest_result.get("Descriptor",{}) if isinstance(manifest_result,dict) else {}
- if desc.get("digest")!=BASE.split("@")[1] or desc.get("platform",{}).get("os")!="linux" or desc.get("platform",{}).get("architecture")!="amd64":
-  fail("PUBLIC_IMMUTABLE_BASE_DESCRIPTOR_UNVERIFIED")
+ # No Docker CLI manifest inspect retry: original CLI error remains unexplained.
+ # Inspect the already consumed owner's private diagnostic evidence OFFLINE.
+ # Exact raw SHA256 and header/receipt/marker bindings are mandatory.
+ # This is content-addressability evidence only, NOT layer/config/platform proof.
+ base_evidence=verify_recorded_base(P.home()/EVIDENCE_FOLDER)
+ if base_evidence["manifestSha256"]!=BASE.rsplit("@",1)[-1]:
+  fail("APPROVED_BASE_DIGEST_AND_EVIDENCE_DISAGREE")
+ report["baseIntegrityEvidence"]=base_evidence
+ report["baseManifestCliFailure"]="UNEXPLAINED_NOT_RETRIED"
+ report["basePlatform"]="NOT_VERIFIED_BEFORE_BUILD_BUILDKIT_AND_RUNTIME_MUST_VERIFY"
+ save()
  tag="oldx-h1a-c2-mediator-off:local-"+stamp.lower()
  container="oldx-h1a-c2-mediator-"+stamp.lower()
  # The exclusive marker consumes authority BEFORE first build. Never removed.

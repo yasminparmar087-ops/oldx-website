@@ -1,5 +1,16 @@
 # OLDX — Current Chat Handoff / Start Here
 
+## 25 Nov 2026 — latest maximum-safe source batch: H1 OFF package + KMS DI signing + bounded HTTP/cleanup fixes
+
+Start `a2eb94ba4e6d62dceba24f266c2c3158c8cbedf7`; verified tested source `6389ace567603139df02f57e8e23c182018abfc1`. [Canonical execution receipt](OLDX_STEP05_MAXIMUM_SAFE_SOURCE_EXECUTION_RECEIPT_2026-11-25.md) contains exact files, tests, G1–G6, separate H1/H2 consent and no-repeat custody. Eight distinct NEW local groups verified in aggregate: initial7=6PASS/1FAIL/0SKIP (terminal-whitespace packaging assertion), affected packaging-only rerun1PASS, new HTTP timeout regression1PASS, affected H1 IAM-forwarding group1PASS; not one final8 suite and no historical tests repeated.
+
+NEW standalone compiled-OFF mediator server + immutable-base single-source Dockerfile/deny-all context; no Firebase/Firestore/ADC/KMS/token/network providers. Existing C1A unchanged. NEW default-OFF injected KMS intent signer/verifier contract pins exact version/kid/algorithm/SPKI/window/state; signs canonical SHA256 digest once with CRC32C and local RSA verification, never Google OAuth signing keys. Real KMS identity/key/version/provider still BLOCKED. KMS IAM scopes at CryptoKey, NOT key version; exact API version pin is not version-level IAM. Existing website HTTP adapter now bounds uncooperative provider/input/output waits. Synthetic cleanup draft caps one Product/one photo and executes nothing.
+
+**H1 source preparation COMPLETE_WITH_LIMITS; H1A local new-image evidence and H1B Cloud creation NOT AUTHORIZED. H2 enabled seller/buyer NOT AUTHORIZED.** G1 new image/host/IAM/quota; G2 real signer/credential custody; G3 actual runtime identity/defaultDB/Auth least privilege; G4 approved media/publication; G5 shared nonce/rate cleanup or Timestamp TTL; G6 enabled/new-image CVE/IAM/rollback remain BLOCKED. Existing secure pipeline publicationEnabled:false preserved, C2 LIVE HOLD / Step05 NOT DONE / production NO-GO; 15-step sequence unchanged.
+
+**ONE next owner action:** authorize H1A only—one free local NEW OFF-mediator build/SBOM/Grype/runtime evidence batch at exact source commit, finite disk/time, private retained reports; no image push, Cloud/permissions/hosted calls/H2. Actual H1B consent follows only after evidence and exact costs. C1A retention already approved through **28 Nov 2026 23:19 IST**, no automatic deletion/extension. No cloud/paid/image/CI/hosted actions in this source batch; local dirty Handoff/.firebaserc preserved.
+
+
 ## Latest verified C2-S1 source-only implementation checkpoint
 
 Starting remote HEAD: `fbf7a5ea36eb99607b3999b26273e66e1bc1ff51`. Verified source commit: `e9a36ecede4c05e8bcd2cf2deabf99bdebb2d887` on `security-hardening-review`; documentation follows in its child commit (final branch SHA in Git history / Issue #17). This checkpoint supersedes older “C2-S1 not yet implemented” / “C1A not deployed” status below; historical evidence is preserved.

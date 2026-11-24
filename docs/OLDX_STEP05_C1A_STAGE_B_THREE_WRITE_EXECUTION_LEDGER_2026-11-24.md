@@ -38,3 +38,23 @@ Expected exactly `sha256:612f3c02806a93d991127f87e34391646edf9bad251bb22b8aace90
 
 ## Status at this write
 `STAGE_B_OWNER_CONSENT=APPROVED` / `STAGE_B_P0=AWAITING_LOCAL_COMMAND` / `B1_SA=NOT_EXECUTED` / `B2_IMAGE_PUSH=NOT_EXECUTED` / `B3_PRIVATE_RUN=NOT_EXECUTED` / `C1B_HOSTED=NOT_AUTHORIZED` / `C2_AND_PRODUCTION=NO_GO`.
+
+
+## 24 Nov 2026 ~22:00 IST — Owner CMD screenshot: actual P0 local preflight PASS, NO cloud writes
+
+**Actual observed CMD commands and results from user screenshot** (not a fresh assistant-authenticated cloud login):
+
+- `where gcloud`: Windows SDK in `D:\\Temp\\google-cloud-sdk\\bin\\gcloud` and `gcloud.cmd`; installed, no need to install/relogin.
+- `gcloud auth list --filter="status:ACTIVE" --format="value(account)"`: exact intended Yasmin owner account **MATCH**, email retained privately in screenshot, not reproduced in public handoff.
+- `gcloud config get-value project`: **`oldx-staging`**.
+- `wsl -d OLDX-Ubuntu-24.04 -- docker image inspect --format "{{.Id}} {{.Os}}/{{.Architecture}} {{.Config.User}}" oldx-step05-gateway-off:wsl-once-20261124-801`: **`sha256:612f3c02806a93d991127f87e34391646edf9bad251bb22b8aace90a434bc30a linux/amd64 65532:65532`** — exact reviewed/prebuilt image, no rebuild/scan needed.
+
+**P0 outcome: `P0_OWNER_PROJECT_LOCAL_IMAGE=PASS`.** Owner has authorized Stage B three writes and exact new-resource cleanup; *none yet performed*. The Cosign pinned parent signature remains **CONSUMED/PASS** and derived remote manifest **NONE**. JIT resource no-collision checks are still REQUIRED before B1 (and B3), with no attempt to rerun the whole historical C1A inventory. Image remote path/name conflict check only immediately before B2. Do NOT create resource on a PERMISSION_DENIED, ambiguous failure or existing name.
+
+**NEXT single user CMD P1 strictly READ-ONLY:**
+```cmd
+gcloud projects describe oldx-staging --format="value(projectNumber)" & gcloud iam service-accounts describe oldx-step05-gateway@oldx-staging.iam.gserviceaccount.com --project=oldx-staging --format="value(uniqueId)" & gcloud run services describe oldx-step05-gateway --project=oldx-staging --region=asia-south1 --format="value(metadata.name)"
+```
+Expected project number `38472235077` and two **explicit NOT_FOUND** outputs. `&` is intentional to display all three independent read-only statuses; NOT an all-pass detector. If any exact new resource EXISTS or results are PERMISSION_DENIED/ambiguous, **STOP**. Check screenshot before creating B1. Avoid repeating P0, builder, scanner, Cosign, old service/IAM/Registry/Billing checks.
+
+Current: `P0=PASS`, `P1_NEW_RESOURCE_COLLISION=AWAITING_OWNER_OUTPUT`, `B1/B2/B3=NOT_EXECUTED`, `C1B/C2/PRODUCTION=NO_GO`.

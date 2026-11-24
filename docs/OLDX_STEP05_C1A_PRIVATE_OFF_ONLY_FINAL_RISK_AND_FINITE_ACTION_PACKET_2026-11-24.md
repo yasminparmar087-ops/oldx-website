@@ -116,3 +116,41 @@ Owner responded **"ha manjuri chhe"** to the immediately preceding explicit scop
 **One current-user Cloud Shell command** will be authored from the pinned GitHub SOURCE COMMIT once source has passed static verification, without git clone or installation (Cloud Shell home previously only 39MiB available). It must download only the immutable new script to a uniquely named file under `/tmp`, check Bash syntax, and execute once. Do not print raw auth account or private resource metadata into the chat; send only the intentionally redacted summary.
 
 **Gates unchanged:** `C1A_READ_ONLY_PREFLIGHT=OWNER_APPROVED_PREPARED_NOT_EXECUTED`; `C1A_OWNER_12_HIGH_CVE_RISK=NOT_ACCEPTED`; `C1A_NEW_WRITES/DEPLOYMENT=NOT_APPROVED`; `CURRENT_GROSS_BILL=UNKNOWN`; `PUBLISHER/DERIVED_REGISTRY_DIGEST=UNKNOWN`; `C1B/C2=NOT_APPROVED`; `STEP05_HOSTED=BLOCKED`; `PRODUCTION=NO_GO`.
+
+
+## 24 Nov 2026 — Owner Cloud Shell C1A read-only preflight EXECUTED: five scoped metadata checks OK, service lookup inconclusive
+
+Owner submitted screenshot of previously-approved exact-script `=== SAFE C1A READ-ONLY PREFLIGHT SUMMARY ===`. **These are actual owner-observed Cloud Shell results**, not direct assistant API results, and no further command/build/CI/scan was repeated.
+
+| Exact saved field | Screenshot result | What this actually establishes |
+|---|---|---|
+| `PROJECT` / `REGION` | `oldx-staging` / `asia-south1` | Requested staging/region |
+| `PROJECT_METADATA_QUERY` / `PROJECT_LIFECYCLE_STATE` | `OK` / `ACTIVE` | Staging project metadata accessible |
+| `ACTIVE_OPERATOR_ACCOUNT_HINT` | `ya***@gmail.com` | Masked Google principal; exact principal NOT in report; do NOT expose private Gmail or assume all rights |
+| `TESTER_ACCOUNT` | `UNSELECTED_BY_OWNER` | Invoker/tester identity unresolved |
+| `NEW_GATEWAY_SERVICE_QUERY` | **`UNVERIFIED_OTHER_ERROR`** | **Hard STOP. Cannot decide service name available vs collision vs permission/API/config error** |
+| `C1A_SERVICE_NAME_COLLISION` | `UNKNOWN_STOP` | No new service creation authorized |
+| `NEW_RUNTIME_SA_QUERY` | `NOT_FOUND_REPORTED` | Exact new proposed SA not found *in this lookup*; not an unconditional absence proof |
+| `PROPOSED_EXISTING_REGISTRY_QUERY` | `OK`, format `DOCKER`, location `asia-south1` | Historical exact `oldx-staging-images` registry confirmed existing; no image pushed |
+| `PROJECT_BILLING_LINK_QUERY` | `OK`, `BILLING_ENABLED=True`, `BILLING_ACCOUNT_LINK_PRESENT=True` | Billing LINKED only, not current gross spend, balance, trial credit or a free/no-spend guarantee |
+| `C1A_DIRECT_PROJECT_IAM_QUERY` | `OK`, 2 direct Owner binding members; 1 direct Editor member | Direct counts only; existing historical high privilege remains; exact effective inherited principal access remains **NOT PROVEN** |
+| `ACTIVE_OPERATOR_DIRECT_PROJECT_ROLE_HINTS` | `roles/owner` | The active operator has a direct project owner role; **do not grant any new broad role or remove former owner** |
+| Gross INR / SKU+tax | `UNVERIFIED` | Cost gate not cleared |
+| Remote image digest | `NOT_PUBLISHED` | Current local Docker image ID is not a deployable registry manifest |
+| 12 HIGH owner decision | `NOT_GRANTED` | Separate C1A-only risk decision remains open |
+| Cloud writes / hosted calls | `NOT_AUTHORIZED` | No create/deploy/HTTP consent |
+| `NO_CLOUD_MUTATIONS` | `TRUE` | Script source contains only read-only metadata/IAM calls; no changes reported |
+
+Owner saved a small redacted summary at `/home/yasminparmar087/oldx-step05-c1a-readonly-20261124T140144Z.txt`. It did NOT preserve the gcloud stderr of the new service lookup because the script intentionally deletes private scratch logs, so **cause of `UNVERIFIED_OTHER_ERROR` UNKNOWN**. Neither a NOT_FOUND claim nor a permission failure may be invented. All other successful tests were already completed and MUST NOT be rerun. Source previous 84 offline cases, 12-CVE Grype, old A8 image and IAM audits all left untouched.
+
+### NEXT ONE *TARGETED* read-only error clarification — not the whole preflight again
+
+From existing `oldx-staging` **Google Cloud Shell**:
+
+```bash
+gcloud --quiet run services describe oldx-step05-gateway --project=oldx-staging --region=asia-south1 --format='value(metadata.name)' 2>&1
+```
+
+This retries ONLY the sole failed lookup, purposely requests **name only** to avoid printing potentially sensitive service details, and displays the exact Cloud SDK error to classify the earlier inconclusive result. It does not create, enable, deploy, grant IAM, or invoke HTTP. **Do not** attempt enabling APIs or changing roles if error suggests it. User should share the short command output; if any private account information appears in an error, redact before sharing. One repeat of the FAILED lookup for diagnostic clarity is distinct from repeating previously completed successful checks. No other GCP command needed now.
+
+**Frozen current status:** `C1A_READONLY_PREFLIGHT=PARTIAL_PASS`; `C1A_NEW_SERVICE_COLLISION=UNKNOWN_STOP`; `C1A_SA=NOT_FOUND_REPORTED`; `ARTIFACT_REGISTRY=EXISTS_DOCKER_ASIA_SOUTH1`; `BILLING_LINK=TRUE_GROSS_INR_UNKNOWN`; `DIRECT_OPERATOR_ROLE=OWNER_EFFECTIVE_IAM_UNKNOWN`; `12_HIGH_CVE_RISK_ACCEPTANCE=NO`; `C1A_DEPLOYMENT=NOT_APPROVED`; `C1B/C2=NOT_APPROVED`; `PRODUCTION=NO_GO`.

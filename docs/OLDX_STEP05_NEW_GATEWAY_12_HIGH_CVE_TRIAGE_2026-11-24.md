@@ -55,3 +55,33 @@ Important nuance: Grype labels these 12 **HIGH**, while Debian/upstream may rate
 3. If owner wants to progress hosting, receive explicit finite C1A permission after identity/ingress/cost/rollback/provenance evidence; neither current consent nor passing scan is deployment permission.
 
 **Status:** `STEP05_NEW_GATEWAY_SECURITY_SCAN=PASS_WITH_LIMITS_12_HIGH_IDS`; `CVE_PACKAGE_TRIAGE=SOURCE_ONLY_PRELIMINARY`; `C1A_READY_FOR_DEPLOY=NO`; `C1A/B/C2_NOT_APPROVED`; `STEP05_NOT_DONE`; `PRODUCTION_NO_GO`.
+
+
+## 6. 24 Nov 2026 — NEW native linkage screenshot: GCC/glibc present, OpenSSL not in Node snapshot
+
+Owner ran the requested **new narrow, local, OFF-only image library inspection** against `oldx-step05-gateway-off:wsl-once-20261124-801` with Linux read-only, network-none, `--cap-drop ALL`, `no-new-privileges`, and `/nodejs/bin/node -e` printing `process.report.getReport().sharedObjects`. The screenshot shows the following complete reported loaded-object list:
+
+```
+linux-vdso.so.1
+/lib/x86_64-linux-gnu/libdl.so.2
+/lib/x86_64-linux-gnu/libstdc++.so.6
+/lib/x86_64-linux-gnu/libm.so.6
+/lib/x86_64-linux-gnu/libgcc_s.so.1
+/lib/x86_64-linux-gnu/libpthread.so.0
+/lib/x86_64-linux-gnu/libc.so.6
+/lib64/ld-linux-x86-64.so.2
+```
+
+This is **a snapshot of a separate `node -e` process in the same exact image**, NOT a complete trace of the actual long-running Gateway server under every request. It establishes which shared objects were loaded at the time of **this test**; it does not prove absence of static code linkage, deferred `dlopen`, changes on codepaths or any negative exploit proof.
+
+### Mapping against the 12 distinct HIGH CVE IDs (NO fresh scanner run)
+
+| Family / CVE IDs | New runtime evidence | Narrow source-only assessment |
+|---|---|---|
+| `gcc-14`: `CVE-2026-102010`, `CVE-2026-95619` (8 Grype matches across 4 binary package names) | `libstdc++.so.6` and `libgcc_s.so.1` **loaded** in Node process. `libgomp1` not explicitly shown; `gcc-14-base` is package metadata, not a separate loaded shared object. | **LINKED; FUNCTION-SPECIFIC EXPOSURE NOT YET DEMONSTRATED.** No evidence that `erase_if` or aligned allocation vulnerable paths are reachable from untrusted HTTP in OFF-only handler. Their mere presence is still an outstanding supply-chain risk, NOT an automatic acceptable exception. |
+| `openssl`: `CVE-2026-107493`, `107494`, `107496`, `121482`, `124709`, `84786`, `88823`, `95691`, `95692` (9 package matches) | **Neither `libssl*.so` nor `libcrypto*.so` appears in the reported loaded-object snapshot.** `libssl3t64` remains present as confirmed by Grype packaging. | **NO DYNAMIC LOAD OBSERVED IN THIS PROCESS, NOT PROVED UNREACHABLE.** OFF-only JS source has no explicit TLS/QUIC/CMS/DANE/AES-GCM-SIV invocation. Node can use embedded crypto or lazily loaded code on other paths; inspect only if required for a formal enabled risk disposition. |
+| `glibc`: `CVE-2026-84243` (1 package match) | `libc.so.6` **loaded** in Node process. | **LINKED; GETTEXT/LANGUAGE TRIGGER NOT YET DEMONSTRATED.** OFF-only JS does not load untrusted `.mo` files or set attacker-controlled `LANGUAGE`; the Linux base/runtime environment and library calls have not been conclusively traced. |
+
+**Interpretation:** All 12 vulnerabilities remain valid *scanner findings*. This test narrows investigation, not a substitute for patching, publisher attestation or security-owner acceptance. Continue to treat the OFF-only PRIVATE Cloud Run C1A proposal as **RISK HOLD**, with any future public/ENABLED C2 depending on independently approved security proofs. Do not call `libssl` absent from the image—only absent from this one `sharedObjects` list.
+
+**Next independent SOURCE-ONLY action:** prepare a tightly constrained C1A **private disabled 503-only** risk-disposition decision record from these existing facts: residual runtime/bundled package risks, mandatory ingress+IAM, approved exact operator/tester, non-production immutable-image provenance, incremental regional gross cost and new-service-only rollback. Request C1A-specific owner approval only after gaps can be filled. No repeated Grype/Syft, Docker build, old 84 tests, A8 scan, Vercel or Cloud inventory. **C1A hosted never approved here; PRODUCTION NO-GO.**

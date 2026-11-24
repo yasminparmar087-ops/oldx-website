@@ -116,3 +116,23 @@ gcloud auth print-access-token | wsl -d OLDX-Ubuntu-24.04 -- bash -lc "cd ~/oldx
 The `gcloud` command uses active intended Yasmin account to pass short-lived credentials exclusively via stdin (NEVER paste/print token), in accordance with official Artifact Registry access-token Docker login guidance https://docs.cloud.google.com/artifact-registry/docs/docker/authentication. WSL script uses `docker login --password-stdin`, temporary Docker credential config, exact local SHA check, one-shot marker before first push, no Docker build/rescan, creates limited log under `$HOME/oldx-step05-c1a-b2-push-20261124/`. **Do not re-run the second command** after any ambiguous error, timeout, or even apparent success; inspect only exact saved summary and targeted new registry tag before proceeding. If `git pull` fails, STOP; no push.
 
 **After successful owner-reported B2 push:** record printed Docker-reported digest separately from local Docker image ID, and use one new targeted `gcloud artifacts docker images describe <exact new tag>` read to verify remote `sha256` before B3 Cloud Run. B3 remains authorized but NOT EXECUTED; no C1B HTTP, C2/production. No old 84 tests, source image build/Syft/Grype, Cosign, old C1A Registry inventory repeated.
+
+
+## 24 Nov 2026 ~23:13 IST — OWNER-OBSERVED B2 ONE PUSH SUCCEEDED; REMOTE REGISTRY READBACK STILL REQUIRED
+
+Owner Windows CMD screenshot after authorized B2 shows:
+
+- WSL existing stable clone `git pull --ff-only` fast-forward success `f68fc2a..0597772`. The B2 one-shot source and ledger were retrieved. No build/scan rerun.
+- `gcloud auth print-access-token | wsl -d OLDX-Ubuntu-24.04 -- bash -lc "cd ~/oldx-c1a-proof-stable-20261124 && bash scripts/step05-c1a-stage-b-one-image-push-once-20261124.sh"` executed ONCE. It reported `AUTH=SHORT_LIVED_OWNER_TOKEN_FROM_STDIN`, `DOCKER_LOGIN=PASS_TEMPORARY_CONFIG`, `ONE_REMOTE_PUSH=STARTED`, **`B2_PUSH_SUCCESS_UNVERIFIED_REMOTE_READBACK`**.
+- Intended tag `asia-south1-docker.pkg.dev/oldx-staging/oldx-staging-images/oldx-step05-gateway-off:c1a-off-20261124-801`.
+- Script stdout `REMOTE_DIGEST=sha256:612f3c02806a93d991127f87e34391646edf9bad251bb22b8aace90a434bc30a`. **CAUTION:** this happens to be identical to previously verified local Docker image ID. Do NOT assume it is the remote OCI manifest digest merely from this matching value. Could reflect image-store semantics or a reporting ambiguity; independently verify registry's actual remote digest before any B3.
+- WSL private report `/root/oldx-step05-c1a-b2-push-20261124/summary.txt` (not extracted/reviewed by assistant). The one-shot B2 marker is consumed; **NEVER run B2 push again** automatically.
+- No Cloud Run B3 create, no C1B hosted HTTP, no C2 Product enabling, no Firebase/Rules/other IAM/backend changes observed.
+
+**Next ONE CMD read-only independently sourced remote digest check (same exact tag, now AFTER observed push):**
+
+```cmd
+gcloud artifacts docker images describe asia-south1-docker.pkg.dev/oldx-staging/oldx-staging-images/oldx-step05-gateway-off:c1a-off-20261124-801 --project=oldx-staging --format="json"
+```
+
+Require successful Artifact Registry tag/digest evidence, correct project/repository/architecture; preserve actual returned `sha256` value as the **remote** immutable deployment input. If registry readback is missing, permission-denied, returns an unrelated image/tag, or ambiguous, STOP and inspect saved B2 logs/manifest, **not a second push**. Do not deploy by tag or local Docker image ID before this. `B1_SA=PASS`, `B2_DOCKER_PUSH=SUCCESS_REPORTED_PENDING_INDEPENDENT_REGISTRY_READBACK`, `B3_PRIVATE_RUN=NOT_EXECUTED`, `C1B/C2/PRODUCTION=NO_GO`.

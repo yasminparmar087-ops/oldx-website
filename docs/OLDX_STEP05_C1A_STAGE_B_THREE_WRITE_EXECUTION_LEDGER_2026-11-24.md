@@ -136,3 +136,18 @@ gcloud artifacts docker images describe asia-south1-docker.pkg.dev/oldx-staging/
 ```
 
 Require successful Artifact Registry tag/digest evidence, correct project/repository/architecture; preserve actual returned `sha256` value as the **remote** immutable deployment input. If registry readback is missing, permission-denied, returns an unrelated image/tag, or ambiguous, STOP and inspect saved B2 logs/manifest, **not a second push**. Do not deploy by tag or local Docker image ID before this. `B1_SA=PASS`, `B2_DOCKER_PUSH=SUCCESS_REPORTED_PENDING_INDEPENDENT_REGISTRY_READBACK`, `B3_PRIVATE_RUN=NOT_EXECUTED`, `C1B/C2/PRODUCTION=NO_GO`.
+
+
+## 24 Nov 2026 ~23:15 IST — B2 REGISTRY INDEPENDENT REMOTE DIGEST READBACK PASS (owner screenshot)
+
+Owner CMD screenshot of **ONE targeted post-push remote** `gcloud artifacts docker images describe asia-south1-docker.pkg.dev/oldx-staging/oldx-staging-images/oldx-step05-gateway-off:c1a-off-20261124-801 --project=oldx-staging --format=json` returned `image_summary`:
+- `registry: asia-south1-docker.pkg.dev`, `repository: oldx-staging-images`.
+- **`digest: sha256:612f3c02806a93d991127f87e34391646edf9bad251bb22b8aace90a434bc30a`**.
+- `fully_qualified_digest: asia-south1-docker.pkg.dev/oldx-staging/oldx-staging-images/oldx-step05-gateway-off@sha256:612f3c02806a93d991127f87e34391646edf9bad251bb22b8aace90a434bc30a`.
+- **`slsa_build_level: unknown`**; this readback DOES NOT certify SLSA/derived signed attestation. Distroless **BASE PARENT** official Cosign signature PASS was consumed separately; new image includes previously accepted 12 distinct HIGH CVEs for isolated PRIVATE DEFAULT-OFF C1A only.
+
+Remote digest happens to equal the local image ID; independent GCP registry metadata **confirmed** this exact value. It is now valid to use the registry's own immutable `fully_qualified_digest` in the B3 Cloud Run deploy command. This is a distinct B2 result; **do NOT repeat tag lookup/push/build/Syft/Grype/Cosign**, and do not falsely claim all vulnerabilities fixed or production certified.
+
+**B2 FINAL:** `B1_NEW_SA=PASS` uniqueId `102194769236111252832`; `B2_ONE_PUSH=PASS`; `B2_INDEPENDENT_REMOTE_DIGEST=PASS`; `B3_NEW_PRIVATE_OFF_SERVICE=AUTHORIZED_NOT_YET_EXECUTED`; `C1B_HOSTED_HTTP/C2/PRODUCTION=NO_GO`. Existing Owner tester/inherited 2 Owner+1 Editor potential access (NOT sole invoker) accepted only for OFF C1A, no public binding, new runtime SA has no newly assigned roles.
+
+**Next:** one just-in-time check of exact NEW `oldx-step05-gateway` Cloud Run service absence and local CLI `gcloud run deploy` supported flags if necessary (different write and ~1 hour after original P1 service name check). Then execute ONE owner-approved `gcloud run deploy` with **the verified immutable digest** only, explicit `--invoker-iam-check --no-allow-unauthenticated --ingress=all --min-instances=0 --max-instances=1 --concurrency=1 --cpu=1 --memory=512Mi --timeout=5s --no-cpu-boost --port=8080`, new dedicated SA `oldx-step05-gateway@oldx-staging.iam.gserviceaccount.com`, no Product/Firebase/KMS backend and no hosted HTTP user probes. Exactly read back newly created service/traffic/IAM after the one deploy; if partial/ambiguous STOP, **NO blind repeat**. No existing `oldx-owner-read` permissions/traffic/tags or project IAM changes. <=24h owner-supervised new-resource-only cleanup remains authorized separately from any unrelated deletion.

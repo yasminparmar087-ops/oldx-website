@@ -1,0 +1,12 @@
+# Step05 C1A ONLY: source-only draft; NEVER build/deploy without separately
+# approved immutable Node24 distroless Linux/AMD64 base digest and fresh image
+# security/provenance review. Omitting this required build arg fails closed.
+# Expected example shape (NOT an actual pinned image):
+# gcr.io/distroless/nodejs24-debian13:nonroot@sha256:<VERIFIED_DIGEST>
+ARG NODE24_BASE_BY_DIGEST
+FROM ${NODE24_BASE_BY_DIGEST}
+WORKDIR /app
+COPY --chown=65532:65532 functions/staging-marketplace/cloud-run-gateway-off-server.mjs /app/server.mjs
+EXPOSE 8080
+# Inherits nodejs24 distroless Node entrypoint, no shell/package install.
+CMD ["server.mjs"]

@@ -1,5 +1,76 @@
 # OLDX Step05 — maximum safe source-only execution receipt
 
+## 25 Nov 2026 — actual one-shot LOCAL H1A resume PASS_WITH_LIMITS; 12 HIGH CVEs NOT accepted
+
+**Current actual checkpoint supersedes earlier BEFORE_BUILD/PENDING statuses below without erasing history.** Started remote `ff78a0146ec53e03fe52777c95976ed528be76af`; exact image sources at approved `1ece3a1e004bea7b0157bf04b6fd26f0e793d976`. Runner blob `55356fda6eb4f1cb8bd103eaba71dff6340ec2ac`, helper blob `27bf21b298e4ffa03afa004b9bde65c5ebb84b22` independently matched downloaded local bytes. Original Dockerfile/ignore/server blobs ec36707…/fc1944d…/68e65e2… matched their full approved hashes. Used isolated minimal repository-root source directory; dirty local Handoff and untracked.firebaserc preserved, no reset/pull/force. This batch modifies ONLY documentation.
+
+### Actual execution and one-shot custody
+Owner-local `OLDX-Ubuntu-24.04`, Docker client/server29.10.0, local Unix socket; existing Syft1.57.1 and Grype0.121.3, no installation.
+Executed approved runner **exactly once**:
+`python3 scripts/step05-h1a-local-image-once-20261125.py --execute --confirm-h1a-resume --source-root <verified-isolated-root>`.
+No prior synthetic tests or full suites rerun. Diagnostic marker already CONSUMED, original private raw receipt/raw bytes present; BUILD marker independently ABSENT before execution. Offline helper validated receipt SHA256 `f301f77236a1af5ac5ee14ef426e3ff1226aa49ec0955fc33d7cea622203b704`, exact4639B raw digest/header/source/marker/permissions; NO Docker manifest inspect or raw GET repeated. Helper metadata `h1aBuildAuthorizedToResume:false` correctly does not confer permission: the separate latest express owner approval and BOTH flags authorize this run. Private runner's legacy `approvalCheckpoint:4470…` is historical metadata; actual resume approval/runner checkout is ff78… above, not a new inference.
+
+Actual interval UTC24Nov19:52:44–19:59:44.949 = **25Nov2026 01:22:44–01:29:44.949 IST**. One build, one SBOM, one Grype, one seven-request local smoke sequence, one SIGTERM shutdown. Exit0 `PASS_WITH_LIMITS`; no retry. BUILD marker now PRESENT/CONSUMED `/root/.oldx-h1a-c2-mediator-once-20261125`; never delete/rerun. Successful operations and image evidence are CONSUMED. Original C1A/Step04 image/tests/scans untouched.
+
+Preflight available RAM3,597,922,304B; virtual /root free1,006,033,211,392B, Windows C:23,636,389,888B. 12GiB conservative peak +4GiB reserve minimum passed. This is a budget/preflight observation, not measured peak. Private temp Docker/scanner configs used, no inherited ignore/configuration. No secret/credential loads or cloud account operations.
+
+### New image build / provenance
+- Build **PASS**, BuildKit default local Docker driver accepted the **unchanged** original pinned base `gcr.io/distroless/nodejs24-debian13:nonroot@sha256:49559f4ee6632a11a13a7e198183efee1226de7a8f437df83c180b01bd8253ec`; no reported manifest/layer verification failure.
+- Actual build command: `docker --host unix:///var/run/docker.sock build --platform=linux/amd64 --network=none --no-cache --file <private-context>/functions/staging-marketplace/Dockerfile.c2-mediator-off --tag oldx-h1a-c2-mediator-off:local-20261124t195244z <private-context>`. Root-layout context contains only3 approved files; specific ignore remains exact. `--network=none` is build-step networking, not a claim base resolution used no public registry.
+- Local tag `oldx-h1a-c2-mediator-off:local-20261124t195244z`.
+- Docker local inspect image ID **`sha256:576a1faa599459ed9b1cdeccc01a3adc2076dffff617bec42f38df7d3a75663e`**; platform linux/amd64; size214,841,702B; configured user65532:65532.
+- BuildKit log distinguishes local exported OCI index576a1faa… above, child manifest `sha256:2e555bd98424d29b32a7bb3409a45e2c257569ff632085e4ff0e3a9ab4413b5f`, and config `sha256:c71c7268e08f9ed91a92fd4e82e499a7331c3a071985cebcede7d76efbdf5b71`.
+- Syft source metadata type=image/userInput=exact new local tag/imageID=c71c7268… **matches exported config**, not Docker's index-valued inspect ID. This explicit chain binds SBOM to this new build; differing identifiers are not blindly treated as the same digest.
+- **No registry push or remote derived manifest/digest.** Local export/attestation-manifest presence is not verified publisher signature/SLSA/remote provenance. Historical original Docker CLI manifest failure remains unexplained; successful BuildKit path does not claim that client fixed.
+- Build emitted one nonfatal `FromPlatformFlagConstDisallowed` lint warning for deliberate fixed linux/amd64 FROM; no source modification under this execution.
+
+### ONE new-image Syft/Grype evidence
+Syft full-image squashed inventory JSON **PASS**, **15 cataloged packages**, not a proof every bundled Node/native component is exhaustively modeled. Grype scan of that exact saved SBOM **PASS_EVIDENCE_ONLY_NO_RISK_ACCEPTANCE**, **55 matches**, ignoredMatches0. No old-image rescan, no zero-CVE claim.
+DB valid=true, schema **v6.1.10**, built **2026-11-24T06:22:05Z**; database archive identity from report `vulnerability-db_v6.1.10_2026-11-24T00:20:31Z_1795501325.tar.zst`, advertised archive SHA256 `fdf0cdec0b112f6769c3fd38cd5f992a3bb6162a4ab2fe30d639d14ae41ea8a9`; saved full report retains provider metadata. No separate DB/scan rerun.
+
+| Severity | Package matches | Distinct CVE IDs |
+| --- | ---: | ---: |
+| Critical | 0 | 0 |
+| High | 18 | 12 |
+| Medium | 20 | 11 |
+| Low | 6 | 3 |
+| Negligible | 11 | 8 |
+
+All HIGH findings (no CRITICAL findings recorded):
+| Affected packages/version | HIGH CVEs | Matches / report fix state |
+| --- | --- | --- |
+| gcc-14-base, libgcc-s1, libgomp1, libstdc++6 —14.2.0-19 | CVE-2026-95619, CVE-2026-102010 | 8 matches; wont-fix, versions[] |
+| libssl3t64 —3.5.9-1~deb13u1 | CVE-2026-124709, CVE-2026-95692, CVE-2026-107496, CVE-2026-107494, CVE-2026-121482, CVE-2026-95691, CVE-2026-88823, CVE-2026-84786, CVE-2026-107493 | 9 matches; not-fixed, versions[] |
+| libc6 —2.41-12+deb13u5 | CVE-2026-84243 | 1 match; wont-fix, versions[] |
+
+Other severity distinct IDs retained in full private JSON: Medium11, Low3, Negligible8. Counts are per severity, not a de-duplicated cross-image total. These are **THIS new image's scan findings**; same base/IDs or prior C1A12 HIGH private-OFF acceptance do NOT accept risk for this candidate. A8's separate15severe remains separate; never sum these as unique CVEs. No call-path exploitability/fix research or vulnerability elimination claim in this execution.
+
+### Actual ONE local runtime PASS
+Saved seven requests, no polling/retry:
+1 GET /health200; 2 HEAD /health200; 3 POST owner with synthetic stripped-IAM-looking header503; 4 guest list503 with outside Origin and no CORS grant; 5 guest detail503; 6 unknown path404; 7 forged application request-proof save403. Synthetic bytes never reflected in responses. The IAM-looking value is not a real token/Google authentication test.
+Node **major24**, process UID/GID65532/65532; attempted /app and /tmp writes returned EROFS. Container readonlyRootfs=true, CapDrop ALL, no-new-privileges=true, memory256MiB/memory+swap256MiB, CPU1, pids32, published port HostIp127.0.0.1 only, only runtime-injected PORT env (no Product activation/credentials). Application only handled local requests; default bridge **is not a verified network-egress sandbox**.
+SIGTERM clean exit0, OOMKilled=false, elapsed **0.507s**, within bound. Exact newly named test container stop/remove successful. Image/reports retained; no unrelated cleanup/prune. No hosted IAM/Firebase/Firestore/KMS, ADC or Product-enabled acceptance.
+
+### Private retained evidence and exact SHA256
+Directory `/root/oldx-h1a-evidence-20261124T195244Z` (0700, private); report JSON files are saved as `syft.stdout` and `grype.stdout`, not uploaded.
+| File | SHA256 |
+| --- | --- |
+| receipt.json | 9be77e292585d30aa859c50cf1bc5112c631c615c89697e4928604171283a560 |
+| syft.stdout — full SBOM JSON | 09159b10490fe3ba072c0f53dadc49c428e8a4c1e0a940de1d939a8c4a2c235a |
+| grype.stdout — full vulnerability JSON | 2fbfc099009a6e1153f438e77f9724dff5e81884ba326953ae1a5fa2cdc0680a |
+| runtime-smoke.stdout | 63b8f2761451a0bf844426a167d3a94b26bdc02bf8696f44114da1cdcdd966dc |
+| context-manifest.json | d5facfc8260bca72d41c6a35d8ab5cc00b033d3f3948b3e6a0fb6a87a38083ef |
+| build.stderr — BuildKit log | 8d2cac331e5f47683b166b831a45a16403864b8b6a3ce91647ff331a5aadd976 |
+| sha256-manifest.json | d3872ebbdff18d156854e4c4c4155b3f2b65f45232a6729a7f1dfa8755ced0c4 |
+
+Full local per-operation commands/stdout/stderr, image/container inspection and DB retained. No full private report/raw body/token/credential committed; public GitHub summary only.
+
+### Limits / exact next step
+**H1A=PASS_WITH_LIMITS is local evidence, NOT security-risk acceptance or H1B authorization.** Remaining:12 HIGH disposition for this exact candidate, derived publisher/remote provenance, actual future registry manifest identity, operator/effective inherited IAM, new-only scoped deployment/rollback/cost consent; G2 real signer, G3data-plane, G4media/publication, G5nonce cleanup/TTL and G6enabled security unchanged. H1B/H2 NOT AUTHORIZED; Step05 NOT DONE / production NO-GO. C1A unchanged retained through28Nov2026 23:19IST; no auto deletion/extension.
+**ONE next action:** prepare/review the source-only H1B security/owner decision packet using THIS retained image/12-HIGH evidence and provenance limits, without rebuild/rescan/push/deploy or accepting CVEs. Any later actual H1B operation needs separate specific owner consent. No more local execution under consumed H1A approval.
+Final pushed/read-back SHA is in accompanying Issue17 checkpoint and this containing documentation commit. Broad CI/old tests not run/requested; docs commits use [skip ci], no workflow or deployment setting changed.
+
+
 ## 25 Nov 2026 ~01:19 IST — OWNER EXPLICITLY APPROVES ONE LOCAL H1A RESUME BUILD + SECURITY/RUNTIME BATCH AFTER OFFLINE GUARD
 
 Owner answered **"ha manjuri chhe"** immediately after asked to approve ONE bounded local H1A attempt with unchanged pinned Distroless base, one Docker `linux/amd64` build, one NEW-image Syft SBOM, one NEW-image Grype scan, and one nonroot/read-only OFF-only runtime/SIGTERM sequence. If BuildKit digest verification fails, STOP, no retry/repin/bypass. **Previous diagnostic is CONSUMED** and must not re-run. This is NOT permission for H1B push/provisioning, H2 enablement, IAM/Firestore/Firebase/KMS/Billing/Cloud Run/Vercel write, production or old image scans.

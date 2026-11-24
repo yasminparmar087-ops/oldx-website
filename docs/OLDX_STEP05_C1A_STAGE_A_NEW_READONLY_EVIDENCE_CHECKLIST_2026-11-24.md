@@ -1,5 +1,9 @@
 # OLDX Step05 C1A — Task25 Stage A approved: ONE new read-only evidence checklist
 
+## LATEST OVERRIDE — 24 Nov 2026: NO PRE-C1A BILLING FORM OR HARD CAP
+
+Owner subsequently removed the ₹100 and other rupee hard-stop/form-gate requirements, directed fastest practical Step05 progress while keeping costs low. Therefore **SKIP section A (current gross charges/pricing form)** and the previous cost-reconciliation STOP in section C; those are historical superseded instructions and must not be requested again as a prerequisite. This change is cost-policy ONLY, not additional authorization to push/create/deploy, alter IAM/Rules, invoke private endpoints or run C2. One new official parent-image Cosign proof (section B) is still the first currently unconsumed technical task. Reference [newest owner decision](OLDX_STEP05_C1A_FASTPATH_OWNER_DECISION_AND_PROVENANCE_2026-11-24.md). No cloud resource operations were performed by this update.
+
 **Date:** 24 November 2026 IST. **Branch:** `security-hardening-review`. **Consent:** owner replied **"ha manjuri chhe"** to combined five-term Stage A decision; see [canonical acceptance](OLDX_STEP05_C1A_FASTPATH_OWNER_DECISION_AND_PROVENANCE_2026-11-24.md). No Google Cloud write, paid action or hosted HTTP has been approved or performed in this Task25 work.
 
 ## Consumed; DO NOT REPEAT

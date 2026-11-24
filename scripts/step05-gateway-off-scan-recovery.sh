@@ -5,7 +5,7 @@ set -Eeuo pipefail
 umask 077
 say(){ printf '%s\n' "$*"; }
 fail(){ printf 'STOP: %s\n' "$*" >&2; exit 1; }
-PIN='sha256:612f3c02806a93d991127f87e34391646edf9bad251bb2b8aace90a434bc30a'
+PIN='sha256:612f3c02806a93d991127f87e34391646edf9bad251bb22b8aace90a434bc30a'
 TAG='oldx-step05-gateway-off:wsl-once-20261124-801'
 SYFT_SHA='bf52519eb57f675d47c07d43213cb6dff6449f3d6d1147ff6701ed91f44eef0c'
 GRYPE_SHA='e9da18cc1429e786722e32161288103600efffd8e483c90761f90485bd1bec85'

@@ -25,7 +25,9 @@ test('two competing transaction consumers cannot accept the same nonce twice',as
  const [a,b]=await Promise.all([consumeAtomicMarketplaceReplayNonce(params),consumeAtomicMarketplaceReplayNonce(params)]);
  assert.equal([a.allowed,b.allowed].filter(Boolean).length,1);
  assert.equal(d.transactions,2);
- assert.deepEqual(d.docs.get(nonceRef.path),{count:1,expiresAtMs:46000});
+ const stored=d.docs.get(nonceRef.path);
+ assert.deepEqual(stored,{count:1,expiresAtMs:46000,nonceTtlAt:new Date(46000)});
+ assert.ok(stored.nonceTtlAt instanceof Date);
  const third=await consumeAtomicMarketplaceReplayNonce(params);assert.equal(third.allowed,false);
 });
 test('invalid expiry, aborted requests and failed storage never grant nonce access',async()=>{
@@ -36,6 +38,8 @@ test('invalid expiry, aborted requests and failed storage never grant nonce acce
  await assert.rejects(()=>consumeAtomicMarketplaceReplayNonce({...base,expiresAtMs:5000,signal:signal.signal}));
  const broken={runTransaction:async()=>{throw Error('commit failed');}};
  await assert.rejects(()=>consumeAtomicMarketplaceReplayNonce({...base,sdk:broken,expiresAtMs:5000}));
+ // An integer timestamp may exceed the Date range even when still safe as a JS number.
+ await assert.rejects(()=>consumeAtomicMarketplaceReplayNonce({...base,now:()=>8640000000000000,expiresAtMs:8640000000000010,retentionMs:30000}));
  assert.equal(d.docs.size,0);
  assert.deepEqual(await createStagingMarketplaceReplayNonce()(),{allowed:false});
 });

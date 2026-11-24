@@ -58,7 +58,7 @@ def preflight():
                 and path.stat().st_uid == 0
                 and (path.stat().st_mode & stat.S_IXUSR) != 0,
                 'SDK_REQUIRED_FILE_UNVERIFIED')
-    require(CONFIG.parent == SDK.parent and not CONFIG.parent.is_symlink(),
+    require(CONFIG.parent == SDK.parent.parent and not CONFIG.parent.is_symlink(),
             'CONFIG_PARENT_UNSAFE')
 
 def run_version():

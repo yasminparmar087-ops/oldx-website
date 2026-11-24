@@ -188,3 +188,28 @@ bash scripts/step05-gateway-off-scan-recovery.sh
 `git pull` only refreshes the temporary review-branch clone; it does not change user's independent Windows project or cloud resources. The new scan-only source is separate from old `step05-gateway-off-wsl-one-shot.sh` (NEVER rerun that earlier build script). Stop on any error and share only final `summary.txt`, last `STOP` and relevant small stderr, not credentials or raw full scanner output; no second manual run under this permission.
 
 **Status:** `EXISTING_WSL_IMAGE_BUILT_AND_OFF_SMOKE=PASS_WITH_LIMITS`; `PREVIOUS_SYFT_DOWNLOAD=120S_TIMEOUT`; `SCAN_ONLY=OWNER_APPROVED_PREPARED_NOT_EXECUTED`; `SBOM=NOT_YET_VERIFIED`; `GRYPE_CVE_COUNT=UNKNOWN`; `NO_NEW_BUILD`; `C1A/C1B/C2=NOT_APPROVED`; `PRODUCTION=NO_GO`. Previous 84 focused offline cases and Step04 A8 Build/Scan not repeated. Passing local scan alone does not satisfy hosted IAM/security/cost/media gates.
+
+
+## 24 Nov 2026 — Owner scan-only attempt STOP at exact Docker image identity preflight (no download/scan)
+
+Owner's Ubuntu screenshot shows actual `git pull --ff-only origin security-hardening-review` succeeded, latest `9b22ff1b248a76b76eb7b11da7d243aca96e31db`, `bash -n` succeeded, and the NEW `scripts/step05-gateway-off-scan-recovery.sh` STOPPED at its initial exact-image guard:
+
+```
+STOP: The exact previously approved image/tag is missing or differs; DO NOT BUILD
+```
+
+This occurs **before** the scan-only one-shot `LOCK="$HOME/.oldx-step05-existing-image-scan-recovery-consumed"` creation in the source, and before `docker save`, any Syft/Grype download, SBOM or scan. Thus no image was rebuilt and the scan-only approval is not consumed by the script. The actual cause (image tag absent, tag points to a different digest, Docker host state changed, or an earlier screenshot-to-source transcription mismatch) **is not yet known**. Do not relax the exact pin or declare that the image was removed without observing Docker output.
+
+**One next READ-ONLY command in the already-open Ubuntu root terminal:**
+```bash
+echo '=== EXACT TAG INSPECT ==='
+docker image inspect oldx-step05-gateway-off:wsl-once-20261124-801 --format 'ID={{.Id}} USER={{.Config.User}} OS={{.Os}} ARCH={{.Architecture}}' || echo 'TAG_NOT_AVAILABLE'
+echo '=== ALL NEW GATEWAY TAGS ==='
+docker images --no-trunc --filter 'reference=oldx-step05-gateway-off:*' --format 'ID={{.ID}} TAG={{.Repository}}:{{.Tag}} SIZE={{.Size}}'
+echo '=== APPROVED SOURCE PIN ==='
+grep -E '^(PIN|TAG)=' scripts/step05-gateway-off-scan-recovery.sh
+echo '=== SCAN-ONLY MARKER ==='
+if test -e /root/.oldx-step05-existing-image-scan-recovery-consumed; then echo 'MARKER_EXISTS'; else echo 'MARKER_NOT_CREATED'; fi
+```
+
+Only after exact actual image ID and tag are established may the source pin be corrected under SOURCE-ONLY scope if transcription error is demonstrated. Do NOT rebuild, retag/repoint local images, delete Docker state, bypass the SHA256 guard or rerun historical 84 tests. Grype CVE findings remain UNKNOWN. The original WSL image build/Linux OFF-only prior PASS evidence remains, but current Docker identity needs read-only verification. C1A/B/C2 remain UNAPPROVED; production NO-GO.

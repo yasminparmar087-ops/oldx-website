@@ -1,5 +1,10 @@
 # OLDX Agent Instructions
 
+## 25 Nov 2026 — latest H1B read-only preflight STOP: first operator command timeout124
+
+Verified script14703d1257c99701e4873be598b5aedc0d5c33b4, isolated exact source, marker initially ABSENT; WSL bash syntax PASS. ONE approved run attempted first gcloud auth list only; timeout40s/exit124, stdout/stderr empty. Project/number, Registry, new service/SA collisions NOT QUERIED/UNKNOWN; do not infer 404/absence/permission state. Separate marker now consumed/PRESENT: no rerun/deletion. Private evidence `/root/oldx-h1b-readonly-preflight-20261124T202258Z`; SHA256SUMS SHA256 `22b2f89ffc7c70be6ad82398e64d8c42170c646669d5399ae4c44622d96d5b1e`. [Exact H1B packet checkpoint](docs/OLDX_STEP05_H1B_PRIVATE_OFF_ONE_SHOT_PREFLIGHT_AND_OPERATION_PACKET_2026-11-25.md). Next ONE owner approval: scoped read-only diagnosis of local WSL gcloud startup/operator timeout, not W1–W6 or full preflight retry. No source changes/tests/build/scans/push/deploy/IAM/Firebase/Billing/credential/Cloud write; dirty owner files preserved. OptionB private/OFF risk24h only unchanged; H1B_WRITES NOT AUTHORIZED / H2 HOLD / Step05 NOT DONE / production NO-GO. C1A unchanged through28Nov23:19IST.
+
+
 ## 25 Nov 2026 — H1B W1-W6 source-only one-shot operations packet + read-only preflight PREPARED; CLOUD NOT TOUCHED
 
 Starting verified remote HEAD `c5e9d526da95fa253e2a64f053c59456d0e0111d`. Owner chose Option B only for 12 known HIGH / unsigned-derived-provenance risk of the exact H1A retained candidate during max24h future **IAM-private/OFF/no-data** H1B experiment; this is **risk acceptance, NOT new Cloud/Registry/IAM spend/deployment authority**. H1A local image/index `sha256:576a1faa599459ed9b1cdeccc01a3adc2076dffff617bec42f38df7d3a75663e` is NOT a remote digest; H1A original build/Syft/Grype/runtime completed and marker CONSUMED. No repeat.

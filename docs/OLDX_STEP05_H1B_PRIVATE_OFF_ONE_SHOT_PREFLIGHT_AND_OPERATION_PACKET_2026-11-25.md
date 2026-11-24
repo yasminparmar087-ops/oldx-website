@@ -1,5 +1,38 @@
 # OLDX Step 05 H1B — single preflight and private OFF-only deployment operational packet
 
+## 25 Nov 2026 — actual one-shot H1B read-only preflight STOP: operator lookup timed out; targets NOT queried
+
+Starting remote HEAD `7358fbc3da718a88e84b2ab31aebe9330bcd4f6b`. Latest AGENTS, this packet and Issue17 latest7143376032 read first. Script `scripts/step05-h1b-readonly-preflight-20261125.sh` Git blob **`14703d1257c99701e4873be598b5aedc0d5c33b4`** matched exact isolated local bytes. Local dirty Handoff and untracked.firebaserc preserved, no reset/force/pull. No source script change.
+
+Owner-local `OLDX-Ubuntu-24.04`: separate marker `/root/.oldx-h1b-readonly-preflight-once-20261125` independently ABSENT before run; `bash -n <isolated>/scripts/step05-h1b-readonly-preflight-20261125.sh` **PASS exit0**, no Cloud request. Then exactly ONE invocation:
+`bash scripts/step05-h1b-readonly-preflight-20261125.sh --read-only-once`.
+The first bounded command, `timeout 40s gcloud auth list --filter=status:ACTIVE --format=value(account)`, saved **exit124 (timeout)** with **stdout0B/stderr0B**. Script reported `STOP: cannot read active gcloud operator; no other lookup attempted`; outer WSL process exit1 observed. No retry, login/token creation, SDK install, account switch or permission change. The cause of the silent timeout is UNVERIFIED; not proof of expired credentials, missing access, network failure or missing resources.
+
+| Requested check | Actual result |
+| --- | --- |
+| Active Google Cloud operator | **UNVERIFIED — first lookup timed out**, no identity printed |
+| Project oldx-staging / expected38472235077 | **NOT QUERIED**; expected values remain proposal/config, not fresh proof |
+| Existing asia-south1 oldx-staging-images Registry | **NOT QUERIED** |
+| NEW service oldx-c2-website-mediator collision | **UNKNOWN — NOT QUERIED** |
+| NEW SA oldx-c2-mediator@oldx-staging.iam.gserviceaccount.com collision | **UNKNOWN — NOT QUERIED** |
+| Effective inherited IAM, push/create/cleanup rights, cost | **UNVERIFIED**, outside successful evidence |
+
+No403/404 response was obtained and **no collision-free/nonexistence claim** is made. Marker now PRESENT/CONSUMED; never delete or rerun script. Only first active-operator gcloud command attempted; no project/Registry/Cloud Run/SA describe commands executed, no hosted endpoint request.
+
+### Private evidence custody
+Directory `/root/oldx-h1b-readonly-preflight-20261124T202258Z` (25Nov2026 ~01:52:58IST start), umask077/private:
+- `SHA256SUMS` SHA256 **`22b2f89ffc7c70be6ad82398e64d8c42170c646669d5399ae4c44622d96d5b1e`**.
+- `active-operator.command` SHA256 `3624b2dd5a2803e238c36e7a26cfaded66d4263605f51a849980b508ea74492a`.
+- `active-operator.exit` SHA256 `ca2ebdf97d7469496b1f4b78958f9dc8447efdcb623953fee7b6996b762f6fff`.
+- stdout/stderr both empty, SHA256 `e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855`.
+Marker retains exact evidence location. Full private evidence/operator output not uploaded, only nonsensitive timeout/status/checksum summary. No images built/scanned/pushed, service/SA/IAM/Firebase/Billing/traffic/deployment/credentials changed. Existing H1A retained image/scans/tests and C1A untouched.
+
+**H1B_READONLY_PREFLIGHT=STOP_OPERATOR_TIMEOUT; H1B_WRITES=NOT_AUTHORIZED; H2=HOLD; PRODUCTION=NO_GO.** OptionB acceptance remains ONLY the exact known candidate's private/OFF/no-data risk for max24h from future actual activation; no activation/start/end clock here, no operational authority. Existing C1A retention deadline28Nov2026 23:19IST unchanged.
+
+**ONE next owner approval required:** one narrowly scoped **read-only diagnosis of the timed-out local WSL gcloud startup/operator lookup**, without repeating consumed preflight, changing credentials/IAM or making resource writes. Do not seek/execute W1–W6 on unverified operator/collisions. Actual target checks need later individually bounded continuation only after the cause is understood; no automatic retry, new marker or longer timeout here. Existing future W1–W6 packet stays PROPOSED/NOT_AUTHORIZED and is not executable on this failed preflight.
+Final pushed/read-back SHA is in Issue17 checkpoint and containing documentation commit.
+
+
 **25 November 2026 IST. SOURCE-ONLY document, NOT operational approval.** Repository `yasminparmar087-ops/oldx-website`, branch `security-hardening-review`. The owner chose **Option B**: accepts precisely the twelve known HIGH CVEs and explicitly disclosed unsigned/uncertified *derived publisher* provenance risk **ONLY** for one **future**, strictly IAM-private, compiled-OFF, no-real-user-data H1B mediator staging experiment of **up to 24 hours from activation**. Actual Cloud creation, image push, IAM write, metered resource activation, hosted HTTP and cleanup have **not** been authorized by that risk decision or the subsequent generic “ok aagal vadho”; this packet prepares them. Existing C1A has a **separate** retention deadline, **28 Nov 2026 23:19 IST**.
 
 ## 1. Frozen evidence; no repeat

@@ -287,3 +287,28 @@ wsl -d OLDX-Ubuntu-24.04 -- bash -lc "if [ -e /root/.oldx-step05-c1b-off-hosted-
 ```
 
 Do not request a repeat HTTP even if the returned code is unexpected; first determine whether it was 200/public bypass, 404/not-found, 3xx/redirect or an auth/proxy-related error. Corrective decisions and any extra HTTP requests require a narrowly reviewed security path and remaining 20-minute original window (possibly expired), not blanket "retry". Cloud Run direct IAM showed no public bindings but private access behavior remains UNVERIFIED and this anonymous response is potentially material. All C1A prior B1/B2/B3, signed-base checks, scans/tests already consumed and must NOT be repeated. `C1B=STOP_UNEXPECTED_ANON_STATUS`, `C1B_HTTP_SENT=1`, `C1B_OWNER_AUTH_CALLS_SENT=0`, `PRODUCTION/C2=NO_GO`.
+
+
+## 24 Nov 2026 ~23:41-23:44 IST — C1B anonymous `/healthz` HTTP **404** actual evidence; official Cloud Run reserved-path cause identified; bounded **/health** continuation prepared NOT EXECUTED
+
+Owner CMD screenshot of exact local-only original one-shot marker/report read returned:
+```text
+C1B_MARKER=PRESENT
+STATUS=STARTED
+HTTP_ATTEMPT_1=ANONYMOUS_GET_HEALTHZ
+HTTP_1_CODE=404
+```
+Exactly **ONE** C1B HTTP request was sent, returned **404**, **NOT** 200, and no Owner GET/POST attempt is logged. The shell script stopped on source `$code_NO_FURTHER_REQUESTS` nounset formatting bug after writing the observed 404; that formatting was fixed SOURCE ONLY (the original one-shot MUST NEVER be repeated). Do NOT claim successful anonymous application access or 401/403 rejection. `C1B=HOLD_PARTIAL` until valid-path private enforcement is shown.
+
+**Newly discovered MATERIAL official Google evidence:** Google [Cloud Run Known Issues — Reserved URL paths](https://docs.cloud.google.com/run/docs/known-issues) (updated 18 Nov 2026) explicitly states `/_ah/` paths and **some paths ending in `z`** are reserved; it recommends avoiding all paths ending in `z`. Thus `/healthz` is an unsuitable discriminator for Cloud Run IAM behaviour, and Google frontend returning 404 *before* reaching the application is a credible explanation; not independently proven for this exact request by server-side logs. The already-built immutable OFF-only server at repo Git blob `25d2679bd4ea970c8b8a32a778fb26eb347bcdd6` supports both `GET /healthz` and **`GET /health`** returning 200 locally. The latter does NOT end in z, so a one-time `/health` test needs **NO Docker rebuild, Registry push, Cloud Run deployment, IAM change, API enablement or source edit**.
+
+**Source-only NEW safe continuation:** [`scripts/step05-c1b-health-reserved-path-continuation-20261124.sh`](../scripts/step05-c1b-health-reserved-path-continuation-20261124.sh), final Git blob `91385ba0a49778042f6de03672d5a816295d7f9e`. It requires ORIGINAL marker/report present and EXACT `HTTP_1_CODE=404`, precisely 1 prior anonymous request, no prior subsequent requests; enforces original first-attempt marker's <=20 minute clock (does not reset approved 20m horizon), exactly 3 ADDITIONAL HTTP calls (#2 anonymous GET `/health` expected 401/403; #3 Owner GET `/health` expected 200; #4 Owner POST `/api/staging/marketplace/owner` expected 503), overall **4 of max6**, no redirects/retries and strict fail-stop. New one-shot marker placed BEFORE HTTP, token from Windows `gcloud auth print-identity-token` piped via WSL stdin and never printed or saved, same approved Owner-only identity. Its own report uses `$HOME/oldx-step05-c1b-health-continuation-result-20261124.txt`. Do not delete previous report or original marker. **Creation of script in GitHub is not execution; NO new HTTP sent by assistant.**
+
+**NEXT owner Windows CMD (ONLY if within original 20min window, otherwise script STOPs):**
+```cmd
+wsl -d OLDX-Ubuntu-24.04 -- bash -lc "cd ~/oldx-c1a-proof-stable-20261124 && git pull --ff-only && bash -n scripts/step05-c1b-health-reserved-path-continuation-20261124.sh"
+gcloud auth print-identity-token | wsl -d OLDX-Ubuntu-24.04 -- bash -lc "cd ~/oldx-c1a-proof-stable-20261124 && bash scripts/step05-c1b-health-reserved-path-continuation-20261124.sh"
+```
+Run second only if first succeeded; second one use ONLY and do NOT retry on any STOP including time expiry, any anonymous response other than 401/403, permission error, or token transport problem. If original 20-minute window already expired, request fresh narrowly scoped owner authorization rather than resetting or reusing the old marker. No C1A B1/B2/B3 rework, old 84 tests, image scan/signature, Firebase/KMS/old backend change. No C2 or production GO. Cleanup of exact new resource identities before previously planned supervised deadline remains separate and not scheduled automatically.
+
+**Current actual:** `C1A=PASS_WITH_LIMITS`; `C1B_OLD_ANON_HEALTHZ=404`; `C1B_HTTP_TOTAL_OBSERVED=1`; `C1B_HEALTH_CONTINUATION=PREPARED_NOT_RUN`; `C2/PRODUCTION=NO_GO`.

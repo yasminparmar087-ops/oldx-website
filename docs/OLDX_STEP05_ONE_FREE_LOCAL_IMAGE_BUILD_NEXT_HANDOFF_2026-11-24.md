@@ -234,3 +234,39 @@ git pull --ff-only origin security-hardening-review && bash -n scripts/step05-ga
 ```
 
 If the scan-only lock exists or a new STOP occurs, DO NOT repeat; preserve image/assets and read `summary.txt` and stage-specific error log. The previous 84 historical Node focused cases have not been rerun. **Status:** `WSL_IMAGE_BUILD/OFF_SMOKE=PASS_WITH_LIMITS`; `PIN_TYPO=FIXED_SOURCE_ONLY`; `SCAN_ONLY=AUTHORIZED_NOT_YET_STARTED`; `SBOM/GRYPE=NOT_VERIFIED`; `C1A/C1B/C2=NOT_APPROVED`; `PRODUCTION=NO_GO`.
+
+
+## 24 Nov 2026 — NEW OFF Gateway WSL scan-only RECOVERY COMPLETE, 12 distinct High-severity CVE IDs
+
+Owner screenshot at ~19:02 IST (24 Nov 2026) shows **SUCCESSFUL completion** of the once-approved scan-only recovery on the *same exact existing local* OFF Gateway Docker image, with **NO new image build, no registry push/deploy, IAM/Firebase modifications, paid cloud action, old A8 scan or old 84 tests repeated**. Preserve this as the latest status, superseding the prior "NOT EXECUTED" and 120-second Syft failure records. Image local ID: `sha256:612f3c02806a93d991127f87e34391646edf9bad251bb22b8aace90a434bc30a`, tag `oldx-step05-gateway-off:wsl-once-20261124-801` (NOT a remotely pushed registry digest or publisher signature); the earlier build/Node24 nonroot/OFF-only/SIGTERM PASS remains valid.
+
+**Source-run evidence:** `MODE=SCAN_ONLY_NO_BUILD`; new evidence directory `/root/oldx-step05-scan-recovery-20261124T123515Z`; Syft attempts 1–3 completed with resumable partials (15,103,086 then 15,758,446 bytes noted); `SYFT_SHA256=VERIFIED`; `SYFT_SBOM_JSON=VALID`, `SYFT_SBOM=PASS`, `CYCLONEDX_SBOM=VALID`, `CYCLONEDX_SBOM=PASS`; Grype attempts 1–3 completed with resumable partials (10,858,666 then 28,548,257 bytes); `GRYPE_SHA256=VERIFIED`; `GRYPE_REPORT_VALID=PASS`. Final status `STATUS=SCAN_ONLY_COMPLETE_PENDING_SECURITY_REVIEW` and `NO_BUILD_NO_PUSH_NO_CLOUD_NO_IAM=TRUE`. Raw reports remain **only on owner's local WSL**, and the screenshot is not an independently downloaded/inspected Grype JSON.
+
+**Measured Grype summary for NEW image:** **55 total package vulnerability matches**: HIGH **18**, MEDIUM **20**, LOW **6**, NEGLIGIBLE **11**; no CRITICAL match shown in the printed severity summary; **12 distinct High/Critical CVE IDs** (distinct from 18 HIGH package matches). The screenshot prints 12 IDs, but **do not derive package-fix or runtime exploitability claims from IDs alone**. Treat this as **scan completed but security disposition still HOLD**, not launch/enablement clearance. Old Step04 A8 scan 15 severe IDs is a DIFFERENT image and must not be blended or re-scanned to compute a new single count.
+
+**NEXT one READ-ONLY user action (NO scanner rerun):** derive a compact grouped **CVE -> package/version/fix availability** list from the ALREADY SAVED Grype JSON. In the root Ubuntu terminal (no network, build, scan, installation or cleanup):
+
+```bash
+python3 - <<'PY'
+import json
+p='/root/oldx-step05-scan-recovery-20261124T123515Z/grype-report.json'
+r=json.load(open(p))
+rows={}
+for m in r.get('matches',[]):
+ v=m.get('vulnerability',{})
+ if v.get('severity') not in ('High','Critical'): continue
+ a=m.get('artifact',{})
+ k=(v.get('id'),a.get('name'),a.get('version'))
+ rows[k]={
+  'fixed': ','.join(v.get('fix',{}).get('versions',[]) or []) or 'NONE_LISTED',
+  'type':a.get('type','?')
+ }
+print('NEW_OFF_GATEWAY_IMAGE_SEVERE_PACKAGE_MATCHES=',len(rows))
+for (cve,name,version),detail in sorted(rows.items()):
+ print(cve,'|',name,'|',version,'|',detail['type'],'| fixed:',detail['fixed'])
+PY
+```
+
+Require reporter review of the returned full package-level mappings, then group duplicate package matches by CVE and consult current official Debian/vendor fixes **ONLY for new image severe rows**, without repeating the old 84 tests, new-image scan, old A8 scans or Cloud inventory. Publisher authenticity/provenance, 12 severe dispositions, exact C1A IAM/operator/tester and INR budget, cleanup and subsequent finite hosted acceptance remain pending separately approved actions.
+
+**Authoritative status:** `NEW_GATEWAY_LINUX_NODE24_OFF_SMOKE=PASS`; `NEW_GATEWAY_SYFT_SBOM=PASS`; `NEW_GATEWAY_CYCLONEDX=PASS`; `NEW_GATEWAY_GRYPE_SCAN=PASS_WITH_12_DISTINCT_HIGH_CVE_IDS`; `GATEWAY_IMAGE_SECURITY_ACCEPTANCE=HOLD`; `C1A/C1B/C2_CLOUD_DEPLOY=NOT_APPROVED`; `STEP05_HOSTED=BLOCKED`; `PRODUCTION=NO_GO`.

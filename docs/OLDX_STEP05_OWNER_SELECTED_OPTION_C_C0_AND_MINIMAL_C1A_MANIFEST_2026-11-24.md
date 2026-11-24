@@ -171,3 +171,30 @@ Public official pages consulted24-Nov-2026; no Billing/project read. Rates below
 **C2 NOT AUTHORIZED:** KMS signer, real Google identity freshness, effective IAM/default DB, original15 severe CVEs' enabled-scope risk, Firestore Timestamp TTL strategy, media/photo/publication, actual seller/buyer acceptance and gross costs/rollback remain BLOCKED. C1A/C1B OFF results cannot certify them.
 
 **Next ONE owner action:** review and authorize a separately bounded NEW Gateway build/security-evidence task on a suitable existing builder, with explicit no-deployment/no-old-image scope and any provider/cost limit filled first. No large toolchain install, Cloud Build or image push is implicitly authorized by this source task.
+
+
+## 24 Nov 2026 — Owner approved ONE **FREE LOCAL** NEW-Gateway image evidence attempt, NOT deployment
+
+Following the latest source-only packaging result at final HEAD `e74082d7a216550a54cebfc61ead8ea931966459`, the assistant offered **one limited cost-free NEW OFF Gateway local build, SBOM/security scan and Linux Node24 OFF-only smoke without Cloud/Registry push/deploy/IAM/spend**. The owner expressly replied **"ha manjuri chhe"**. This is ONE approved local build/evidence attempt, not blanket rescan/retry, old A8 B1/R1, paid service or C1A/C1B deployment approval.
+
+**Tool availability:** Current assistant-side Linux runtime has ~30 GB free scratch but NO Docker/Podman/Buildah daemon or other builder, and public `gcr.io` DNS/network is blocked. Therefore an actual image cannot be built/scanned *in the present assistant runtime*. GitHub repo is PUBLIC; the official standard GitHub-hosted Linux runner would be free, but committing a new automatic workflow would also trigger the old unconditional `oldx-review-safety.yml` workflow and repeat historical safety checks. Respect owner's strict no-repeat instruction. No workflow/CI run was triggered. No attempt to use paid Google Cloud Build, create an IAM identity or push an image.
+
+**Actionable safe alternative (existing owner's free Cloud Shell Docker if already available):** [one-shot local script](../scripts/step05-gateway-off-local-one-shot.sh), guarded with exact Git blob hashes of the THREE new Gateway input files and review branch/source, local daemon availability, Linux AMD64, >=4 GiB scratch and a persistent one-attempt marker set immediately before first Docker build. Script builds **ONLY** the new Gateway image locally with immutable reviewed Node24 base, never pushes/deploys; inspects Linux/amd64 and nonroot65532, runs a standalone read-only/network-none process test, checks Node24/readonly source, launches only the NEW OFF Gateway with network none, uses bounded local in-container health200 / Product503 and SIGTERM0 checks. Separately downloads pinned SHA256-checked official **Syft v1.57.1** and **Grype v0.121.3**, creates one CycloneDX SBOM and one Grype JSON scan of the newly derived image, reports distinct HIGH/CRITICAL CVE IDs and SHA256 of evidence reports. All generated image containers are removed by exact ID/tag and temp scanner binary/data cleaned on exit; the small report directory is retained under owner's Cloud Shell HOME. No secrets, cloud token, Firebase, new API, Registry upload, KMS or billed operation.
+
+**Full upstream asset checksums independently read from official GitHub release metadata:**
+- Syft Linux AMD64 v1.57.1 archive: `bf52519eb57f675d47c07d43213cb6dff6449f3d6d1147ff6701ed91f44eef0c`.
+- Grype Linux AMD64 v0.121.3 archive: `e9da18cc1429e786722e32161288103600efffd8e483c90761f90485bd1bec85`.
+- Both are public release downloads. No curl-pipe-to-shell or executable fetched without checksum.
+- Local script content created, reviewed, and a corresponding local draft's Bash syntax was checked; **this does NOT constitute image BUILD/SBOM/SCAN PASS**, nor Linux Node24 hosted test. Only the new script was authored, with bounded readiness correction before user execution. Do not add these as NEW test cases to cumulative 84.
+
+**Owner execution:** from Cloud Shell using a **fresh temporary public repo clone**, never overwrite owner's current working tree. Use one combined command:
+
+```bash
+d=$(mktemp -d /tmp/oldx-step05-build.XXXXXX) && git clone --quiet --depth 1 --single-branch --branch security-hardening-review https://github.com/yasminparmar087-ops/oldx-website.git "$d" && cd "$d" && bash scripts/step05-gateway-off-local-one-shot.sh
+```
+
+Run ONLY after checking that free Cloud Shell has a working local Docker daemon and adequate disk; the script itself refuses otherwise and never falls back to paid infra. It creates a single persisted `$HOME/.oldx-step05-new-gateway-image-build-consumed` marker **once**, and should not be repeated automatically after any failure. Share only `summary.txt` and compact failure/error from `build.log` if necessary; never send credentials. Scan results with severe CVEs mean HOLD for enabled usage, NOT automatic GO. Image ID is local Docker IMAGE ID, not an immutable pushed registry digest or publisher signature.
+
+**CURRENT STATUS:** `OPTION_C_C0=OWNER_SELECTED`; `NEW_IMAGE_BUILD_AUTH=ONE_FREE_LOCAL_ATTEMPT_APPROVED_NOT_YET_EXECUTED`; `NEW_DERIVED_IMAGE_BUILD/SBOM/GRYPE/LINUX_SMOKE=NOT_EXECUTED`; `OLD84_TESTS=UNCHANGED_NOT_RERUN`; `C1A/C1B/C2_DEPLOY=NOT_AUTHORIZED`; `PRODUCTION=NO_GO`. Once execution result is obtained, record exact measured derived image evidence and build/sbom/scan findings in this manifest, then separately prepare finite C1A operator/tester/cost/deployment consent. Keep original Step04 G2/G4/G8 gates.
+
+**No current-user Cloud Shell was accessed, and no actual Docker build, registry download, SBOM or Grype scan was executed by the assistant in this runtime.** Any assistant-created build script alone is not sufficient to call C1A ready.

@@ -151,3 +151,23 @@ Remote digest happens to equal the local image ID; independent GCP registry meta
 **B2 FINAL:** `B1_NEW_SA=PASS` uniqueId `102194769236111252832`; `B2_ONE_PUSH=PASS`; `B2_INDEPENDENT_REMOTE_DIGEST=PASS`; `B3_NEW_PRIVATE_OFF_SERVICE=AUTHORIZED_NOT_YET_EXECUTED`; `C1B_HOSTED_HTTP/C2/PRODUCTION=NO_GO`. Existing Owner tester/inherited 2 Owner+1 Editor potential access (NOT sole invoker) accepted only for OFF C1A, no public binding, new runtime SA has no newly assigned roles.
 
 **Next:** one just-in-time check of exact NEW `oldx-step05-gateway` Cloud Run service absence and local CLI `gcloud run deploy` supported flags if necessary (different write and ~1 hour after original P1 service name check). Then execute ONE owner-approved `gcloud run deploy` with **the verified immutable digest** only, explicit `--invoker-iam-check --no-allow-unauthenticated --ingress=all --min-instances=0 --max-instances=1 --concurrency=1 --cpu=1 --memory=512Mi --timeout=5s --no-cpu-boost --port=8080`, new dedicated SA `oldx-step05-gateway@oldx-staging.iam.gserviceaccount.com`, no Product/Firebase/KMS backend and no hosted HTTP user probes. Exactly read back newly created service/traffic/IAM after the one deploy; if partial/ambiguous STOP, **NO blind repeat**. No existing `oldx-owner-read` permissions/traffic/tags or project IAM changes. <=24h owner-supervised new-resource-only cleanup remains authorized separately from any unrelated deletion.
+
+
+## 24 Nov 2026 ~23:15 IST — PREPARED ONE B3 PRIVATE OFF-ONLY CREATE COMMAND (NOT RUN)
+
+Verified current official Google CLI help for `gcloud run deploy`: supports `--invoker-iam-check --no-allow-unauthenticated --ingress --min-instances --max-instances --concurrency --cpu --memory --timeout --no-cpu-boost --cpu-throttling --port --service-account --image`. References: https://docs.cloud.google.com/sdk/gcloud/reference/run/deploy, https://docs.cloud.google.com/run/docs/securing/managing-access. The approved source code is isolated OFF-only Node24 HTTP service: health GET200 and Product API503, no Firebase, KMS, backend client or secrets. NOTE: local WSL Docker `--read-only` testing does **not** prove Cloud Run root filesystem is read-only. No claim of signed derived-image attestation (`slsa_build_level=unknown`). Previous new-image 12 HIGH CVE risk owner-accepted for this limited PRIVATE default-OFF C1A ONLY.
+
+**Exact B3 immediate prewrite ONLY (not a full old-asset re-audit):**
+```cmd
+gcloud run services describe oldx-step05-gateway --project=oldx-staging --region=asia-south1 --format="value(metadata.name)"
+```
+Only **`Cannot find service [oldx-step05-gateway]`** is acceptable to proceed. Any existing service, permission error or other unclear status STOP. This is justified by the time interval since earlier P1; no repeat old A8/IAM/Registry/SA/source scan. Old SA B1 and remote Registry B2 already confirmed.
+
+**ONE owner-approved B3 deployment only after clean new-service NOT_FOUND, Windows CMD single long line:**
+```cmd
+gcloud --quiet run deploy oldx-step05-gateway --project=oldx-staging --region=asia-south1 --image=asia-south1-docker.pkg.dev/oldx-staging/oldx-staging-images/oldx-step05-gateway-off@sha256:612f3c02806a93d991127f87e34391646edf9bad251bb22b8aace90a434bc30a --service-account=oldx-step05-gateway@oldx-staging.iam.gserviceaccount.com --ingress=all --invoker-iam-check --no-allow-unauthenticated --min-instances=0 --max-instances=1 --concurrency=1 --cpu=1 --memory=512Mi --timeout=5s --port=8080 --cpu-throttling --no-cpu-boost
+```
+
+WARNING: this command is a **real Google Cloud billed resource write**, not read-only; approved by owner only for one NEW service. Ingress `all` is internet-addressable but MUST be IAM authenticated; historic 2Owners/1Editor possible inherited Invokers accepted as not exclusive. May fail due to `iam.serviceAccounts.actAs`, quota, project/org, runtime incompatibility, or CLI flags; **do not auto-enable APIs, grant IAM, repeat deploy, alter old service, bypass authentication, tag old A8 or start HTTP probes**. After any apparent success or ambiguous failure, perform one **read-only exact new service describe/iam-policy verification**, preserve actual revision, traffic, image digest, SA, min/max/concurrency/memory/cpu/timeout, ingress and required IAM flag. STOP if any mismatch, notify owner for narrowly scoped recovery. Exactly newly created resources only may be guarded-cleaned within owner consent; <=24h supervised trial, not automatic expiration.
+
+**Current before owner runs B3:** `B1=PASS`; `B2_REMOTE_DIGEST=PASS`; `B3_PRIVATE_GATEWAY_DEPLOY=NOT_YET_EXECUTED`; `C1B/C2/PRODUCTION=NO_GO`.

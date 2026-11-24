@@ -54,6 +54,12 @@ docker run -d --name "$CONTAINER" --network none --read-only --cap-drop ALL \
 docker exec "$CONTAINER" /nodejs/bin/node -e '
 (async()=>{
  const assert=require("node:assert/strict");
+ let ready=false;
+ for(let i=0;i<20;i++){
+  try{const check=await fetch("http://127.0.0.1:8080/healthz",{signal:AbortSignal.timeout(250)});if(check.status===200){ready=true;break;}}catch{}
+  await new Promise(resolve=>setTimeout(resolve,100));
+ }
+ assert.equal(ready,true,"OFF gateway never became ready");
  for(const [path,expected,method] of [["/healthz",200,"GET"],["/api/staging/marketplace/save",503,"POST"],["/api/staging/marketplace/list",503,"POST"]]){
   const r=await fetch("http://127.0.0.1:8080"+path,{method,signal:AbortSignal.timeout(2000),headers:{authorization:"Bearer fake.fake.fake","x-serverless-authorization":"Bearer fake.fake.fake"},...(method==="POST"?{body:"{}"}:{})});
   assert.equal(r.status,expected,path);

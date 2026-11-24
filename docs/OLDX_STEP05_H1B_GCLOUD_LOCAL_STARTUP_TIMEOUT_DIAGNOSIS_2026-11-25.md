@@ -1,5 +1,32 @@
 # OLDX Step05 H1B — gcloud local WSL startup timeout: diagnosis boundary and source handoff
 
+## 25 Nov 2026 — actual ONE owner-WSL local gcloud diagnostic: VERSION TIMEOUT124, no Cloud query
+
+Starting remote HEAD `2624c88d61b1e441cee42ca103343e4ea47b7f9a`. Read latest AGENTS, this diagnosis document and Issue17 checkpoint7143708788. Approved script Git blob **`59e9d20d4d82ec6d0783cabeec5f358af89e3b8e`** matched exact isolated local bytes; `bash -n` PASS exit0 without Cloud request. Dedicated marker initially ABSENT; original preflight/H1A markers not modified.
+
+Ran exactly ONCE in owner `OLDX-Ubuntu-24.04`:
+`bash scripts/step05-h1b-gcloud-local-timeout-diagnosis-once-20261125.sh --diagnose-local-once`.
+Only passive local metadata + one `timeout --signal=TERM --kill-after=2s 12s gcloud --version`. **Saved version.exit=124 (timeout)**; version stdout0B/stderr0B. Script emitted `H1B_GCLOUD_STARTUP=VERSION_TIMEOUT_OR_KILLED_STOP`, `H1B_LOCAL_DIAG_EXIT=2`; outer WSL wrapper exit1 observed. Distinguish inner SDK-probe timeout124 from diagnostic script2. No retry or second SDK process. Marker now CONSUMED `/root/.oldx-h1b-gcloud-startup-diagnosis-once-20261125`; never remove/rerun.
+
+### Actual passive findings and interpretation
+- `gcloud_executable_found=YES`, install path class **WINDOWS_MOUNT_PATH**; regular launcher file6494B. WSL2 kernel6.18.58.1-microsoft-standard-WSL2. Raw installed path not published.
+- CLOUDSDK_CONFIG / CLOUDSDK_PYTHON / active-configuration / PYTHONPATH override presence allNO; HTTP(S)/NO_PROXY presence allNO. These are presence checks only, not exported environment values.
+- Default SDK config directory present; credential/token DB files present mode600; only stat metadata inspected, **no contents/auth validity/account identity read**. Presence does not prove usable credentials. No matching process names recorded by pre-probe snapshot; not proof of absence of transient startup children later.
+- **Possible cause, explicitly unconfirmed:** WSL resolving a Windows-mounted SDK launcher may involve cross-filesystem startup or launcher/interpreter path behavior. This observation does NOT establish the root cause, wrong credentials, invalid account, permissions, network issue or corrupt SDK. Generic SDK startup itself failed to finish within12s; original40s auth-list timeout is still unresolved.
+- No auth list/login/refresh/token/config change/install or Cloud project/Registry/service/SA/IAM/hosted endpoint query. Original consumed preflight NOT repeated; all operator/project/collision findings remain UNKNOWN. No builds/scans/push/deploy/Cloud writes.
+
+### Private evidence / checksum
+Directory `/root/oldx-h1b-gcloud-startup-diagnosis-20261124T203450Z` (25Nov2026 ~02:04:50IST start), private0700/umask077, saved outputs retained:
+- `SHA256SUMS` SHA256 **`bd3826284e9c103cd1a3b8e05a6871f777a5eda71d66ce103f078128a56d8df1`**.
+- `local-metadata.txt` SHA256 `9ea1423fa53fc07201e8543c709b550884077a6c66d60f1253e3d1e03ae78ab9`.
+- `version.exit` SHA256 `ca2ebdf97d7469496b1f4b78958f9dc8447efdcb623953fee7b6996b762f6fff`.
+- version stdout/stderr both empty SHA256 `e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855`.
+Only nonsensitive result/path-class/hash summary saved in GitHub, not full private SDK metadata/log/credential contents. Dirty local Handoff/untracked.firebaserc preserved; intended documentation only.
+
+**Next ONE action:** separately scoped read-only inspection of the resolved Windows-mounted gcloud launcher and its interpreter selection, **without starting gcloud again**, changing environment/config/credentials, installing software or querying Cloud. This is a proposed different diagnosis, not authorized/executed by this consumed probe. Do not infer permission to lengthen timeout, retry --version/auth list or rerun original preflight.
+`H1B_LOCAL_DIAG=VERSION_TIMEOUT124_CONSUMED`; `H1B_CLOUD_WRITES=NOT_AUTHORIZED`; `H2=HOLD`; Step05 NOT DONE / production NO-GO. OptionB private/OFF max24h risk only unchanged, no activation. C1A retention through28Nov2026 23:19IST unchanged, no auto cleanup. Final pushed/read-back SHA in Issue17 checkpoint and containing documentation commit.
+
+
 ## 25 Nov 2026 — OWNER APPROVAL FOR ONE LOCAL-ONLY DIAGNOSTIC (NOT RUN YET)
 
 The owner explicitly answered **"ha manjuri chhe"** to the exact question whether to run **ONE** 12-second maximum local `gcloud --version` startup diagnosis in the existing owner WSL environment. This supersedes the historical "not yet approved" status **for this diagnostic only**. Scope: `scripts/step05-h1b-gcloud-local-timeout-diagnosis-once-20261125.sh`, source Git blob `59e9d20d4d82ec6d0783cabeec5f358af89e3b8e`, exactly **`--diagnose-local-once`**; execute at most once after checking dedicated diagnostic marker ABSENT. Read ONLY local SDK executable/config/credential-file **metadata** without contents, environment override presence and process names; start only a bounded local `gcloud --version` process; save private WSL evidence/exit/status/checksums. Never delete the old consumed `~/.oldx-h1b-readonly-preflight-once-20261125` marker. No original `gcloud auth list` replay, project/SA/Cloud Run/Registry lookup, account login/logout, credentials or config change, CLI install/upgrade, IAM/Cloud writes, image/push/build/scan, or hosted calls. If initial dedicated marker exists or tool fails/timeouts, **STOP** with actual evidence; no retry. `gcloud --version` success proves local startup only, never account validity or target collision.

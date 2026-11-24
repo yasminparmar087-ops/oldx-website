@@ -1,12 +1,13 @@
-# Step05 C1A ONLY: source-only draft; NEVER build/deploy without separately
-# approved immutable Node24 distroless Linux/AMD64 base digest and fresh image
-# security/provenance review. Omitting this required build arg fails closed.
-# Expected example shape (NOT an actual pinned image):
-# gcr.io/distroless/nodejs24-debian13:nonroot@sha256:<VERIFIED_DIGEST>
-ARG NODE24_BASE_BY_DIGEST
-FROM ${NODE24_BASE_BY_DIGEST}
+# C1A private OFF-only Gateway. Build context: repository root.
+# Official nonroot linux/amd64 manifest/config metadata SHA256 checked 2026-11-24.
+# Candidate only: publisher signature, derived build, SBOM and scan still pending.
+# No mutable tag, build ARG override, builder stage, package install or shell.
+FROM --platform=linux/amd64 gcr.io/distroless/nodejs24-debian13:nonroot@sha256:49559f4ee6632a11a13a7e198183efee1226de7a8f437df83c180b01bd8253ec
 WORKDIR /app
-COPY --chown=65532:65532 functions/staging-marketplace/cloud-run-gateway-off-server.mjs /app/server.mjs
+ENV NODE_ENV=production
+COPY --chown=65532:65532 --chmod=0444 functions/staging-marketplace/cloud-run-gateway-off-server.mjs /app/server.mjs
+USER 65532:65532
 EXPOSE 8080
-# Inherits nodejs24 distroless Node entrypoint, no shell/package install.
+STOPSIGNAL SIGTERM
+ENTRYPOINT ["/nodejs/bin/node"]
 CMD ["server.mjs"]

@@ -1,0 +1,4 @@
+**
+!functions/
+!functions/staging-marketplace/
+!functions/staging-marketplace/cloud-run-gateway-off-server.mjs

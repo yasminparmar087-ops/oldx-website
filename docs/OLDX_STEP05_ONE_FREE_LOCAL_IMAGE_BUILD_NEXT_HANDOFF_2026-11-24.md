@@ -76,3 +76,25 @@ df -h /tmp "$HOME"
 This is read-only and uses no network/cloud. **If image still present**, consider a separately scoped **scan-only** diagnostic with Syft stderr preserved (no new image build). **If image absent**, STOP: first decide a separate new image build+scan approval after source-only repair/plan; do not rerun automatically or use a mutable base. If disk is depleted, do not delete any unknown Cloud Shell home files without user's approval. Security evidence remains BLOCKED until actual new-image SBOM/Grype plus publisher/provenance review.
 
 `STEP05_IMAGE_BUILD=PASS_WITH_LIMITS`; `OFF_ONLY_LINUX_SMOKE=PASS`; `SYFT_SBOM=FAILED_0_BYTES_CAUSE_UNKNOWN`; `GRYPE=NOT_RUN`; `C1A/C1B=NOT_APPROVED`; `PRODUCTION=NO_GO`.
+
+
+## 24 Nov 2026 — THIRD screenshot: derived image absent; Cloud Shell HOME only 39 MiB free
+
+The owner's THIRD screenshot of the requested read-only inspection shows **`IMAGE_REMOVED_OR_UNAVAILABLE`** for the exact `DERIVED_LOCAL_IMAGE_ID`; no matching local derived image is now inspectable. The one-shot local cleanup removed the image or made it unavailable; Docker layers/cache possibly remain but are **not** proof of an available runnable image. The same screenshot's `df -h /tmp "$HOME"` shows:
+- root/overlay `/`: **119G total / 110G used / 9.8G available (92%)**.
+- separate persistent `/home`: **4.8G total / 4.5G used / only 39M available (reported 100%)**.
+
+**Critical new diagnosis:** almost-full persistent HOME is a plausible contributor to scanner failure, but **not proven** because Syft stderr was not recorded. Do not attribute the failed 0-byte SBOM solely to storage. No valid SBOM/Grype report exists. No new build/scan/permission/spend and no old 84 tests were repeated in obtaining this screenshot; Step05 security approval remains HOLD. The single original owner-approved build is **consumed** and the exact derived image **unavailable**, so there is no scan-only recovery against that image. A new build is **NOT** automatically authorized.
+
+**NEXT single READ-ONLY check before designing any recovery:** inspect what consumes persistent HOME disk without deleting any project/user data:
+
+```bash
+echo "=== HOME SPACE BY TOP-LEVEL DIRECTORY (READ-ONLY) ==="
+du -x -h --max-depth=1 "$HOME" 2>/dev/null | sort -h | tail -n 18
+echo "=== PERSISTENT HOME SPACE ==="
+df -h "$HOME"
+```
+
+Review directories and find only provably disposable OLDX tool caches or scratch artifacts. Do NOT bulk-rm HOME/old project data, delete Docker images or run `docker system prune`, and do NOT rerun the one-shot build. Preserve evidence directory and old checkpoint files. Any space recovery requires exact path ownership and a narrowly scoped decision. If a source-only fix is possible, prepare a **new separate bounded build+scan-only action consent** (still no Cloud/deploy), explicitly redirect scanner cache/temporary files to `/tmp`, cap scratch use and save Syft stderr; obtain owner approval before executing a second build. Verify `/tmp` space remains sufficient without assuming 9.8G guarantees a full image+scanner peak. Cloud Build remains outside authorization.
+
+**Frozen status:** `NEW_GATEWAY_BUILD=PASS_WITH_LIMITS_EARLIER`; `DERIVED_IMAGE=REMOVED_OR_UNAVAILABLE`; `HOME_SPACE=39M_FREE`; `SYFT_SBOM=FAILED_0_BYTES_CAUSE_UNPROVEN`; `GRYPE=NOT_RUN`; `ORIGINAL_ONE_SHOT_APPROVAL=CONSUMED`; `C1A/C1B/C2=NOT_APPROVED`; `STEP05_HOSTED=BLOCKED`; `PRODUCTION=NO_GO`.

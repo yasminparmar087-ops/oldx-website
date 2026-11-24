@@ -16,7 +16,7 @@ if [[ -e "$MARKER" ]]; then
   echo "STOP_ALREADY_ATTEMPTED: Do not repeat. Read the prior local report: $OUT"
   exit 0
 fi
-for exe in git grep cosign timeout date; do
+for exe in git grep cosign timeout date sed; do
   command -v "$exe" >/dev/null 2>&1 || { echo "STOP_MISSING_TOOL: $exe (do not auto-install)"; exit 0; }
 done
 [[ "$(git branch --show-current)" == "$BRANCH" ]] || { echo "STOP_WRONG_BRANCH"; exit 1; }
@@ -25,6 +25,10 @@ grep -Fq "gcr.io/distroless/nodejs24-debian13:nonroot@${CHILD}" "$DOCKERFILE" ||
  echo "STOP_PINNED_CHILD_CHANGED"; exit 1;
 }
 git diff --quiet -- "$DOCKERFILE" || { echo "STOP_DOCKERFILE_DIRTY"; exit 1; }
+git diff --cached --quiet -- "$DOCKERFILE" || { echo "STOP_DOCKERFILE_STAGED_CHANGE"; exit 1; }
+[[ "$(git hash-object "$DOCKERFILE")" == "f1bbfc65c0f593c2f54a338b323b7f7cd4dbdbc1" ]] || {
+ echo "STOP_SOURCE_DOCKERFILE_BLOB_NOT_REVIEWED"; exit 1;
+}
 
 # Only this new lookup is permitted by owner's Stage A.
 # Existing parent-index -> linux/amd64 child metadata result is CONSUMED and NOT rerun.

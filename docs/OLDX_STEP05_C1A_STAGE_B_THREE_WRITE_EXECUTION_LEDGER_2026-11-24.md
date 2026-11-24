@@ -256,3 +256,19 @@ If first fails, DO NOT run the second. Second command requires installed existin
 wsl -d OLDX-Ubuntu-24.04 -- bash -lc "if [ -e /root/.oldx-step05-c1b-off-hosted-once-20261124 ]; then echo C1B_MARKER=PRESENT; else echo C1B_MARKER=ABSENT; fi; if [ -e /root/oldx-step05-c1b-off-hosted-result-20261124.txt ]; then echo C1B_REPORT=PRESENT; grep -E '^(STATUS|HTTP_ATTEMPT_|HTTP_[0-9]+_CODE|HTTP_REQUESTS_SENT|APPROVED_MAX_HTTP)' /root/oldx-step05-c1b-off-hosted-result-20261124.txt || true; else echo C1B_REPORT=ABSENT; fi"
 ```
 If marker/report PRESENT, do NOT rerun; review exact status/counted requests and 20-minute/6-call boundary first. If both ABSENT, no marker/report recorded by script, strongly suggests original failed before guarded HTTP section, but still review actual source flow/time constraints before new owner token. **Do NOT** run C1A B1/B2/B3 cloud changes, old tests, Docker build/Grype/Cosign or deploy; no IAM/Firebase/production changes. `C1A=PASS_WITH_LIMITS`; `C1B_HTTP=ERROR_UNKNOWN_REQUEST_COUNT_PENDING_MARKER_REPORT`; `C2/PRODUCTION=NO_GO`.
+
+
+## 24 Nov 2026 ~23:35 IST — OWNER C1B ONE-SHOT MARKER/REPORT READBACK **BOTH ABSENT**, previous shell failure BEFORE HTTP
+
+Latest owner screenshot from existing WSL running the specifically requested **READ-ONLY** marker/report probe returned **`C1B_MARKER=ABSENT`** and **`C1B_REPORT=ABSENT`**. Prior faulty C1B script enters its marker/write-report block only after the corrupted line31 parameter expansion; documented prior `line 57: $1: unbound variable` therefore failed **before** the original file's first HTTP block and before the one-shot marker. The screenshot shows no 401/403, 200 or 503. Together with the original GitHub source flow, this strongly establishes `C1B_PREVIOUS_HOSTED_REQUEST_COUNT=0` for that script invocation; it is **NOT a server-side request log audit**, so do not claim universal absence of all possible external HTTP traffic. The owner-approved maximum six C1B calls remain unused, and the prior shell failure did not count as an HTTP retry.
+
+Final corrected script currently confirmed from GitHub blob `8e5f684f218be026ebd5506c2a76bee9d7eb2a92` with exactly ONE valid `OWNER_ID_TOKEN="${OWNER_ID_TOKEN%$'\\r'}"` line, no duplicate script tail, only 3 ordered calls, no tokens printed/saved, proper fail-closed if `SCRIPT_LOCK` or `OUT` exists. **This corrected code has NOT yet been executed**. A SINGLE owner-consented FIRST hosted test is now available; no second run after marker creation or an unexpected response.
+
+**NEXT two existing Windows CMD commands (not a repeat of the faulty old code):**
+
+```cmd
+wsl -d OLDX-Ubuntu-24.04 -- bash -lc "cd ~/oldx-c1a-proof-stable-20261124 && git pull --ff-only && bash -n scripts/step05-c1b-private-off-http-once-20261124.sh"
+gcloud auth print-identity-token | wsl -d OLDX-Ubuntu-24.04 -- bash -lc "cd ~/oldx-c1a-proof-stable-20261124 && bash scripts/step05-c1b-private-off-http-once-20261124.sh"
+```
+
+Run the SECOND only if the FIRST succeeded; do not print/store the identity token; allow one 20-minute test window, no HTTP retries. If any failure STOP and report result/marker, do not re-run script or change IAM/Firebase/Cloud Run. Expected statuses: anonymous GET /healthz -> 401 or 403, Owner ID-token GET /healthz -> 200, Owner ID-token POST /api/staging/marketplace/owner -> 503. New service only. C1A already PASS_WITH_LIMITS, three Cloud writes/IAM config consumed. `C1B_ATTEMPT_1=FAILED_BEFORE_HTTP`; `C1B_ACTUAL_HOSTED_STATUS=PENDING_NEW_CORRECTED_ONE_SHOT`; `C2/PRODUCTION=NO_GO`.

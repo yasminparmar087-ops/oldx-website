@@ -1,5 +1,13 @@
 # OLDX Step 05 H1B — single preflight and private OFF-only deployment operational packet
 
+## 25 Nov 2026 — NEW source-only gcloud local timeout diagnostic PREPARED (NOT RUN)
+
+The exact owner preflight remains **STOP at gcloud auth list 40s exit124, stdout/stderr empty**. Operator/project/Registry/new service/new SA not checked; collision UNKNOWN. Its original one-shot marker is consumed; never re-run it.
+
+Separate ONE local-only diagnostic prepared: `scripts/step05-h1b-gcloud-local-timeout-diagnosis-once-20261125.sh` (Git blob `59e9d20d4d82ec6d0783cabeec5f358af89e3b8e`). Independently local shell syntax and synthetic fake-SDK one-shot marker tests PASS; **not executed against owner WSL**. This checks only local installation/config metadata (no credential contents) and one bounded `gcloud --version` (12s, no auth list, no Cloud API). It will have a SEPARATE consumed marker. **Owner's new scoped approval required before actual run.** No generic prior approval to re-run or clear old marker. [Exact diagnostic guard and handoff](OLDX_STEP05_H1B_GCLOUD_LOCAL_STARTUP_TIMEOUT_DIAGNOSIS_2026-11-25.md).
+
+Until the diagnosis and a distinct follow-on H1B operation approval, `H1B_NEW_CLOUD_WRITES=NO_GO`, `H2/PRODUCTION=NO_GO`; existing C1A retains only through 28 Nov 2026 23:19 IST.
+
 ## 25 Nov 2026 — actual one-shot H1B read-only preflight STOP: operator lookup timed out; targets NOT queried
 
 Starting remote HEAD `7358fbc3da718a88e84b2ab31aebe9330bcd4f6b`. Latest AGENTS, this packet and Issue17 latest7143376032 read first. Script `scripts/step05-h1b-readonly-preflight-20261125.sh` Git blob **`14703d1257c99701e4873be598b5aedc0d5c33b4`** matched exact isolated local bytes. Local dirty Handoff and untracked.firebaserc preserved, no reset/force/pull. No source script change.

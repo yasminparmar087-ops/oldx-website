@@ -132,3 +132,24 @@ wsl -d OLDX-Ubuntu-24.04 -- bash -lc 'for d in /tmp/oldx-step05-wsl.*; do [ -d "
 ```
 
 Do not rerun the whole command until the precise local checkout mismatch is understood; no cloud actions/deployment/paid build. `STEP05_WSL_ONE_SHOT=NOT_STARTED`; `STEP05_OLD_CLOUD_SHELL_LOCAL_IMAGE=PASS_WITH_LIMITS_AND_IMAGE_REMOVED`; `NEW_WSL_SBOM_GRYPE=NOT_RUN`; `C1A/C1B/C2=UNAPPROVED`; `PRODUCTION=NO_GO`.
+
+
+## 24 Nov 2026 — Local WSL2 NEW gateway image PASS, download Syft FAIL, image RETAINED
+
+Owner's screenshot of the first **authorized** WSL2 one-shot run in a directly opened Ubuntu/root shell confirms the guarded script was located and executed from `/tmp/oldx-step05-wsl.1gqReU`; reported Git `SOURCE_SHA=1a31f7d3c7512e0acf6efb24653fc2fcbc116bea`. Evidence retained in **`/root/oldx-step05-laptop-evidence-20261124T115031Z`**. This supersedes the older local PowerShell/Bash quoting and stale/missing-clone screenshots: current working clone successfully runs the correct script.
+
+**Verified screenshot checkpoints:** NEW immutable-base image locally built `linux/amd64` user `65532:65532`; `LINUX_NODE24_NONROOT_READONLY=PASS`, `OFF_ONLY_HTTP=PASS`, `LINUX_SIGTERM=PASS`. The script proceeded to `STEP: export the exact new image to a local tar (not push)`, then attempted the official pinned Syft asset download and reported **`STOP: Syft download failed`**, `STOP: SYFT_DOWNLOAD. Image remains local if built; do NOT rerun this one-shot.` This does not verify successful SBOM or Grype, and **no CVE counts are available**. The new image is intentionally preserved by script logic on scan failure; do not claim actual Docker inspect still exists until checked, and archive scratch was deleted by the failure trap. GitHub CI, old 84 offline tests, old A8 build/scan, Cloud resource/deploy/push/IAM/billing remain untouched. Laptop one-shot approval is now CONSUMED.
+
+**Exact NEXT ONE read-only owner command in the already-open Ubuntu (root) shell:**
+
+```bash
+OUT=/root/oldx-step05-laptop-evidence-20261124T115031Z
+echo '=== SYFT DOWNLOAD ERROR ==='
+cat "$OUT/syft-download.stderr.log"
+echo '=== NEW IMAGE ==='
+docker images --no-trunc --filter 'reference=oldx-step05-gateway-off:*' --format '{{.ID}} {{.Repository}}:{{.Tag}} {{.Size}}'
+echo '=== SUMMARY ==='
+cat "$OUT/summary.txt"
+```
+
+No retries, downloads, builds, installs, deletes, scans, cloud actions or paid operations in this read-only command. If the asset failed due to a network/SSL/release URL or desktop proxy problem, plan a separately scoped **scan-only recovery** on the **SAME saved local image**, with trusted pinned release asset checksum and retained stderr; seek approval if download/network/install changes are needed. Do not attempt another build; do not delete local Docker state. `STEP05_WSL_BUILD=PASS_WITH_LIMITS`; `STEP05_WSL_NODE24_OFF=PASS`; `STEP05_WSL_SYFT_DOWNLOAD=FAILED_REASON_PENDING_LOG`; `STEP05_WSL_SBOM_GRYPE=NOT_EXECUTED`; `C1A/C1B/C2=NOT_APPROVED`; `PRODUCTION=NO_GO`.

@@ -1,5 +1,11 @@
 # OLDX Step05 H1B — gcloud local WSL startup timeout: diagnosis boundary and source handoff
 
+## 25 Nov 2026 — OWNER APPROVAL FOR ONE LOCAL-ONLY DIAGNOSTIC (NOT RUN YET)
+
+The owner explicitly answered **"ha manjuri chhe"** to the exact question whether to run **ONE** 12-second maximum local `gcloud --version` startup diagnosis in the existing owner WSL environment. This supersedes the historical "not yet approved" status **for this diagnostic only**. Scope: `scripts/step05-h1b-gcloud-local-timeout-diagnosis-once-20261125.sh`, source Git blob `59e9d20d4d82ec6d0783cabeec5f358af89e3b8e`, exactly **`--diagnose-local-once`**; execute at most once after checking dedicated diagnostic marker ABSENT. Read ONLY local SDK executable/config/credential-file **metadata** without contents, environment override presence and process names; start only a bounded local `gcloud --version` process; save private WSL evidence/exit/status/checksums. Never delete the old consumed `~/.oldx-h1b-readonly-preflight-once-20261125` marker. No original `gcloud auth list` replay, project/SA/Cloud Run/Registry lookup, account login/logout, credentials or config change, CLI install/upgrade, IAM/Cloud writes, image/push/build/scan, or hosted calls. If initial dedicated marker exists or tool fails/timeouts, **STOP** with actual evidence; no retry. `gcloud --version` success proves local startup only, never account validity or target collision.
+
+**Current execution fact:** this ChatGPT tool environment is not the owner's Windows WSL session; neither this diagnosis nor any Cloud operation was executed here. No synthetic-only test result is a live result. Next action is one owner-local Codex/WSL invocation with the exact approved script and Git blob verification, then preserve private evidence and update Issue #17 with safe status only. `H1B_LOCAL_DIAGNOSTIC=APPROVED_NOT_EXECUTED`, `H1B_READONLY_ORIGINAL=STOP_TIMEOUT_CONSUMED`, `H1B_WRITES/H2/PRODUCTION=NOT_AUTHORIZED`. C1A independent OFF-only retention deadline remains **28 Nov 2026 23:19 IST**.
+
 **25 November 2026 IST — preparation SOURCE-ONLY; no owner authorization for the NEW local diagnostic yet.**
 
 ## Frozen actual H1B P-phase STOP

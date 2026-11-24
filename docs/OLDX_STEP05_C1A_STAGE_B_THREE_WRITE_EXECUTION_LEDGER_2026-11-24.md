@@ -243,3 +243,16 @@ If first fails, DO NOT run the second. Second command requires installed existin
 
 
 **24 Nov 2026 C1B no-repeat tool detail:** WSL script was minimally improved SOURCE-ONLY for Windows CMD `gcloud.cmd` CRLF stdout: strip exactly one trailing `\\r` from in-memory ephemeral ID token before JWT validation; does not log/store it or alter the HTTP scope. Final reviewed script Git blob **`6fdb001c5bd20b20a40f13d6d687cf2d01b1f27d`**; replaces the initial blob `5ae169af...`. Final command remains unchanged, **C1B HTTP NOT EXECUTED**. No previous tests rerun.
+
+
+## 24 Nov 2026 ~23:31 IST — C1B OWNER COMMAND STOPPED BY MALFORMED SCRIPT; NO RETRY; local marker/readback FIRST
+
+**Actual owner CMD screenshot:** `git pull --ff-only` fast-forward to `eb5ca77` and `bash -n scripts/step05-c1b-private-off-http-once-20261124.sh` completed without visible syntax error. The one C1B `gcloud auth print-identity-token | wsl ... bash ...` invocation immediately reported **`scripts/step05-c1b-private-off-http-once-20261124.sh: line 57: $1: unbound variable`** and returned to CMD. Screenshot contains **NO** anonymous401/403/auth200/api503 or request count PASS. **Do not infer Cloud Run hosted failure or any successful HTTP response, and DO NOT automatically repeat the C1B command.** Sensitive ID token was piped, not printed.
+
+**Source root cause established by direct GitHub file inspection:** the initial CRLF-handling source update corrupted the Bash parameter expansion at original line31 and included a duplicate tail at original line95-159, which a basic `bash -n` did not detect as an execution-time failure. Source-only repair saved in `scripts/step05-c1b-private-off-http-once-20261124.sh` at **Git blob `8e5f684f218be026ebd5506c2a76bee9d7eb2a92`, commit `689bb27225921e4d4aecab591d2e09c771e66505`**: correct single `OWNER_ID_TOKEN="${OWNER_ID_TOKEN%$'\\r'}"` trim, remove duplicate tail, preserve exactly three ordered HTTP requests, no credential logging, fail-closed when either original one-attempt marker OR prior report exists. This fixes source only; does NOT itself authorize blindly rerunning previous C1B request or establish no HTTP was sent.
+
+**NEXT and ONLY NEXT owner CMD action, READ-ONLY local evidence (NO gcloud/token/HTTP):**
+```cmd
+wsl -d OLDX-Ubuntu-24.04 -- bash -lc "if [ -e /root/.oldx-step05-c1b-off-hosted-once-20261124 ]; then echo C1B_MARKER=PRESENT; else echo C1B_MARKER=ABSENT; fi; if [ -e /root/oldx-step05-c1b-off-hosted-result-20261124.txt ]; then echo C1B_REPORT=PRESENT; grep -E '^(STATUS|HTTP_ATTEMPT_|HTTP_[0-9]+_CODE|HTTP_REQUESTS_SENT|APPROVED_MAX_HTTP)' /root/oldx-step05-c1b-off-hosted-result-20261124.txt || true; else echo C1B_REPORT=ABSENT; fi"
+```
+If marker/report PRESENT, do NOT rerun; review exact status/counted requests and 20-minute/6-call boundary first. If both ABSENT, no marker/report recorded by script, strongly suggests original failed before guarded HTTP section, but still review actual source flow/time constraints before new owner token. **Do NOT** run C1A B1/B2/B3 cloud changes, old tests, Docker build/Grype/Cosign or deploy; no IAM/Firebase/production changes. `C1A=PASS_WITH_LIMITS`; `C1B_HTTP=ERROR_UNKNOWN_REQUEST_COUNT_PENDING_MARKER_REPORT`; `C2/PRODUCTION=NO_GO`.

@@ -1,5 +1,10 @@
 # OLDX — Current Chat Handoff / Start Here
 
+## 25 Nov 2026 — latest actual H1A local preflight STOP, no build/scan/runtime
+
+H1A approved, actual local WSL Docker29.10.0/Syft1.57.1/Grype0.121.3 and source3 hashes/disk/RAM verified. ONE pinned-base manifest lookup failed: `manifest verification failed for digest sha256:49559f4ee6632a11a13a7e198183efee1226de7a8f437df83c180b01bd8253ec`. **BLOCKED_BEFORE_BUILD: build0, SBOM0, scan0, runtime0, no image, marker ABSENT.** No retry/bypass/base replacement. Root cause unverified; do not assume network fault or invalid pin. New safe one-shot script saved, syntax/actual preflight verified only; downstream image branches NOT executed. Private evidence `/root/oldx-h1a-evidence-20261124T193159Z`; receipt SHA256 `cc7834527299c37547cdc99de800e4cd26a3ba4670b2412a56b08cb87b83dd28`. [Canonical exact receipt](OLDX_STEP05_MAXIMUM_SAFE_SOURCE_EXECUTION_RECEIPT_2026-11-25.md) includes hashes/errors/resource budget. Next ONE: raw public-manifest SHA256/header diagnostic of samepin, no layers or image operation. No Cloud/paid action/old tests/scans; local dirty Handoff/.firebaserc preserved. C1A unchanged retained through28Nov23:19IST; H1B/H2 NOT AUTHORIZED; Step05 NOT DONE / production NO-GO.
+
+
 ## 25 Nov 2026 — latest maximum-safe source batch: H1 OFF package + KMS DI signing + bounded HTTP/cleanup fixes
 
 Start `a2eb94ba4e6d62dceba24f266c2c3158c8cbedf7`; verified tested source `6389ace567603139df02f57e8e23c182018abfc1`. [Canonical execution receipt](OLDX_STEP05_MAXIMUM_SAFE_SOURCE_EXECUTION_RECEIPT_2026-11-25.md) contains exact files, tests, G1–G6, separate H1/H2 consent and no-repeat custody. Eight distinct NEW local groups verified in aggregate: initial7=6PASS/1FAIL/0SKIP (terminal-whitespace packaging assertion), affected packaging-only rerun1PASS, new HTTP timeout regression1PASS, affected H1 IAM-forwarding group1PASS; not one final8 suite and no historical tests repeated.

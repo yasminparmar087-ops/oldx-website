@@ -1,4 +1,37 @@
 # OLDX Step05 — maximum safe source-only execution receipt
+
+## 25 Nov 2026 — actual LOCAL H1A preflight BLOCKED before build; no retry
+
+Start remote HEAD `4470c6b880b9c41bcb46ae835da1ccb7987cd30b`; approved image source `1ece3a1e004bea7b0157bf04b6fd26f0e793d976`. Current source blobs independently matched all THREE approved Git SHAs before any build. Actual WSL attempt ran 25 Nov 2026 ~01:01–01:02 IST (UTC report 2026-11-24T19:31:59Z–19:32:08Z). This is a real local preflight, NOT image build/runtime evidence.
+
+**H1A=BLOCKED_BEFORE_BUILD. Build0; Syft SBOM0; Grype scan0; runtime0; images created0.** Exact approved immutable base cache lookup found no named cached image. ONE public metadata operation `docker --host unix:///var/run/docker.sock manifest inspect --verbose gcr.io/distroless/nodejs24-debian13:nonroot@sha256:49559f4ee6632a11a13a7e198183efee1226de7a8f437df83c180b01bd8253ec` exited1 with exact saved stderr:
+```
+manifest verification failed for digest sha256:49559f4ee6632a11a13a7e198183efee1226de7a8f437df83c180b01bd8253ec
+```
+Do NOT infer that the historical pin is invalid, vulnerable/fixed, unavailable or network-blocked: root cause is UNVERIFIED. Could require a public raw-manifest integrity diagnostic; no substitute tag/base or Docker verification bypass permitted. Stopped; NO second registry request, pull/build/scan/runtime/CI or Cloud action. Build one-shot marker `/root/.oldx-h1a-c2-mediator-once-20261125` independently ABSENT. Build authority not consumed, but **do not rerun the full script or registry lookup until this integrity discrepancy is resolved**.
+
+### Actual prerequisite and validation results
+- Initial sandbox WSL enumeration E_ACCESSDENIED; separately escalated read-only access succeeded. Docker really accessible in owner's local `OLDX-Ubuntu-24.04`, not remote/cloud: explicit Unix socket, Docker client/server29.10.0, Linux x86_64.
+- Existing Syft1.57.1 and Grype0.121.3 found under `/root/oldx-step05-scan-recovery-20261124T123515Z/tools`, not PATH; version queries only, no install/download/rescan. Prior binary recovery reused, no old SBOM/Grype operation repeated.
+- Available memory at final preflight3,581,644,800 bytes; virtual /root free1,006,034,034,688B, Windows C: free23,657,156,608B. Conservative budget12GiB peak+4GiB reserve: base/builder4, derived/temp2, DB/download3, reports1, margin/copies2. Both filesystems met16GiB minimum. These are measured preflight resources, not actual build peak.
+- New `scripts/step05-h1a-local-image-once-20261125.py`: private0700 evidence directory/umask077, minimal child environment/empty Docker and scanner configs, exact source hashes, local socket, bounded subprocesses, pre-build exclusive marker; one build/one SBOM/one Grype/one smoke path, no retry/install/prune/push/Cloud. Source root is a minimal clean repository-root layout with exactly the approved3 files, not dirty owner's repository. All private scan JSON would stay local, never Git.
+- Windows `python -m py_compile …` BLOCKED: Python alias not installed (no auto-install). WSL `python3 -m py_compile …` PASS (exit0); then executed revised script parsed and performed the above real preflight and intentional exit1. No historical tests rerun. Build/scan/smoke branches remain UNEXECUTED / not end-to-end validated. Planned runtime uses loopback publish on local Docker bridge, no cloud client/calls; bridge is NOT an egress isolation guarantee.
+- No credentials printed, no cloud/provider account command, no layer pull, image build, database, hosted probe or paid resource action; existing C1A/resources untouched. WSL root systemd-user-session warning observed separately; Docker works, no evidence this caused manifest-integrity failure.
+
+### Retained exact private evidence
+WSL directory `/root/oldx-h1a-evidence-20261124T193159Z`, file mode restricted by umask077:
+- `receipt.json` SHA256 `cc7834527299c37547cdc99de800e4cd26a3ba4670b2412a56b08cb87b83dd28`.
+- `base-manifest.stderr` SHA256 `944a4952c54dfb0e180ade95f393aa1fe11b9f7f720e146d2787d09a9123ad2e`; stdout empty, not valid manifest.
+- `context-manifest.json` SHA256 `d5facfc8260bca72d41c6a35d8ab5cc00b033d3f3948b3e6a0fb6a87a38083ef`.
+- Approved Dockerfile blob `ec36707fce197150e3f5f1b4bd1d0f30d8cbf7fa`, SHA256 `144bbd2d91963f506b7d3e0b689d250c547818c56410491e9c18869a52948cac`.
+- Approved ignore blob `fc1944d7165bccc1bef5c06901841792724f751d`, SHA256 `8fb26e46de32b867ba135e7e4907280a9845b55808642edd64935522a462ce7e`.
+- Approved OFF server blob `68e65e2e1cdce5994780a5588c8a02da3e1f4be7`, SHA256 `1063d77bff1a84e8a58906584dbf6e0de627bcee64cb83f9441fe421a7715b12`.
+Full per-operation command/stdout/stderr and `sha256-manifest.json` retained privately. **No new image ID/remote digest, SBOM package count, Grype DB metadata/CVEs or runtime results exist. Security findings UNKNOWN, not zero/PASS.** Do not inherit C1A12 HIGH acceptance or add A8 findings to this unbuilt image.
+
+**Next ONE action:** one read-only public-registry raw-manifest SHA256/header diagnostic for the SAME exact pinned base, with no image layers/pull/build/scan and no disabling digest checks, to distinguish registry bytes/digest from Docker-client verification behavior. This is a DIFFERENT diagnostic proposal, not a script rerun or base change. No further action executed after STOP.
+
+Save this outcome and script on review branch; final pushed SHA is in the accompanying Issue17 checkpoint and containing commit. H1B Cloud deployment / H2 enabled Product NOT AUTHORIZED; production NO-GO. C1A retention remains through28Nov2026 23:19IST, no auto cleanup.
+
 ## 25 Nov 2026 — OWNER EXPRESS H1A APPROVAL: ONE FREE LOCAL NEW OFF-MEDIATOR BUILD / SBOM / GRYPE / RUNTIME BATCH ONLY
 
 Owner explicitly answered **"ha manjuri chhe"** immediately after being asked to authorize ONE bounded FREE LOCAL H1A batch for the NEW compiled-OFF mediator image only. **Permitted**: from verified `security-hardening-review` source commit `1ece3a1e004bea7b0157bf04b6fd26f0e793d976` (or immutable named source hashes after verifying no drift), build exactly ONE `linux/amd64` image using `functions/staging-marketplace/Dockerfile.c2-mediator-off` and its Dockerfile-specific deny-all context; one complete new-image Syft SBOM, one new-image Grype CVE scan with DB identity/version and all severity classes, one bounded LOCAL nonroot/read-only/health200/API503/SIGTERM smoke and secure SHA256/hash/immutable-digest evidence capture. Public immutable base image/scanner DB downloads are allowed only as necessary for this LOCAL batch, with no Google Cloud account operations, no registry image push, no hosted HTTP or paid/cloud resource usage. Scope is ONE build, ONE image's scans, ONE runtime test sequence (no automated repeats/retries); stop on missing Docker/scan tools or disk (do not delete unrelated files or install paid software); no existing image scans/builds/suites rerun. Save results and accurate limitations to GitHub branch Issue #17 and canonical receipts, with no claims of host PASS until observed. No need to ask owner again for ordinary approved local H1A actions; no H1B provisioning is authorized.

@@ -1,5 +1,9 @@
 # OLDX — One consolidated launch execution plan (13 November 2026)
 
+## 25 Nov 2026 — Step05 H1B S1 isolated native-Linux CLI SETUP APPROVED, OWNER WSL NOT EXECUTED
+
+Owner approved ONLY the new separate S1 Google-official Linux x86_64 archive download/current-doc checksum/structural inspection/private Linux extraction, NO CLI invocation. [Latest exact S1 runner/5 synthetic test PASS, one-command WSL handoff, and scope](OLDX_STEP05_H1B_NATIVE_LINUX_GCLOUD_S1_OWNER_APPROVED_SOURCE_RECEIPT_2026-11-25.md). Runner SHA256 `21aef1ff5e4475b0744de027f223725fd00cdf2db171eca67a7ad051f4928622`, commit `d8ba8ce3e927edc352b496184bd18fb8e55d4dfd`, Git blob `76b04cac78481a8ec9b80248db7656499a1375f6`. **Assistant cannot access owner's WSL; actual S1 marker/evidence absent/unverified, do NOT call S1 complete.** Existing Windows SDK/auth/config/PATH/old markers and C1A untouched. S2 startup verification, S3 read-only project/target, H1B writes, H2/production **separate not authorized**. Existing C1A retention ends **28 Nov 2026 23:19 IST** with no auto cleanup.
+
 ## 25 Nov 2026 — H1B W1-W6 source-only one-shot operations packet + read-only preflight PREPARED; CLOUD NOT TOUCHED
 
 Starting verified remote HEAD `c5e9d526da95fa253e2a64f053c59456d0e0111d`. Owner chose Option B only for 12 known HIGH / unsigned-derived-provenance risk of the exact H1A retained candidate during max24h future **IAM-private/OFF/no-data** H1B experiment; this is **risk acceptance, NOT new Cloud/Registry/IAM spend/deployment authority**. H1A local image/index `sha256:576a1faa599459ed9b1cdeccc01a3adc2076dffff617bec42f38df7d3a75663e` is NOT a remote digest; H1A original build/Syft/Grype/runtime completed and marker CONSUMED. No repeat.

@@ -19,12 +19,12 @@ for pair in \
  'functions/staging-marketplace/cloud-run-gateway-off-server.mjs:25d2679bd4ea970c8b8a32a778fb26eb347bcdd6' \
  'functions/staging-marketplace/Dockerfile.gateway-off:f1bbfc65c0f593c2f54a338b323b7f7cd4dbdbc1' \
  'functions/staging-marketplace/Dockerfile.gateway-off.dockerignore:53da9bb7a2d12b143feae9de71a245ac31693111'; do
- path=\${pair%%:*}; expected=\${pair##*:}
+ path=${pair%%:*}; expected=${pair##*:}
  [[ "$(git rev-parse "HEAD:$path")" == "$expected" ]] || fatal "Changed/unverified source: $path"
  [[ -z "$(git status --porcelain -- "$path")" ]] || fatal "Dirty source: $path"
 done
 [[ "$(docker context show)" == default ]] || fatal 'Non-default Docker context: remote builder not allowed'
-[[ -z "\${DOCKER_HOST:-}" ]] || fatal 'DOCKER_HOST override not permitted'
+[[ -z "${DOCKER_HOST:-}" ]] || fatal 'DOCKER_HOST override not permitted'
 docker info --format '{{.OSType}}/{{.Architecture}}' 2>/dev/null | grep -Eq '^linux/(x86_64|amd64)$' || fatal 'Local Linux AMD64 Docker daemon unavailable'
 free_kib=$(df -Pk /tmp | awk 'NR==2 {print $4}')
 c_kib=$(df -Pk /mnt/c | awk 'NR==2 {print $4}')

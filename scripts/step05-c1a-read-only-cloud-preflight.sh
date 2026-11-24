@@ -37,7 +37,7 @@ read_only(){
    STATUS='OK'
  else
    local rc="$?"
-   if grep -Eqi 'not found|NOT_FOUND|does not exist' "$stderr"; then
+   if grep -Eqi 'not found|NOT_FOUND|does not exist|cannot find service' "$stderr"; then
      STATUS='NOT_FOUND_REPORTED'
    elif grep -Eqi 'PERMISSION_DENIED|permission denied|does not have permission|403|forbidden' "$stderr"; then
      STATUS='UNVERIFIED_PERMISSION_DENIED'

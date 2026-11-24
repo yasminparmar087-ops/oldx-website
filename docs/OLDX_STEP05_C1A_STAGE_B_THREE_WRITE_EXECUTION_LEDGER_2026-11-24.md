@@ -272,3 +272,18 @@ gcloud auth print-identity-token | wsl -d OLDX-Ubuntu-24.04 -- bash -lc "cd ~/ol
 ```
 
 Run the SECOND only if the FIRST succeeded; do not print/store the identity token; allow one 20-minute test window, no HTTP retries. If any failure STOP and report result/marker, do not re-run script or change IAM/Firebase/Cloud Run. Expected statuses: anonymous GET /healthz -> 401 or 403, Owner ID-token GET /healthz -> 200, Owner ID-token POST /api/staging/marketplace/owner -> 503. New service only. C1A already PASS_WITH_LIMITS, three Cloud writes/IAM config consumed. `C1B_ATTEMPT_1=FAILED_BEFORE_HTTP`; `C1B_ACTUAL_HOSTED_STATUS=PENDING_NEW_CORRECTED_ONE_SHOT`; `C2/PRODUCTION=NO_GO`.
+
+
+## 24 Nov 2026 ~23:38 IST — C1B ONE ANONYMOUS HTTP RESULT UNEXPECTED, SAFE STOP; EXACT CODE MUST BE READ LOCALLY
+
+**Latest owner screenshot:** Git pull fetched the repaired (then-current) C1B script; next one-time `gcloud auth print-identity-token | wsl ... bash scripts/step05-c1b-private-off-http-once-20261124.sh` exited **`line 56: code_NO_FURTHER_REQUESTS: unbound variable`**. Unlike the previous failed attempt (no marker/report), direct inspection of the exact original git blob `8e5f684f218be026ebd5506c2a76bee9d7eb2a92` confirms this time execution progressed THROUGH the FIRST anonymous `GET /healthz`: `curl` exited successfully, `HTTP_ATTEMPT_1=ANONYMOUS_GET_HEALTHZ` and **`HTTP_1_CODE=<actual code>`** were appended to the local report, then the script entered `if code !=401 && code !=403` and aborted on Bash nounset while expanding the wrongly concatenated `$code_NO_FURTHER_REQUESTS`. Therefore **exactly ONE HTTP request from this second run is evidenced**; it produced an unexpected status other than 401/403, but the numeric status remains **UNKNOWN** pending local report. Owner GET200 and POST503 were NOT attempted. **DO NOT classify C1B as PASS; potential anonymous access issue must be triaged.**
+  
+**Source-only error-reporting fix** saved at commit `15cec40c90d50b6322f89b30704f81fa3b391e89` (script blob `052cbad75188dfd3ac88e6a455e019fcde6d31b4`): changed strings to `${code}` and `${label}_EXPECTED_${expected}_GOT_${code}` so unexpected HTTP errors can be printed without unbound-variable shell abort. **This patch does NOT authorize new hosted requests or change the result of the already-sent request.** Original one-attempt marker now SHOULD exist; do NOT delete it, edit report, re-run script, `gcloud auth print-identity-token` or Cloud Run deploy.
+
+**NEXT only, one local read-only CMD query of original marker/status report (NO token, HTTP, Google Cloud mutation):**
+
+```cmd
+wsl -d OLDX-Ubuntu-24.04 -- bash -lc "if [ -e /root/.oldx-step05-c1b-off-hosted-once-20261124 ]; then echo C1B_MARKER=PRESENT; else echo C1B_MARKER=ABSENT; fi; if [ -f /root/oldx-step05-c1b-off-hosted-result-20261124.txt ]; then grep -E '^(STATUS|HTTP_ATTEMPT_[0-9]+|HTTP_[0-9]+_CODE|HTTP_REQUESTS_SENT)' /root/oldx-step05-c1b-off-hosted-result-20261124.txt; else echo C1B_REPORT=ABSENT; fi"
+```
+
+Do not request a repeat HTTP even if the returned code is unexpected; first determine whether it was 200/public bypass, 404/not-found, 3xx/redirect or an auth/proxy-related error. Corrective decisions and any extra HTTP requests require a narrowly reviewed security path and remaining 20-minute original window (possibly expired), not blanket "retry". Cloud Run direct IAM showed no public bindings but private access behavior remains UNVERIFIED and this anonymous response is potentially material. All C1A prior B1/B2/B3, signed-base checks, scans/tests already consumed and must NOT be repeated. `C1B=STOP_UNEXPECTED_ANON_STATUS`, `C1B_HTTP_SENT=1`, `C1B_OWNER_AUTH_CALLS_SENT=0`, `PRODUCTION/C2=NO_GO`.

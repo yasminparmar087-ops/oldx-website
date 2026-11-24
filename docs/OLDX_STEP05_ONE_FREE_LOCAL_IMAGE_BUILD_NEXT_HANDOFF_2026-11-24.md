@@ -213,3 +213,24 @@ if test -e /root/.oldx-step05-existing-image-scan-recovery-consumed; then echo '
 ```
 
 Only after exact actual image ID and tag are established may the source pin be corrected under SOURCE-ONLY scope if transcription error is demonstrated. Do NOT rebuild, retag/repoint local images, delete Docker state, bypass the SHA256 guard or rerun historical 84 tests. Grype CVE findings remain UNKNOWN. The original WSL image build/Linux OFF-only prior PASS evidence remains, but current Docker identity needs read-only verification. C1A/B/C2 remain UNAPPROVED; production NO-GO.
+
+
+## 24 Nov 2026 — Root cause RESOLVED: scan-only source PIN typo (63 vs 64 hex digits)
+
+Owner's new exact read-only screenshot shows the local Docker `image inspect` output and existing image list both match:
+
+- Local Docker image ID **`sha256:612f3c02806a93d991127f87e34391646edf9bad251bb22b8aace90a434bc30a`** (exactly 64 hexadecimal digest digits).
+- Tag **`oldx-step05-gateway-off:wsl-once-20261124-801`**.
+- User **`65532:65532`**; platform **`linux/amd64`**.
+
+The older scan-only script used **`sha256:612f3c02806a93d991127f87e34391646edf9bad251bb2b8aace90a434bc30a`** (only 63 hex digits), missing ONE `2` in `...251bb22b8...`. This was a **source transcription typo**, not an unknown local-image change or a Docker failure. The initial exact-image guard correctly denied further action; no scanner downloads, image rebuild, Grype/Syft or cloud activity occurred, and the script's one-shot marker had not been created at that preflight.
+
+**SOURCE-ONLY FIX:** Changed ONLY the `PIN=` value in `scripts/step05-gateway-off-scan-recovery.sh` to the verified exact 64-digit image ID, commit `eb2ce1b5f82f43820b4a8489262ffc0cee9c0e42`. The fixed PIN and tag are literal immutable approved values; **do not remove/relax SHA matching, retag, rebuild or rescan historical work**. One scope remains: previously owner-approved scan-only SBOM/Grype on that same local image.
+
+**NEXT SINGLE Ubuntu-shell command**, in the already checked-out local `/tmp/oldx-step05-wsl.1gqReU` folder:
+
+```bash
+git pull --ff-only origin security-hardening-review && bash -n scripts/step05-gateway-off-scan-recovery.sh && bash scripts/step05-gateway-off-scan-recovery.sh
+```
+
+If the scan-only lock exists or a new STOP occurs, DO NOT repeat; preserve image/assets and read `summary.txt` and stage-specific error log. The previous 84 historical Node focused cases have not been rerun. **Status:** `WSL_IMAGE_BUILD/OFF_SMOKE=PASS_WITH_LIMITS`; `PIN_TYPO=FIXED_SOURCE_ONLY`; `SCAN_ONLY=AUTHORIZED_NOT_YET_STARTED`; `SBOM/GRYPE=NOT_VERIFIED`; `C1A/C1B/C2=NOT_APPROVED`; `PRODUCTION=NO_GO`.

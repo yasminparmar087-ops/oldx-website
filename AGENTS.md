@@ -1,5 +1,9 @@
 # OLDX Agent Instructions
 
+## 25 Nov 2026 — OWNER APPROVED ONE H1B local gcloud VERSION-only diagnostic; NOT EXECUTED YET
+
+Owner explicitly replied **"ha manjuri chhe"** to one bounded LOCAL owner-WSL SDK startup diagnosis. Approved one and only one execution of `scripts/step05-h1b-gcloud-local-timeout-diagnosis-once-20261125.sh --diagnose-local-once`, verified Git blob `59e9d20d4d82ec6d0783cabeec5f358af89e3b8e`, max one `gcloud --version` under 12s, only passive local file/SDK/process-name metadata (NO credentials contents). Check separate diagnostic marker absent before run; preserve first preflight's consumed marker and evidence. No original 40s `gcloud auth list` retry, project/Registry/new SA/service reads, login, token/SDK/config changes, Cloud writes, old tests, builds or scans. **ChatGPT has NOT run this on owner WSL**. [Canonical approval and exact guard](docs/OLDX_STEP05_H1B_GCLOUD_LOCAL_STARTUP_TIMEOUT_DIAGNOSIS_2026-11-25.md). Real status `H1B_LOCAL_DIAG=APPROVED_NOT_EXECUTED`; `H1B_CLOUD/H2/PRODUCTION=NO_GO`; C1A OFF retention expires 28 Nov 2026 23:19 IST, unchanged.
+
 ## 25 Nov 2026 — H1B gcloud local-startup timeout diagnosis SOURCE-ONLY prepared; separate consent REQUIRED
 
 Confirmed original H1B read-only preflight STOP at FIRST `gcloud auth list` **40s timeout124 / stdout0/stderr0** in owner WSL; no operator/project/Registry/service/SA result, collisions UNKNOWN, no cloud change. Original preflight marker CONSUMED, **never rerun**. Private old evidence `/root/oldx-h1b-readonly-preflight-20261124T202258Z` `SHA256SUMS` SHA256 `22b2f89ffc7c70be6ad82398e64d8c42170c646669d5399ae4c44622d96d5b1e`.

@@ -165,3 +165,26 @@ The same screenshot shows the NEW locally derived Gateway image **still in Docke
 **Next authorized action status:** the **one-shot build was executed and consumed**. Do NOT rebuild it, rerun the one-shot, delete the image, or rerun old 84 tests/A8/Cloud scans. A narrow **scan-only recovery** using this existing immutable identified local image, longer bounded release download with official SHA256 verification and saved Syft/Grype stderr, followed by SBOM+Grype, is the smallest sensible next step; seek action-specific owner approval before doing any new network/download/install/scan. It can leave all existing Docker images/volumes untouched, no Cloud Build/Registry push/deploy/IAM/Firebase. A timestamped report directory should be preserved for future chat. Avoid treating successful local scan as C1A/production GO.
 
 **Status:** `STEP05_NEW_LOCAL_IMAGE_BUILD=PASS_WITH_LIMITS`; `EXACT_IMAGE=RETAINED_215MB`; `DOWNLOAD_FAILURE=OFFICIAL_SYFT_RELEASE_120S_TIMEOUT`; `SYFT_SBOM=NOT_RUN`; `GRYPE=NOT_RUN`; `NEW_BUILD_PERMISSION=CONSUMED`; `C1A/C1B/C2=UNAPPROVED`; `PRODUCTION=NO_GO`.
+
+
+## 24 Nov 2026 — Owner explicitly APPROVED separate scan-only recovery on existing retained WSL image
+
+Owner explicitly replied **"ha manjuri chhe"** to the request to resume the free download and run ONLY Syft SBOM and Grype on the EXISTING locally retained **Step05 OFF Gateway** image (no re-build). Scope is separate from, and does NOT renew, the already CONSUMED local WSL image-build approval. Image from screenshot remains `sha256:612f3c02806a93d991127f87e34391646edf9bad251bb2b8aace90a434bc30a`, tag `oldx-step05-gateway-off:wsl-once-20261124-801`, 215 MB, `linux/amd64`, nonroot65532, Linux Node24 OFF/health/SIGTERM prior PASS.
+
+**New source-only execution file:** `scripts/step05-gateway-off-scan-recovery.sh` on `security-hardening-review`. Prepared in the assistant runtime and checked via `bash -n` (syntax only, **not a scan PASS**). This guarded one-shot checks WSL Linux AMD64, local default Docker daemon, **exact existing immutable image ID AND tag**, image user/platform, actual Windows C and WSL disk reserves; it uses a distinct scan-recovery one-shot marker and performs NO `docker build`, image pull, registry push, IAM/cloud/API credentials, Firebase writes, deployment or old A8 checks. It exports that same existing image locally into a retained Docker archive, and performs only NEW image Syft SBOM generation and Grype vulnerability assessment.
+
+**Partial network recovery:** the previous Syft download failed after 2,882,408/31,432,061 bytes due to a 120-second timeout; that earlier partial tarball was removed by prior script's trap. The new one-shot starts a NEW archive download, retaining **its own** incomplete files in `$HOME/oldx-step05-scan-recovery-*/assets/`, using `curl -C -` within a finite maximum **5 x 600-second** per-release transfer window, SHA256 checking the already-pinned official Syft v1.57.1 and Grype v0.121.3 release archives BEFORE extracting/executing. If resume/server/network/sha mismatches, STOP and preserve evidence, never silently use corrupted assets. Syft gets one explicit `docker-archive:` scan, emits nonempty JSON, then converts that SBOM to CycloneDX without rescanning image; Grype scans the Syft JSON once with its own bounded 1,200-second database/scan window, reports CVE counts and unique HIGH/CRITICAL CVE IDs. Real Grype DB fetch is separate and may still fail on low bandwidth; do not claim success until logs exist. Individual `*-download.log`, Syft/Grype stderr, JSON, report hashes, image tar and stage summary stay in a new private root HOME evidence directory on any failure; existing Docker image and other images/volumes are never deleted. The official source supports `docker-archive:` from `docker save`, and Grype supports `sbom:` Syft JSON.
+
+**One owner execution command (paste in ALREADY OPEN ROOT UBUNTU shell, NOT PowerShell):**
+
+```bash
+cd /tmp/oldx-step05-wsl.1gqReU &&
+git pull --ff-only origin security-hardening-review &&
+git ls-files --error-unmatch scripts/step05-gateway-off-scan-recovery.sh &&
+bash -n scripts/step05-gateway-off-scan-recovery.sh &&
+bash scripts/step05-gateway-off-scan-recovery.sh
+```
+
+`git pull` only refreshes the temporary review-branch clone; it does not change user's independent Windows project or cloud resources. The new scan-only source is separate from old `step05-gateway-off-wsl-one-shot.sh` (NEVER rerun that earlier build script). Stop on any error and share only final `summary.txt`, last `STOP` and relevant small stderr, not credentials or raw full scanner output; no second manual run under this permission.
+
+**Status:** `EXISTING_WSL_IMAGE_BUILT_AND_OFF_SMOKE=PASS_WITH_LIMITS`; `PREVIOUS_SYFT_DOWNLOAD=120S_TIMEOUT`; `SCAN_ONLY=OWNER_APPROVED_PREPARED_NOT_EXECUTED`; `SBOM=NOT_YET_VERIFIED`; `GRYPE_CVE_COUNT=UNKNOWN`; `NO_NEW_BUILD`; `C1A/C1B/C2=NOT_APPROVED`; `PRODUCTION=NO_GO`. Previous 84 focused offline cases and Step04 A8 Build/Scan not repeated. Passing local scan alone does not satisfy hosted IAM/security/cost/media gates.

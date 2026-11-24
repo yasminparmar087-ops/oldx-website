@@ -1,5 +1,43 @@
 # OLDX Step05 H1B — gcloud local WSL startup timeout: diagnosis boundary and source handoff
 
+## 25 Nov 2026 — ONE passive launcher inspection complete; mixed Windows-SDK/WSL startup implicated, exact stall UNKNOWN
+
+Start remote HEAD `4a5a47c268145f3174b7ff4849cd05b1b6ef645a`; latest AGENTS/current diagnosis/Issue17 read. **Strictly passive local evidence, no SDK launcher/Python interpreter executed.** A single35s-bounded shell inspection completed exit0 in existing owner `OLDX-Ubuntu-24.04`. Source capture limited to installed212-line6494B launcher and a bounded excerpt of6579B gcloud.py (each capped20KB/260lines), path/symlink/file metadata and candidate executable resolution only. Later reading already-captured evidence added no live inspection. Existing consumed markers/credentials/config/PATH/WSL settings untouched; new passive inspection marker preserved. Dirty repo files/.firebaserc unchanged; intended documentation only.
+
+### Classified actual findings
+| Classification | Evidence / meaning |
+| --- | --- |
+| **CONFIRMED** | Resolved gcloud launcher is a regular6494B file on a Windows-mounted SDK, **0 symlink hops**; not a native-Linux SDK root. Full private path/chain saved locally, not published |
+| **CONFIRMED** | Shebang `#!/bin/sh`; 212lines, **0CRLF**. No observed CRLF/shebang line-ending fault. Native Linux sh/bash candidates present; no interpreter executed |
+| **CONFIRMED** | Launcher defines its own SDK-root resolver/Python setup; final line212 execs selected `CLOUDSDK_PYTHON` plus args and root-relative `lib/gcloud.py`. That6579B Python entrypoint exists, prepends SDK lib/third_party to sys.path and imports googlecloudsdk modules |
+| **CONFIRMED** | Linux bundled `platform/bundledpythonunix/bin/python3` absent; Windows bundled `platform/bundledpython/python.exe` and `bin/gcloud.cmd` present. Their mere presence does NOT prove either ran |
+| **CONFIRMED** | With CLOUDSDK_PYTHON unset and no Linux bundle selected, launcher optionally sources an enabled SDK config virtualenv, then tries `python3.14, python3.13, python3.12, python3, python3.11, python3.10, python` in that order. Each candidate invokes a silent `-c` version check (accepted3.9–3.14); output redirected to /dev/null, no per-candidate timeout in source |
+| **CONFIRMED** | Passive current PATH lookup finds native-Linux `python3`, no `python`, and Windows-mounted `python.exe`. Does NOT establish native python3's version or which earlier versioned candidates exist/execute |
+| **CONFIRMED** | Launcher refs include CLOUDSDK_ROOT_DIR/PYTHON/PYTHON_ARGS/PYTHON_SITEPACKAGES/GSUTIL_PYTHON/BQ_PYTHON/CONFIG/ENCODING, PYTHONHOME, VIRTUAL_ENV, PYTHONIOENCODING and optional CLOUDSDK_USE_GOCLOUD. This is STATIC variable-name logic, not printed runtime values. Old approved metadata showed no CLOUDSDK_PYTHON/config/PYTHONPATH override |
+| **CONFIRMED** | Hypothetical `bin/bootstrapping/bootstrapping.sh` file is absent, but captured launcher is self-contained and does not reference that helper. **Not evidence of a required missing dependency** |
+| **LIKELY** | Using a Windows SDK tree from WSL, lacking its Linux bundle, exposes automatic interpreter selection/possible virtualenv startup and SDK module loading from mounted Windows storage. This mixed-layout startup path is the leading hypothesis for the earlier silent12s version/40s auth-list timeouts, rather than a demonstrated Cloud API error |
+| **UNKNOWN** | Actual selected Python, each versioned-candidate resolution, SDK virtualenv enabled state, exact syscall/import/interop at stall, config/module/dependency completeness, filesystem/AV latency and supported native-Python version. No performance trace or new execution allowed, so no definitive root cause |
+| **UNKNOWN** | Account/credential validity, operator/project/Registry/new SA/service collision and IAM. This passive evidence establishes NONE of them |
+
+Do **NOT** claim Windows bundled python.exe was automatically selected: the observed shell source tests Linux bundled locations and PATH names, not that Windows executable. Do not blame CRLF, missing optional bootstrapping helper, credentials or IAM from this evidence. Most likely startup stage is before/during interpreter selection or mounted-SDK module imports, but exact stage remains UNKNOWN.
+
+### Safest/quickest proposed fix — not performed
+Prefer a **separate native Linux Cloud SDK placed on WSL's Linux filesystem with its matching supported/bundled Linux Python**, invoked via explicit path. This removes the observed Windows-mounted tree and missing-Linux-bundle mismatch without overwriting the working Windows SDK. It should reduce these startup risks, **not a proven cure**. Do not copy credential DBs, reauthenticate, globally change PATH/CLOUDSDK_PYTHON, replace SDK config or migrate accounts under this finding. Download/source-integrity/platform selection and any installation are a **new explicit owner-approved setup scope**, not this passive task; no software installed/switched now. Even successful local native startup later would not authorize auth-list/preflight repetition or Cloud writes.
+
+A process-scoped existing-native-Python binding could bypass the source's automatic candidate loop without installation, but would still load the Windows-mounted SDK and native Python compatibility is unverified; it is not presented as a proven permanent repair or executed here.
+
+### Private evidence and no-repeat custody
+Private directory `/root/oldx-h1b-passive-launcher-20261124T204131Z` (~25Nov02:11:31IST), umask077/0700. Exact resolved paths and interpreter candidates only in private files, not stdout/GitHub. No credential/account/environment values read or published.
+- `SHA256SUMS` SHA256 **`61e4990035bce90923fefce882566170ba0d94d005188a5052d2d0f9c3aabd70`**.
+- Captured complete launcher `source-bin_gcloud.txt` SHA256 `03d163265c038e9a67b0760ed98de9b5970c4c9d172dbfec03384939d02d4800`.
+- Captured `source-lib_gcloud.py.txt` SHA256 `c8acc602cebef4ca64ecfdb4f531718dd2dce85a86c735a52530f9555eb02962`.
+- `summary.txt` SHA256 `861c748e7f7332a9aa62a7591eb32925cd97cd48450802c194370acc28a93589`.
+Source snippet/metadata files stay private. Passive marker `/root/.oldx-h1b-passive-launcher-inspection-once-20261125` retained. No previous scripts/probes run; no gcloud/interpreter/Python version execution, auth/login/Cloud API, Docker/scanners, installs/config/credential/environment/IAM/Billing changes.
+
+**ONE next owner action:** approve/reject an **isolated native-Linux SDK setup plan** (official-source integrity/platform verification, separate WSL-Linux directory, existing Windows SDK/auth/config left intact; no login, Cloud/preflight execution). Any later startup verification is a distinct bounded approved step, not automatic under this passive result. No repair executed.
+H1B OPERATIONAL=HOLD / H2=HOLD / production NO-GO; OptionB exact private/OFF max24h risk only unchanged, no activation. C1A retention28Nov2026 23:19IST unchanged, no auto cleanup. Final pushed/read-back SHA is in accompanying Issue17 checkpoint and containing docs commit.
+
+
 ## 25 Nov 2026 — actual ONE owner-WSL local gcloud diagnostic: VERSION TIMEOUT124, no Cloud query
 
 Starting remote HEAD `2624c88d61b1e441cee42ca103343e4ea47b7f9a`. Read latest AGENTS, this diagnosis document and Issue17 checkpoint7143708788. Approved script Git blob **`59e9d20d4d82ec6d0783cabeec5f358af89e3b8e`** matched exact isolated local bytes; `bash -n` PASS exit0 without Cloud request. Dedicated marker initially ABSENT; original preflight/H1A markers not modified.

@@ -1,5 +1,25 @@
 # OLDX Step05 H1B S3 — Owner-approved Cloud Shell READ-ONLY new-target preflight
 
+## 25 Nov 2026 — ACTUAL S3 CLOUD SHELL OWNER/PROJECT/REGISTRY PASS; NEW-SERVICE UNRESOLVED STOP
+
+Owner's latest actual Google Cloud Shell screenshot (prompt `yasminparmar087@cloudshell:~ (oldx-staging)$`) confirms the original approved S3 pinned read-only script was executed once. Exact printed evidence:
+```text
+S3_OWNER=EXPECTED_OWNER_ACTIVE
+S3_PROJECT=EXACT_ID_NUMBER_ACTIVE
+S3_EXISTING_REGISTRY=DOCKER_VERIFIED_READ_ONLY
+S3_NEW_SERVICE=UNRESOLVED_ERROR_NOT_PROVEN_ABSENT
+S3_NEW_SA=API_NOT_FOUND_REPORTED_REVIEW_REQUIRED
+S3_RESULT=STOP
+S3_REASON=TARGET_STATUS_UNRESOLVED_STOP
+S3_CLOUD_WRITE=NONE
+S3_EXISTING_S1_S1R_S2_MARKERS=UNTOUCHED
+```
+Verified Owner, project `oldx-staging` active and project number expected, existing `oldx-staging-images` Docker repository. **NEW service `oldx-c2-website-mediator` state is UNKNOWN**; `UNRESOLVED_ERROR_NOT_PROVEN_ABSENT` is NOT proof of absence or existence (might be 403, transient, parsing of an English 'not found' without `404` / `NOT_FOUND`, or other error; exact error not yet inspected). **NEW SA `oldx-c2-mediator@oldx-staging.iam.gserviceaccount.com` returned `API_NOT_FOUND_REPORTED_REVIEW_REQUIRED`, negative API evidence ONLY, not proven collision-free or authority to create. Do not infer final S3 PASS or start H1B W1–W6. No Cloud writes or SDK/credential changes.
+
+Original S3 one-shot marker `~/.oldx-h1b-s3-cloudshell-readonly-once-20261125` now **CONSUMED**; NEVER delete/rerun original preflight, S3, old Windows/WSL auth-list diagnostic, S1, S1R, S2 or H1A scan/build. Continue with **offline inspection only** of EXISTING private S3 marker-derived evidence: `new-service.exit` and `new-service.stderr`, optionally `new-service.stdout` only metadata, no `gcloud` invocation. A concise error classification may establish 403 vs API 404 vs textual 'not found' vs bad request, but any future fresh Cloud resource read requires separately scoped approval. Do not paste raw private credentials/logs into Github.
+
+Actual pinned S3 script `scripts/step05_h1b_s3_cloudshell_readonly_once_20261125.py` Git blob `fb2dd41a54c3cf4632914dbb91c27591221b9dae`. Its `target_state` on nonzero exit recognizes only `NOT_FOUND` or `404`, so English-only missing-resource wording is a POSSIBLE explanation, not established until saved stderr inspected. Protected C1A default-OFF private retention ends **28 Nov 2026 23:19 IST**, no automatic cleanup or extension. H1B W1–W6/H2/production NO-GO.
+
 **25 November 2026 IST.** Branch `security-hardening-review`, repository `yasminparmar087-ops/oldx-website`.
 
 ## 1. Actual owner authorization and START state

@@ -1,0 +1,12 @@
+# H1 candidate ONLY. Same historically verified immutable BASE, new derived image UNKNOWN.
+# Repository-root context, no builder/install/SDK/credentials; no H2 code included.
+FROM --platform=linux/amd64 gcr.io/distroless/nodejs24-debian13:nonroot@sha256:49559f4ee6632a11a13a7e198183efee1226de7a8f437df83c180b01bd8253ec
+WORKDIR /app
+ENV NODE_ENV=production
+COPY --chown=65532:65532 --chmod=0444 functions/staging-marketplace/c2-mediator-off-server.mjs /app/server.mjs
+USER 65532:65532
+EXPOSE 8080
+STOPSIGNAL SIGTERM
+ENTRYPOINT ["/nodejs/bin/node"]
+CMD ["server.mjs"]
+

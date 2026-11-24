@@ -9,13 +9,16 @@ export function prepareC2SyntheticCleanupManifest({enabled=false,projectId,datab
  if(enabled!==true)return stop('DISABLED');
  if(projectId!=='oldx-staging'||databaseId!=='(default)'||typeof runId!=='string'||!/^[A-Za-z0-9_-]{1,30}$/.test(runId)||!Array.isArray(actors)||actors.length<1||actors.length>2||!Array.isArray(records)||records.length>128)return stop('SCOPE');
  const ids=new Set(actors);if(ids.size!==actors.length||actors.some(uid=>!['synthetic-c2-'+runId+'-seller','synthetic-c2-'+runId+'-buyer'].includes(uid)))return stop('ACTORS');
- const seen=new Set(),captured=[];
+ const seen=new Set(),captured=[],products=new Set(),photos=new Set();
  for(const raw of records){
   const row=copyRecord(raw,['ownerUid','path','runId','updateTime']);
   if(!row||Object.getPrototypeOf(row)!==Object.prototype||Object.keys(row).sort().join(',')!=='ownerUid,path,runId,updateTime'||row.runId!==runId||!ids.has(row.ownerUid)||typeof row.path!=='string'||row.path.length>220||seen.has(row.path)||typeof row.updateTime!=='string'||!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,9})?Z$/.test(row.updateTime))return stop('RECORD');
   const parts=row.path.split('/');if(parts.length!==2||!allowed.has(parts[0])||!/^[A-Za-z0-9_-]{1,100}$/.test(parts[1]))return stop('SHARED_OR_FOREIGN_PATH');
   if([c.privateRecords,c.publicViews].includes(parts[0])&&!parts[1].startsWith('product_'))return stop('FOREIGN_PRODUCT_KIND');
   if(parts[0]===c.actors&&parts[1]!==row.ownerUid)return stop('FOREIGN_ACTOR');
+  if([c.privateRecords,c.publicViews].includes(parts[0]))products.add(parts[1]);
+  if(parts[0]===m.assets)photos.add(parts[1]);
+  if(products.size>1||photos.size>1)return stop('SYNTHETIC_OBJECT_CAP');
   seen.add(row.path);captured.push({...row});
  }
  const out={decision:'DRAFT_ONLY',authorized:false,projectId,databaseId,runId,actors:[...actors],records:captured,
@@ -24,3 +27,4 @@ export function prepareC2SyntheticCleanupManifest({enabled=false,projectId,datab
  if(Buffer.byteLength(JSON.stringify(out),'utf8')>32768)return stop('SIZE');
  return out;
 }
+

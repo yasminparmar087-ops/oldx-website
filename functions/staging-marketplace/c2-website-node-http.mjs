@@ -65,11 +65,16 @@ export function createC2WebsiteNodeHandler({enabled=false,websiteOrigin,allowedO
       return send(...Object.values(failure(415,'UNSUPPORTED_MEDIA_TYPE')));
     const controller=new AbortController();
     const abort=()=>controller.abort();
+    const stopped=new Promise((_,reject)=>{controller.signal.addEventListener('abort',()=>reject(Error('ABORTED')),{once:true});});
+    stopped.catch(()=>{});
+    const bounded=operation=>Promise.race([Promise.resolve().then(()=>{if(controller.signal.aborted)throw Error('ABORTED');return operation();}),stopped]);
     res.once('close',abort);
     const timer=setTimeout(abort,timeoutMs);
     try {
       const chunks=[];let size=0;
-      for await(const chunk of req) {
+      const input=req[Symbol.asyncIterator]();
+      for (;;) {
+        const {done,value:chunk}=await bounded(()=>input.next());if(done)break;
         if(controller.signal.aborted) throw Error('ABORTED');
         size+=chunk.length;
         if(size>limit) return send(...Object.values(failure(413,'BODY_TOO_LARGE')));
@@ -82,16 +87,17 @@ export function createC2WebsiteNodeHandler({enabled=false,websiteOrigin,allowedO
       }
       const request=new Request(websiteOrigin+path,{method:req.method,headers,
         ...(req.method==='POST'?{body:Buffer.concat(chunks,size)}:{}),signal:controller.signal});
-      const result=await mediator.fetch(request);
+      const result=await bounded(()=>mediator.fetch(request));
       if (!(result instanceof Response) || result.redirected || result.status<200 ||
         result.status>599 || result.status===204 && result.body) throw Error('BAD_RESPONSE');
       const out=[];let count=0;
-      if(result.body) for await(const chunk of result.body){
+      if(result.body){const output=result.body[Symbol.asyncIterator]();for(;;){
+        const {done,value:chunk}=await bounded(()=>output.next());if(done)break;
         if(controller.signal.aborted) throw Error('ABORTED');
         count+=chunk.length;
         if(count>65536) throw Error('OVERSIZE_RESPONSE');
         out.push(chunk);
-      }
+      }}
       const extra={};
       const corsOrigin=result.headers.get('access-control-allow-origin');
       if (corsOrigin===caller && allowedOrigins.includes(corsOrigin)) {

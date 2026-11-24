@@ -1,5 +1,9 @@
 # OLDX — Current Chat Handoff / Start Here
 
+## 24 Nov 2026 — NEXT SOURCE TASK REGISTERED — CRYPTOGRAPHIC ATTESTATION (NOT EXECUTED)
+
+Read-only Vercel discovery after `bf39ce4...`: currently connected team `OldX Store/old-x-store` and personal scope show **0 deployments/aliases**; a direct `oldx-webs` project lookup returned **404** in both. However historic `VERCEL_ENVIRONMENT_VARIABLES.md` documents legacy `oldx-webs` tied to former repository account; this is **NOT** evidence of a present accessible staging deployment, and not evidence it was deleted. Branch `vercel.json` disables review-branch auto-deploy. No host/owner/URL guessed. [Single heavy SOURCE-ONLY Codex specification](OLDX_STEP05_GATEWAY_ATTESTATION_SOURCE_ONLY_CODEX_TASK_2026-11-24.md) now prepared to implement real cryptographic independent gateway attestation verification with offline signed fixtures and safe default OFF; **TASK HAS NOT BEEN EXECUTED YET**. It is the one next Codex action. [Gateway evidence and review §9](OLDX_STEP05_GATEWAY_IDENTITY_AND_HOSTED_PREFLIGHT_DESIGN_2026-11-24.md). Step05 hosted STILL BLOCKED, Step04 technical gates unchanged, production NO-GO; no Vercel/Cloud writes, tests, billing or CI. Historical Step05 48 distinct offline cases not repeated.
+
 **Latest Vercel read-only account check:** visible team `OldX Store` (`old-x-store`, Hobby) has **0 linked and 0 listed projects**; no `.vercel.app` URL surfaced from the canonical Handoff. The team being connected does NOT prove that historical OLDX staging is absent or identify its real account. See [gateway source-only design §8](OLDX_STEP05_GATEWAY_IDENTITY_AND_HOSTED_PREFLIGHT_DESIGN_2026-11-24.md). Owner must verify exact intended Vercel project/preview URL before OIDC config. No Cloud/Vercel mutations.
 
 ## 24 Nov 2026 — NEW LATEST: Step05 gateway identity design and hosted preflight SOURCE-ONLY, NOT OWNER APPROVED

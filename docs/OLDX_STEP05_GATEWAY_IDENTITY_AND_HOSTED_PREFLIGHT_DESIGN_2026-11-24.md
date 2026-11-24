@@ -93,3 +93,9 @@ There is **NO** unconditional one-click script or approval contained in this pac
 **Evidence consulted:** current GitHub `AGENTS.md`, `docs/OLDX_CURRENT_HANDOFF.md`, 15-step plan, existing Step05 receipt, `trusted-host.mjs`, `product-read-server.mjs`; Google Cloud Run/WIF docs and Vercel official OIDC/GCP docs linked above. No tests or provider execution in this document-only decision packet.
 
 **Owner approval state:** `GATEWAY_OPTION_V=RECOMMENDED_CONDITIONALLY_NOT_SELECTED`; `GATEWAY_PROOF=NOT_IMPLEMENTED`; `H0-H3=NOT_AUTHORIZED`; `STEP05_HOSTED=BLOCKED`; `PRODUCTION=NO_GO`.
+
+## 8. Additional CURRENT Vercel account evidence — READ ONLY (2026-11-24)
+
+After writing this packet, connector `get_git_deployment_context` returned **one visible team**: `OldX Store`, slug `old-x-store`, plan `hobby`, with **0 linked Git projects**. An explicit `list_projects` under that team, with and without `oldx` search, returned **0 projects**. No deployment or project was created, modified or accessed. The long historical Handoff text itself provided no `.vercel.app` URL in a scoped string search. These results show ONLY that the **currently connected Vercel team exposes no matching hosted project**, not that a historical staging deployment never existed or does not belong to another account/team.
+
+**Practical consequence:** Option V remains conditional and **UNVERIFIED**. Do not claim that this connected team hosts OLDX or that its OIDC credentials can invoke private Cloud Run. The owner should supply/read-only verify the existing Vercel dashboard **project/team and exact HTTPS staging deployment URL** (no passwords, private keys or tokens). If no active accessible Vercel Function exists, evaluate Option C with a fresh cost/least-privilege review rather than inventing a Vercel deployment. Until then, continue only generic source-only trust design, no token minting/iam role changes/cloud calls, and preserve `STEP05_HOSTED=BLOCKED`.

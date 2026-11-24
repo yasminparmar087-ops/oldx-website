@@ -88,3 +88,20 @@ STEP05_OVERALL=NOT_DONE
 PRODUCTION=NO_GO
 NO_NEW_CLOUD_IAM_FIREBASE_KMS_BILLING_DEPLOY_HTTP=TRUE_FOR_THIS_SOURCE_REVIEW
 ```
+
+
+## 6. ONE copy/paste Codex task for C2-S1 (source-only heavy task; NOT YET RUN)
+
+The owner prefers Codex for substantial code changes and minimal repeated checks. This is a **ready instruction**, not evidence that Codex executed it. Use an existing local Codex session against this review branch; do not start Cloud Shell/SDK or enable anything.
+
+```text
+OLDX Step05 C2-S1 SOURCE-ONLY, ONE PASS, NO REPEAT. Repo yasminparmar087-ops/oldx-website, branch security-hardening-review ONLY, never main.
+
+FIRST READ AGENTS.md latest first, docs/OLDX_STEP05_C2_SOURCE_ONLY_ENABLED_SLICE_GAP_AND_ONE_PASS_IMPLEMENTATION_PACKET_2026-11-24.md, docs/OLDX_STEP05_SOURCE_ONLY_KICKOFF_AND_MINIMUM_OWNER_BUYER_SLICE_2026-11-24.md and the actual source of secure-product-pipeline.mjs, trusted-host.mjs, cloud-run-http.mjs, public-runtime.mjs, features/marketplace/http-transport.mjs. Check git status: preserve existing dirty/untracked owner files; do not reset/clean/overwrite. If already done by a newer commit, STOP and report no-op.
+
+GOAL: Close ONLY source C2-G1/G2's trusted-host + buyer-transport contract seams with smallest reversible default-OFF dependency-injected source code; not C2 data activation. Keep actual deployed C1A private OFF-only Gateway, A8 old backend, source Bootstrap, IAM/Rules/Cloud Run configs, Dockerfiles, packages and production wholly unchanged. Do not create a public endpoint or change IAM Invoker to allUsers. Do not pretend a browser Firebase Auth ID token is a Cloud Run service-to-service IAM ID token. Separate bearer Firebase identity, backend IAM identity, and distinct request intent signer. For guest buyer, design a trusted browser->website/server-mediated path, OR explicitly leave a fail-closed unresolved provider port; never let current private Gateway be anonymous. Never use browser-supplied IAM, attestation, nonce, proof or client IP headers as trusted.
+
+IMPLEMENTATION: If code needed, add one small inactive host contract/adapter that refuses with 503 unless injected allowed HTTPS origin, known principal/audience, validated distinct signed-request provider, trusted anonymous guest quota and signed cursor, safe backend binding are all present. Do not initialize Firebase Admin, ADC, KMS, new signing keys, Cloud Run token mint, HTTP listener, global fetch or environment on import. Keep publicationEnabled:false in operational composition. Reuse existing source modules and DTOs; avoid redesign or duplicate runtime. Add only new minimal tests for missing-provider 503, browser privileged header spoof denial, independent Firebase and Google IAM token channels, guest safe rejection if no trusted mediator, and no network/work when OFF. If a source change would need new cloud credentials/roles or real data, STOP and document unresolved dependency instead of stubbing success.
+
+RUN ONLY newly relevant targeted Node tests for actual changed modules, one focused invocation each; no historic 84/77/other suites, no full CI, Docker build/Syft/Grype/Cosign, Cloud Shell, Billing, Firebase, Cloud Run, IAM or hosted HTTP. Record exact command and PASS/FAIL/SKIP; no invented results. No unbounded test loops or offline copied stale source. Commit only your new source/tests/docs on security-hardening-review, with [skip ci] if appropriate to avoid automatic duplicate workflows; do not alter AGENTS contrary to latest owner policy. Append exact source-only receipt and remaining C2-G3..G6 blockers to the canonical C2 doc and Issue #17. C2 enabled pilot, publication, backend privileges and production remain NO-GO; C1A/C1B one-shot results consumed. If a required dependency missing, stop with a precise source-only handoff rather than live action.
+```

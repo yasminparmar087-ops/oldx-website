@@ -102,3 +102,17 @@ wsl -d OLDX-Ubuntu-24.04 -- bash -lc "cd ~/oldx-c1a-proof-stable-20261124 && git
 gcloud auth print-access-token | wsl -d OLDX-Ubuntu-24.04 -- bash -lc "cd ~/oldx-c1a-proof-stable-20261124 && bash scripts/step05-c1a-stage-b-one-image-push-once-20261124.sh"
 ```
 These two lines are **future** steps only after exact remote target absence confirmation; no cloud write has been executed merely by adding the script. If push is ambiguous, run only targeted new-tag readback and STOP, no second push. Never share auth tokens or old resources. `B1=PASS`, `B2=PREPARED_AWAITING_JIT_TARGET_ABSENCE`, `B3=NOT_EXECUTED`, `C1B/C2/PRODUCTION=NO_GO`.
+
+
+## 24 Nov 2026 ~22:37 IST — B2 exact-tag JIT registry absence CONFIRMED, ONE PUSH NOW APPROVED TO EXECUTE
+
+Owner CMD screenshot shows single scoped exact-tag `gcloud artifacts docker images describe asia-south1-docker.pkg.dev/oldx-staging/oldx-staging-images/oldx-step05-gateway-off:c1a-off-20261124-801 --project=oldx-staging --format=json` returned **`ERROR: (gcloud.artifacts.docker.images.describe) Image not found.`**, not PERMISSION_DENIED. This is expected for NEW exact image/tag; the accompanying generic syntax help is not a second failure. `B2_REMOTE_TARGET_COLLISION=NOT_FOUND_CONFIRMED_AT_CHECK`. Previously verified B1 actual service account exists with uniqueId `102194769236111252832`, and local WSL approved image exact ID/amd64/nonroot already PASS. **No B2 push occurred in this screenshot.**
+
+**NEXT execute existing guarded B2 script once, from Windows CMD, two commands**, no rebuild:
+```cmd
+wsl -d OLDX-Ubuntu-24.04 -- bash -lc "cd ~/oldx-c1a-proof-stable-20261124 && git pull --ff-only"
+gcloud auth print-access-token | wsl -d OLDX-Ubuntu-24.04 -- bash -lc "cd ~/oldx-c1a-proof-stable-20261124 && bash scripts/step05-c1a-stage-b-one-image-push-once-20261124.sh"
+```
+The `gcloud` command uses active intended Yasmin account to pass short-lived credentials exclusively via stdin (NEVER paste/print token), in accordance with official Artifact Registry access-token Docker login guidance https://docs.cloud.google.com/artifact-registry/docs/docker/authentication. WSL script uses `docker login --password-stdin`, temporary Docker credential config, exact local SHA check, one-shot marker before first push, no Docker build/rescan, creates limited log under `$HOME/oldx-step05-c1a-b2-push-20261124/`. **Do not re-run the second command** after any ambiguous error, timeout, or even apparent success; inspect only exact saved summary and targeted new registry tag before proceeding. If `git pull` fails, STOP; no push.
+
+**After successful owner-reported B2 push:** record printed Docker-reported digest separately from local Docker image ID, and use one new targeted `gcloud artifacts docker images describe <exact new tag>` read to verify remote `sha256` before B3 Cloud Run. B3 remains authorized but NOT EXECUTED; no C1B HTTP, C2/production. No old 84 tests, source image build/Syft/Grype, Cosign, old C1A Registry inventory repeated.

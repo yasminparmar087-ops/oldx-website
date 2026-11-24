@@ -312,3 +312,24 @@ gcloud auth print-identity-token | wsl -d OLDX-Ubuntu-24.04 -- bash -lc "cd ~/ol
 Run second only if first succeeded; second one use ONLY and do NOT retry on any STOP including time expiry, any anonymous response other than 401/403, permission error, or token transport problem. If original 20-minute window already expired, request fresh narrowly scoped owner authorization rather than resetting or reusing the old marker. No C1A B1/B2/B3 rework, old 84 tests, image scan/signature, Firebase/KMS/old backend change. No C2 or production GO. Cleanup of exact new resource identities before previously planned supervised deadline remains separate and not scheduled automatically.
 
 **Current actual:** `C1A=PASS_WITH_LIMITS`; `C1B_OLD_ANON_HEALTHZ=404`; `C1B_HTTP_TOTAL_OBSERVED=1`; `C1B_HEALTH_CONTINUATION=PREPARED_NOT_RUN`; `C2/PRODUCTION=NO_GO`.
+
+
+## 24 Nov 2026 ~23:47 IST — ACTUAL C1B HOSTED PRIVATE/OFF END-TO-END PASS_WITH_LIMITS (OWNER CMD SCREENSHOT); CONSUMED — DO NOT REPEAT
+
+**Owner's latest Windows CMD screenshot** of the single previously approved `scripts/step05-c1b-health-reserved-path-continuation-20261124.sh` run shows:
+```text
+ANON_GET_HEALTH=403 PASS
+OWNER_GET_HEALTH=200 PASS
+OWNER_POST_API_OFF=503 PASS
+C1B_CONTINUATION=PASS_WITH_LIMITS
+HTTP_TOTAL=4/6
+NO_CLOUD_WRITE=TRUE
+REPORT=/root/oldx-step05-c1b-health-continuation-result-20261124.txt
+```
+The prior preserved original first one-shot report had `HTTP_1_CODE=404` from anonymous `GET /healthz`; official Cloud Run docs note paths ending `z` can be reserved. This makes **four HTTP requests in total**, not five: #1 anon /healthz 404, #2 anon /health 403, #3 authenticated Owner GET /health 200, #4 authenticated Owner POST /api/staging/marketplace/owner 503. Owner-approved max six in original 20min period was not exceeded. **This is the first actual hosted validation of IAM rejection + authorized health success + default-OFF Product API enforcement**. The token stayed piped over stdin; screenshot does not expose it. No Cloud Run resource write is reported by the test, no old service/Firestore/Auth/KMS/Product enablement command.
+
+**Interpretation:** private Cloud Run Invoker IAM is enforced for the tested anonymous endpoint (403) while authenticated Owner access reaches OFF Gateway (200/503). Separate C1A infrastructure B1 SA uniqueId `102194769236111252832`, B2 immutable Registry remote `sha256:612f3c02806a93d991127f87e34391646edf9bad251bb22b8aace90a434bc30a` and B3 private new Cloud Run service UID `bf441d37-e39b-4afd-b4c8-0e6edee7269b`, revision `oldx-step05-gateway-00001-thd`, resource/IAM metadata all previously PASS_WITH_LIMITS. **Classification: `C1A=PASS_WITH_LIMITS`; `C1B=PASS_WITH_LIMITS`; `C1B_HTTP_COUNT=4/6`; `C1B_PRIVATE_OFF_GUARD=PASS_FOR_TESTED_PATHS`.** This is NOT blanket endpoint pen-test, not a derived image SLSA attestation, not a fix for 12 new Gateway HIGH CVEs, and **NOT C2/production authorization**. Existing Product Cloud Run root/A8 traffic/IAM was not re-read now and is not claimed proven unchanged by screenshot (no command touched it).
+
+**CRITICAL no-repeat:** Both original C1B one-shot marker/report and continuation one-shot marker/report are consumed. **DO NOT re-run** `gcloud auth print-identity-token` with either C1B script; no more HTTP tests unless a separate later scoped decision requires them. Do NOT rebuild Docker/re-scan Syft/Grype/reverify parent Cosign, recreate SA, push Registry, redeploy Cloud Run, redo original 84 cases or prior IAM audit. Owner requests rapid work/no repeated cost forms/no rupee hard cap, while controlling waste with min0/effective max1 and no new services. Existing C1A/C1B evidence is sufficient for a bounded private-OFF endpoint validation.
+
+**NEXT:** Step05 C1B complete; prepare C2 risk/decision scope from existing plan/source WITHOUT activation. C2 will need distinct approval for enabled Product/backend/data access and separate security risk disposition—none granted. NEW-only cleanup of private supervised C1A test resources was previously consented only with exact UID+digest+no-dependency safety checks; this is **not automatic**. Original approx <=24h supervised stage trial from 24 Nov ~23:19 IST implies owner should decide retention or guarded cleanup by **25 Nov ~23:19 IST**. Do not delete `oldx-owner-read`, existing Registry repository, other images or SAs. `C2/PRODUCTION=NO_GO`.

@@ -1,5 +1,9 @@
 # OLDX — One consolidated launch execution plan (13 November 2026)
 
+## 24 Nov 2026 — LATEST owner Step05 acceleration: no hard ₹ cap; drop Billing-gate formalities
+
+New direct owner instruction "kharch ni formality ma na pado, aagal zadpi rasto apnavvo, bane tya sudhi kharch vadhe nai te try karjo pan koi hard cap nathi" supersedes former Step05 ₹100 incremental C1A manual STOP and pre-execution gross-INR screenshot/current SKU/tax/credit worksheet as **mandatory conditions**. Do not repeatedly request Billing screenshots or perform paid-cost modeling when the action is source-only. Preserve frugal defaults (existing WSL image and Registry, no new Cloud Build/Registry/KMS, min0/max1 Run), recognize charges may still accrue with no guaranteed cap. This does **not** grant C1A Stage B Cloud writes/hosted probes, modify IAM/security, or automatically waive 12 new C1A HIGH CVE limited-risk/official Cosign publisher/signature/source check, current identity and exact resource protections; enabled/production HOLD remains. **Next narrowly needed step: one pinned Google Distroless signature verification if cosign present; then distinct succinct C1A three-write consent and exact resource/recovery prewrite before any mutation.** See [latest C1A decision](OLDX_STEP05_C1A_FASTPATH_OWNER_DECISION_AND_PROVENANCE_2026-11-24.md). `STEP05_COST_FORM_GATE=REMOVED`, `STEP05_STAGE_A_APPROVED=YES`, `STEP05_C1A_WRITES=HOLD`, `PRODUCTION=NO_GO`.
+
 
 ## 24 Nov 2026 — Task25 LATEST: Step05 C1A Stage A OWNER APPROVED; Stage B/cloud changes HOLD
 

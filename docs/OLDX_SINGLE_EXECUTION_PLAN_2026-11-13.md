@@ -1,5 +1,25 @@
 # OLDX — One consolidated launch execution plan (13 November 2026)
 
+## 25 Nov 2026 — ACTUAL S3 CLOUD SHELL OWNER/PROJECT/REGISTRY PASS; NEW-SERVICE UNRESOLVED STOP
+
+Owner's latest actual Google Cloud Shell screenshot (prompt `yasminparmar087@cloudshell:~ (oldx-staging)$`) confirms the original approved S3 pinned read-only script was executed once. Exact printed evidence:
+```text
+S3_OWNER=EXPECTED_OWNER_ACTIVE
+S3_PROJECT=EXACT_ID_NUMBER_ACTIVE
+S3_EXISTING_REGISTRY=DOCKER_VERIFIED_READ_ONLY
+S3_NEW_SERVICE=UNRESOLVED_ERROR_NOT_PROVEN_ABSENT
+S3_NEW_SA=API_NOT_FOUND_REPORTED_REVIEW_REQUIRED
+S3_RESULT=STOP
+S3_REASON=TARGET_STATUS_UNRESOLVED_STOP
+S3_CLOUD_WRITE=NONE
+S3_EXISTING_S1_S1R_S2_MARKERS=UNTOUCHED
+```
+Verified Owner, project `oldx-staging` active and project number expected, existing `oldx-staging-images` Docker repository. **NEW service `oldx-c2-website-mediator` state is UNKNOWN**; `UNRESOLVED_ERROR_NOT_PROVEN_ABSENT` is NOT proof of absence or existence (might be 403, transient, parsing of an English 'not found' without `404` / `NOT_FOUND`, or other error; exact error not yet inspected). **NEW SA `oldx-c2-mediator@oldx-staging.iam.gserviceaccount.com` returned `API_NOT_FOUND_REPORTED_REVIEW_REQUIRED`, negative API evidence ONLY, not proven collision-free or authority to create. Do not infer final S3 PASS or start H1B W1–W6. No Cloud writes or SDK/credential changes.
+
+Original S3 one-shot marker `~/.oldx-h1b-s3-cloudshell-readonly-once-20261125` now **CONSUMED**; NEVER delete/rerun original preflight, S3, old Windows/WSL auth-list diagnostic, S1, S1R, S2 or H1A scan/build. Continue with **offline inspection only** of EXISTING private S3 marker-derived evidence: `new-service.exit` and `new-service.stderr`, optionally `new-service.stdout` only metadata, no `gcloud` invocation. A concise error classification may establish 403 vs API 404 vs textual 'not found' vs bad request, but any future fresh Cloud resource read requires separately scoped approval. Do not paste raw private credentials/logs into Github.
+
+Actual pinned S3 script `scripts/step05_h1b_s3_cloudshell_readonly_once_20261125.py` Git blob `fb2dd41a54c3cf4632914dbb91c27591221b9dae`. Its `target_state` on nonzero exit recognizes only `NOT_FOUND` or `404`, so English-only missing-resource wording is a POSSIBLE explanation, not established until saved stderr inspected. Protected C1A default-OFF private retention ends **28 Nov 2026 23:19 IST**, no automatic cleanup or extension. H1B W1–W6/H2/production NO-GO.
+
 ## 25 Nov 2026 — Step05 S3 READ-ONLY OWNER APPROVED; NEW CLOUD SHELL ONE-SHOT PREPARED, NOT EXECUTED
 
 After verified actual S2 native Linux CLI startup PASS_WITH_LIMITS, owner explicitly said **"ha manjuri chhe"** to ONLY S3 Owner/project/Registry/NEW-only Cloud Run service+SA collision **read-only checks**, without IAM/Registry/Cloud Run/Firebase/Billing change. Since S2 used a **fresh isolated empty WSL CLOUDSDK_CONFIG**, authentication there is not proven; safest NEW S3 mode is the **already-authenticated Owner Cloud Shell**, no WSL credential copying or `gcloud auth login`/account switch. Current Owner Cloud Shell session/access/identity is **NOT YET VERIFIED**; S3 has **NOT been run**. Canonical [S3 exact owner consent, source SHA/11 NEW local tests, single pinned one-paste Cloud Shell command](docs/OLDX_STEP05_H1B_S3_CLOUD_SHELL_READ_ONLY_OWNER_APPROVAL_AND_HANDOFF_2026-11-25.md). NEW script `scripts/step05_h1b_s3_cloudshell_readonly_once_20261125.py` pinned commit `475e0b9a22e56736a592cbe098f908bf5d6881c8`, Git blob `fb2dd41a54c3cf4632914dbb91c27591221b9dae`, independent SHA256 `915ad19df632565a67e12fed5e1a9913d57f503b7561d1d07b7dfc82b9acd70e`; source/test GitHub readback exactly matched local passed bytes (11 focused new synthetic tests PASS, no live API). NEW S3 marker `~/.oldx-h1b-s3-cloudshell-readonly-once-20261125` consumed at first Cloud Shell attempt, never delete/retry. Gating account must equal `yasminparmar087@gmail.com`, project oldx-staging #38472235077 ACTIVE, existing Docker Registry oldx-staging-images asia-south1; NEW candidate service oldx-c2-website-mediator and SA oldx-c2-mediator only describe. 403/unknown ALWAYS unresolved; reported 404 requires separate confirmation before writes. No prior old consumed WSL H1B preflight replay. W1–W6 H1B Cloud writes, H2/production remain NO-GO; original S1/S1R/S2, image/scan one-shot markers untouched. C1A separate private/OFF retention expires **28 Nov 2026 23:19 IST**, no auto cleanup/extension.

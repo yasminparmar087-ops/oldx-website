@@ -1,5 +1,10 @@
 # OLDX Agent Instructions
 
+## 26 Nov 2026 — OWNER APPROVES G2 WSL OAUTH + ISOLATED REGISTRY AUTH + ONE RETAINED H1A PUSH; G2A SOURCE PREPARED, NOT EXECUTED
+
+Owner said `ha manjuri chhe` to precisely the earlier G2 scoped plan: ONE supervised native WSL Yasmin OAuth login, isolated Docker helper only `asia-south1-docker.pkg.dev`, ONE new unique tag push of unchanged retained H1A image, remote OCI digest verification. No W1–W6 SA/Cloud Run/IAM/hosted probes yet. G2A verified pinned source commit `4e0a4a99fb163f32fac29b3e3d0da74c161c666a`, Git blob `5f574b57f91b726f82ae71ec830376dde602b24e`; only auth + isolated config, **NO PUSH** by G2A script. Owner must run with real WSL and keep OAuth URL/code private. G2B separate guarded one-time image push source AFTER actual G2A result; no rebuild/rescan/Cloud Shell image export or old G1/S2/S3/C1A rerun. H2/production NO-GO. Details and exact CMD+WSL pinned one-paste: [G2 consent + pinned one-shot WSL login and isolated Docker config](docs/OLDX_STEP05_H1B_G2_OWNER_APPROVED_WSL_LOGIN_ONE_SHOT_SOURCE_2026-11-26.md).
+
+
 ## 26 Nov 2026 — ACTUAL H1B G1 READ_ONLY_WITH_LIMITS; G1 ONE-SHOT CONSUMED; NEXT G2 WSL AUTH/PUSH SEPARATELY AUTHORIZED ONLY
 
 Owner Cloud Shell G1 screenshot: all seven queried Project and four Registry testIamPermissions entries `RETURNED`; `H1B_G1_RESULT=READ_ONLY_WITH_LIMITS`, `H1B_G1_FUTURE_NEW_SA_ACTAS=NOT_YET_TESTABLE`, `H1B_G1_WSL_AUTH=NOT_CONFIGURED`, `H1B_G1_CLOUD_RESOURCE_WRITES=NONE`. G1 distinct one-shot consumed, DO NOT rerun/reset. H1A local image retained; no build/scan repeat; C1A service already removed, leftover SA/image retained (references unknown); Cloud Shell HOME reports 100% full. Fastest next NEW gate requires explicit narrowly scoped approval for isolated native-WSL OAuth/Docker host auth and ONE exact old-H1A image Registry push, immutable remote digest verification before any W1–W6. G1 permission results are NOT live W1–W6 authority; H2/production NO-GO. Full screenshot transcription, no-repeat source and limits: [Owner screenshot G1 actual PASS and G2 next gate](docs/OLDX_STEP05_H1B_G1_OWNER_SCREENSHOT_PASS_AND_G2_FASTPATH_2026-11-26.md).

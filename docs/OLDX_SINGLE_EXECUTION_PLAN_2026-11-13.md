@@ -1,5 +1,9 @@
 # OLDX — One consolidated launch execution plan (13 November 2026)
 
+## Permanent workflow overlay — 26 Nov 2026
+
+All future OLDX sessions follow [FAST TRACK POLICY](OLDX_FAST_TRACK_POLICY.md) and update [short current checkpoint](OLDX_FAST_TRACK_CURRENT.md). These are the mandatory entrypoints for efficient execution and continuity, not replacements for this 15-step master roadmap or scoped owner approvals. Latest dated actual evidence governs over stale historical snapshots. No launch gate, deployment permission, IAM/cost/resource consent, technical exit criterion or sequencing restriction is silently changed. Production HOLD/NO-GO. Avoid repeated historical tests and oversized handoff reads; preserve exact receipts and update this master only for genuine step/decision changes.
+
 ## 26 Nov 2026 — OWNER APPROVES G2 WSL OAUTH + ISOLATED REGISTRY AUTH + ONE RETAINED H1A PUSH; G2A SOURCE PREPARED, NOT EXECUTED
 
 Owner said `ha manjuri chhe` to precisely the earlier G2 scoped plan: ONE supervised native WSL Yasmin OAuth login, isolated Docker helper only `asia-south1-docker.pkg.dev`, ONE new unique tag push of unchanged retained H1A image, remote OCI digest verification. No W1–W6 SA/Cloud Run/IAM/hosted probes yet. G2A verified pinned source commit `4e0a4a99fb163f32fac29b3e3d0da74c161c666a`, Git blob `5f574b57f91b726f82ae71ec830376dde602b24e`; only auth + isolated config, **NO PUSH** by G2A script. Owner must run with real WSL and keep OAuth URL/code private. G2B separate guarded one-time image push source AFTER actual G2A result; no rebuild/rescan/Cloud Shell image export or old G1/S2/S3/C1A rerun. H2/production NO-GO. Details and exact CMD+WSL pinned one-paste: [G2 consent + pinned one-shot WSL login and isolated Docker config](docs/OLDX_STEP05_H1B_G2_OWNER_APPROVED_WSL_LOGIN_ONE_SHOT_SOURCE_2026-11-26.md).

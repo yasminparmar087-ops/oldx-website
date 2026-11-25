@@ -1,5 +1,11 @@
 # OLDX — One consolidated launch execution plan (13 November 2026)
 
+## 26 Nov 2026 ~01:41 IST — C1A SERVICE GONE; EXACT RESIDUAL SA AND PINNED IMAGE METADATA PRESENT; REFERENCES UNKNOWN
+
+Latest owner read-only Cloud Shell screenshot after already CONFIRMED_REMOVED C1A service shows **`C1A_SA=EXACT_UID_PRESENT`** for `oldx-step05-gateway@oldx-staging.iam.gserviceaccount.com` (uniqueId `102194769236111252832`), **`C1A_IMAGE=METADATA_READ_OK`** for pinned C1A `asia-south1-docker.pkg.dev/oldx-staging/oldx-staging-images/oldx-step05-gateway-off@sha256:612f3c02806a93d991127f87e34391646edf9bad251bb22b8aace90a434bc30a`, `C1A_OTHER_REFERENCES=NOT_YET_CHECKED`, `CLOUD_WRITES=NONE`. The current existence of these two resources **does not establish no other workload dependencies**. This read did not delete anything. **C1A Cloud Run service deletion is fully confirmed** from prior saved `DONE_NO_ERROR`+404 readback, must NEVER be repeated. Other C1A and Eventarc one-shot markers still consumed.
+
+[Canonical metadata confirmation and next no-repeat boundaries](docs/OLDX_STEP05_C1A_SA_IMAGE_METADATA_PRESENT_DEPENDENCY_PENDING_2026-11-26.md), commit `35f2d99c575d7cbe3fdc20f2db000ce35b4f9e27`. NEXT: narrowly scoped **read-only** SA/image other-reference check if worthwhile; on incomplete inventory **RETAIN** both, do NOT delete by image tag/name or shared `oldx-staging-images` repository; any separate SA/image deletion requires independent approval. Prior Owner Option B Eventarc unknown-dependency risk applied to **service-only deletion**, never automatically to SA/image. Prioritize remaining Step05 H1B source-only work without re-running H1A/S3B builds/tests/scans, IAM grants, C1A deletion/readback. H1B W1–W6/H2/production live activations still NO-GO.
+
 ## 26 Nov 2026 ~01:37 IST — C1A OPTION B CLOUD RUN SERVICE DELETION INDEPENDENTLY CONFIRMED; NO FURTHER DELETE
 
 Owner screenshot of exact separate one-shot read-only verification `6036b39261f7092fb7c64cb756868f9573b875f1`:

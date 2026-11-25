@@ -177,11 +177,54 @@ def get_token(gcloud):
     need(bool(re.fullmatch(r'[A-Za-z0-9._~-]{40,4096}',s)),'C1A_OWNER_TOKEN_INVALID')
     return s
 
+def local_selfcheck():
+    # Isolated synthetic metadata only, no Cloud API, credentials or deletion.
+    expected={
+        'name':FULL,'uid':UID,'etag':'synthetic-etag',
+        'reconciling':False,'invokerIamDisabled':False,
+        'generation':'1','observedGeneration':'1',
+        'latestReadyRevision':REV,'latestCreatedRevision':REV,
+        'template':{'serviceAccount':SA,'containers':[{'image':IMAGE}]},
+        'traffic':[{'percent':100,'revision':REV}],
+        'trafficStatuses':[{'percent':100,'revision':REV}]
+    }
+    need(inspect_current(expected)=='synthetic-etag','LOCAL_GUARD_POSITIVE_FAILED')
+    for attribute,bad_value in [('uid','other-uid'),('invokerIamDisabled',True),
+                                 ('reconciling',True)]:
+        bad=dict(expected,**{attribute:bad_value})
+        try:
+            inspect_current(bad)
+        except Stop:
+            continue
+        raise Stop('LOCAL_GUARD_NEGATIVE_FAILED_'+attribute)
+    need(eventarc_ok([{'destination':{'cloudRun':{'service':'unrelated-service'}}}]),
+         'LOCAL_GUARD_EVENTARC_NEGATIVE_FAILED')
+    for service in (SERVICE,FULL):
+        try:
+            eventarc_ok([{'destination':{'cloudRun':{'service':service}}}])
+        except Stop:
+            continue
+        raise Stop('LOCAL_GUARD_EVENTARC_DEPENDENCY_MISSED')
+    need(service_iam_ok({'bindings':[]}) is None,
+         'LOCAL_GUARD_IAM_POSITIVE_FAILED')
+    try:
+        service_iam_ok({'bindings':[{'role':'roles/run.invoker','members':['allUsers']}]})
+    except Stop:
+        return True
+    raise Stop('LOCAL_GUARD_IAM_NEGATIVE_FAILED')
+
 def main():
     os.umask(0o077)
     if sys.argv[1:]!=['--delete-only-c1a-service-once']:
         print('C1A_SERVICE_DELETE_RESULT=STOP_FLAG_REQUIRED')
         return 2
+    try:
+        need(local_selfcheck(), 'LOCAL_GUARD_SELFTEST_FAILED')
+    except (Stop, ValueError, TypeError) as e:
+        print('C1A_SERVICE_DELETE_RESULT=STOP_LOCAL_GUARDS')
+        print('C1A_REASON='+str(e))
+        return 2
+    print('C1A_LOCAL_GUARDS=PASS_SYNTHETIC_NO_CLOUD')
     home=Path.home()
     try:
         need(platform.system()=='Linux' and 'microsoft' not in platform.release().lower()

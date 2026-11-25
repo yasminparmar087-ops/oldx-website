@@ -1,5 +1,24 @@
 # OLDX Step 05 — Actual temporary Eventarc Viewer grant/revoke succeeded, all-location listing FAILED
 
+## Second owner offline screenshot — exact `REASON` punctuation mismatch identified from pinned source
+
+Owner's **offline-only** marker inspection now prints:
+```text
+ATTEMPT_CONSUMED_MATCH=True
+RESULT_MATCH=True
+REASON_MATCH=False
+REVOKE_MATCH=True
+RESULT_SAVED=STOP_WITH_REVOKE_VERIFIED
+REASON_SAVED=UNKNOWN_OR_NONSTANDARD
+REVOKE_SAVED=REMOVED_AND_VERIFIED
+EVIDENCE_POINTER_COUNT=1
+LITERAL_NEWLINE_ESCAPES=False
+OFFLINE_ONLY=TRUE
+```
+Pinned original source `scripts/step05_c1a_eventarc_temporary_viewer_read_revoke_once_20261126.py` at immutable `360dd60b6541e2f4cdbbc5583a3f4d75a94b2426` Git blob `bcad5d9a99a515db62086b05e7a89e960ea811a6` was **reopened/verified directly in GitHub**. Its `CLI.json` line 130 constructs `name.upper() + '_' + code`, where name is **`eventarc-all-locations`** line 204. Therefore for a CLI NONZERO error the script saves the literal value **`REASON=EVENTARC-ALL-LOCATIONS_NONZERO`** (hyphens), not the incorrectly anticipated `REASON=EVENTARC_ALL_LOCATIONS_NONZERO` (underscores). Likewise the previous offline diagnostic's allowlist `[A-Z0-9_]` rejected hyphens, yielding `REASON_SAVED=UNKNOWN_OR_NONSTANDARD`. This is a **confirmed code-to-diagnostic format mismatch**, not new Cloud error or revocation failure. It explains the visible marker mismatch; the preserved Eventarc stderr still must be read to determine *why* CLI exited nonzero. No marker changed.
+
+**Next zero-Cloud step:** local Python must validate exact hyphenated REASON; verify RESULT, REVOKE, evidence path and summary; only then read the **previously saved** `eventarc-all-locations.exit` and `eventarc-all-locations.stderr`, output a sanitized error classification/line. No `gcloud`, IAM grant/revoke, fresh list or deletion. Exact revocation remained `REMOVED_AND_VERIFIED`; C1A service/SA/image not deleted. All markers remain consumed. No further Cloud IAM grant authorized.
+
 ## New owner screenshot — offline marker guard STOP, NOT an Eventarc retry
 
 The user ran the **local Python-only** snippet from the prior handoff to inspect saved Eventarc error data. Its observable terminal output ended **`STOP: MARKER_MISMATCH`**; the snippet exited during its **marker subset assertion**, before reading the existing `summary.json`, `eventarc-all-locations.exit`, or `eventarc-all-locations.stderr`. Therefore **the saved Eventarc CLI error is still unclassified**. This is a new **offline inspection failure** only; it is **NOT a Cloud IAM/revoke failure**, not a fresh Eventarc API call, not a new deletion attempt and does not supersede the previous actual `C1A_EVENTARC_REVOKE=REMOVED_AND_VERIFIED` Cloud Shell readback. Do not assert what exact marker field differed; screenshot does not show its contents.

@@ -1,0 +1,424 @@
+#!/usr/bin/env python3
+"""OLDX C1A: ONE service-only Cloud Run conditional deletion with exact UID + etag.
+
+Preconditions: actual owner-approved original C1A cleanup preflight PASS and
+previous private evidence intact. Does NOT delete service account, image,
+Artifact Registry repository, H1B, or any other Cloud Run service.
+Every API call is bounded. No retry if a write has been attempted.
+"""
+from __future__ import annotations
+import json
+import os
+from pathlib import Path
+import platform
+import re
+import shutil
+import ssl
+import subprocess
+import sys
+from datetime import datetime, timezone
+from urllib import error, parse, request
+
+OWNER='yasminparmar087@gmail.com'
+PROJECT='oldx-staging'
+REGION='asia-south1'
+SERVICE='oldx-step05-gateway'
+FULL=f'projects/{PROJECT}/locations/{REGION}/services/{SERVICE}'
+UID='bf441d37-e39b-4afd-b4c8-0e6edee7269b'
+REV='oldx-step05-gateway-00001-thd'
+SA='oldx-step05-gateway@oldx-staging.iam.gserviceaccount.com'
+SA_UID='102194769236111252832'
+IMAGE=('asia-south1-docker.pkg.dev/oldx-staging/oldx-staging-images/'
+       'oldx-step05-gateway-off@sha256:612f3c02806a93d991127f87e34391646edf9bad251bb22b8aace90a434bc30a')
+PREFLIGHT_MARKER='.oldx-step05-c1a-cleanup-readonly-once-20261126'
+DELETE_MARKER='.oldx-step05-c1a-option-b-conditional-service-delete-once-20261126'
+BASE='https://run.googleapis.com/v2/'
+MAX_BODY=256*1024
+
+class Stop(Exception): pass
+
+def need(ok, reason):
+    if not ok: raise Stop(reason)
+
+def private_file(file, uid):
+    need(file.is_file() and not file.is_symlink() and file.stat().st_uid==uid
+         and file.stat().st_size<=MAX_BODY, 'PRIVATE_EVIDENCE_FILE_UNSAFE')
+
+def validate_preflight(home:Path):
+    marker=home/PREFLIGHT_MARKER
+    private_file(marker,os.geteuid())
+    rows=marker.read_text().splitlines()
+    need({'ATTEMPT_CONSUMED', 'RESULT=READ_ONLY_PASS_WITH_LIMITS',
+          'REASON=EXACT_HISTORIC_C1A_IDENTIFIERS_MATCH'}.issubset(set(rows)),
+         'ORIGINAL_C1A_PREFLIGHT_NOT_PASS')
+    dirs=[r.partition('=')[2] for r in rows if r.startswith('EVIDENCE=')]
+    need(len(dirs)==1,'ORIGINAL_C1A_EVIDENCE_AMBIGUOUS')
+    folder=Path(dirs[0])
+    need(folder.parent==home and folder.is_dir() and not folder.is_symlink()
+         and folder.name.startswith('oldx-c1a-cleanup-preflight-')
+         and folder.stat().st_uid==os.geteuid(),'ORIGINAL_C1A_EVIDENCE_UNSAFE')
+    def load(name):
+        f=folder/name
+        private_file(f,os.geteuid())
+        return json.loads(f.read_text())
+    summary=load('summary.json')
+    need(summary.get('result')=='READ_ONLY_PASS_WITH_LIMITS'
+         and summary.get('reason')=='EXACT_HISTORIC_C1A_IDENTIFIERS_MATCH'
+         and summary.get('passed')==['service','service_iam','revisions','runtime_sa']
+         and summary.get('read_only') is True
+         and summary.get('cleaned_or_deleted') is False,'C1A_PRIOR_SUMMARY_MISMATCH')
+    # Preserve previous exact successful v1 findings; the new v2 GET below
+    # independently checks the resource's CURRENT UID + etag before deletion.
+    v1=load('service.json')
+    need(v1.get('metadata',{}).get('uid')==UID
+         and v1.get('metadata',{}).get('name')==SERVICE
+         and v1.get('status',{}).get('latestReadyRevisionName')==REV,
+         'C1A_PRIOR_SERVICE_MISMATCH')
+    need(not load('service_iam.json').get('bindings'),'C1A_PRIOR_DIRECT_IAM_MISMATCH')
+    revisions=load('revisions.json')
+    need(isinstance(revisions,list) and len(revisions)==1
+         and revisions[0].get('metadata',{}).get('name')==REV,
+         'C1A_PRIOR_REVISIONS_MISMATCH')
+    sa=load('runtime_sa.json')
+    need(sa.get('email')==SA and str(sa.get('uniqueId'))==SA_UID,
+         'C1A_PRIOR_SA_MISMATCH')
+    return True
+
+def validate_confirmed_diagnostic(home:Path):
+    """Requires consumed prior no-write STOP plus successful exact v2 readonly receipt."""
+    uid=os.geteuid()
+    failed=home/'.oldx-step05-c1a-conditional-service-delete-once-20261126'
+    need(failed.is_file() and not failed.is_symlink() and failed.stat().st_uid==uid,
+         'OLD_C1A_DELETE_MARKER_UNVERIFIED')
+    rows=failed.read_text(encoding='utf-8').splitlines()
+    need({'ATTEMPT_CONSUMED','RESULT=STOP','REASON=C1A_RECONCILING_OR_UNKNOWN',
+          'WRITE_ATTEMPTED=False'}.issubset(set(rows)),
+         'OLD_C1A_DELETE_NOT_EXACT_NO_WRITE_STOP')
+    diag=home/'.oldx-step05-c1a-v2-reconciling-readonly-once-20261126'
+    need(diag.is_file() and not diag.is_symlink() and diag.stat().st_uid==uid,
+         'C1A_V2_DIAGNOSTIC_MARKER_UNVERIFIED')
+    drows=diag.read_text(encoding='utf-8').splitlines()
+    need({'READ_ONLY_DIAG_ATTEMPT_CONSUMED','RESULT=READ_ONLY_DIAG_COMPLETE',
+          'REASON=EXACT_SERVICE_UID_MATCH'}.issubset(set(drows)),
+         'C1A_V2_DIAGNOSTIC_NOT_PASS')
+    dirs=list(home.glob('oldx-c1a-v2-reconciling-diagnostic-*'))
+    need(len(dirs)==1 and dirs[0].parent==home and dirs[0].is_dir()
+         and not dirs[0].is_symlink() and dirs[0].stat().st_uid==uid,
+         'C1A_V2_DIAGNOSTIC_EVIDENCE_MISSING_OR_AMBIGUOUS')
+    f=dirs[0]/'sanitized-diagnostic.json'
+    need(f.is_file() and not f.is_symlink() and f.stat().st_uid==uid
+         and f.stat().st_size<=16384,'C1A_V2_DIAGNOSTIC_RECEIPT_UNSAFE')
+    receipt=json.loads(f.read_text(encoding='utf-8'))
+    need(receipt.get('result')=='READ_ONLY_DIAG_COMPLETE'
+         and receipt.get('reason')=='EXACT_SERVICE_UID_MATCH'
+         and receipt.get('cloud_writes') is False
+         and receipt.get('deleted') is False,
+         'C1A_V2_DIAGNOSTIC_RECEIPT_MISMATCH')
+    d=receipt.get('details')
+    need(isinstance(d,dict) and
+         all(d.get(k)==v for k,v in {
+          'reconciling':'ABSENT','generation':'MATCH',
+          'terminal_condition':'CONDITION_SUCCEEDED','revision_pair':'MATCH',
+          'service_account':'MATCH','image':'MATCH','etag':'PRESENT',
+          'traffic':'PRESENT','traffic_statuses':'PRESENT',
+          'reconciling_root_cause':'MISSING_FIELD_CAUSED_STRICT_FALSE_GUARD'
+         }.items()),'C1A_V2_DIAGNOSTIC_FIELD_MISMATCH')
+    return True
+
+def validate_owner_accepted_eventarc_exception(home:Path):
+    """B exception approved in owner conversation, NOT claim of absent triggers.
+
+    Verify original second no-write STOP and actual temp role revocation receipt.
+    This intentionally does NOT issue Eventarc API calls or IAM writes.
+    """
+    uid=os.geteuid()
+    prior=home/'.oldx-step05-c1a-conditional-service-delete-v2-once-20261126'
+    private_file(prior,uid)
+    p_rows=prior.read_text(encoding='utf-8').splitlines()
+    need({'ATTEMPT_CONSUMED','RESULT=STOP','REASON=C1A_LIVE_CLI_READ_FAILED',
+          'WRITE_ATTEMPTED=False'}.issubset(set(p_rows)),
+         'SECOND_DELETE_WAS_NOT_VERIFIED_NO_WRITE_STOP')
+    granted=home/'.oldx-step05-c1a-eventarc-temp-viewer-grant-list-revoke-once-20261126'
+    private_file(granted,uid)
+    lines=granted.read_text(encoding='utf-8').splitlines()
+    need({'ATTEMPT_CONSUMED','RESULT=STOP_WITH_REVOKE_VERIFIED',
+          'REASON=EVENTARC-ALL-LOCATIONS_NONZERO',
+          'REVOKE=REMOVED_AND_VERIFIED'}.issubset(set(lines)),
+         'EVENTARC_TEMP_GRANT_REVOKE_NOT_VERIFIED')
+    paths=[x.partition('=')[2] for x in lines if x.startswith('EVIDENCE=')]
+    need(len(paths)==1,'EVENTARC_EVIDENCE_AMBIGUOUS')
+    folder=Path(paths[0])
+    need(folder.parent==home and folder.is_dir() and not folder.is_symlink()
+         and folder.stat().st_uid==uid and
+         folder.name.startswith('oldx-c1a-eventarc-temp-viewer-'),
+         'EVENTARC_EVIDENCE_UNSAFE')
+    receipt=folder/'summary.json'
+    private_file(receipt,uid)
+    r=json.loads(receipt.read_text(encoding='utf-8'))
+    need(r.get('result')=='STOP_WITH_REVOKE_VERIFIED'
+         and r.get('reason')=='EVENTARC-ALL-LOCATIONS_NONZERO'
+         and r.get('revoke_result')=='REMOVED_AND_VERIFIED'
+         and r.get('grant_attempted') is True
+         and r.get('grant_verified') is True
+         and r.get('cloud_run_deleted') is False,
+         'EVENTARC_SAVED_IAM_REVOCATION_MISMATCH')
+    return True
+
+def inspect_current(service):
+    need(isinstance(service,dict) and service.get('name')==FULL
+         and service.get('uid')==UID, 'C1A_V2_UID_CHANGED')
+    etag=service.get('etag')
+    need(isinstance(etag,str) and 1<=len(etag)<=256, 'C1A_ETAG_MISSING')
+    # A protobuf false Boolean is legitimately absent from JSON. Require
+    # absence OR explicit False AND independent completed readiness evidence.
+    reconc=service.get('reconciling','__FIELD_MISSING__')
+    need(reconc=='__FIELD_MISSING__' or reconc is False,'C1A_RECONCILING_ACTIVE_OR_INVALID')
+    condition=service.get('terminalCondition')
+    need(isinstance(condition,dict) and condition.get('state')=='CONDITION_SUCCEEDED',
+         'C1A_TERMINAL_NOT_SUCCEEDED')
+    need(not service.get('deleteTime'),'C1A_ALREADY_DELETING')
+    need(service.get('invokerIamDisabled') is not True, 'C1A_IAM_CHECK_DISABLED')
+    need(str(service.get('generation'))==str(service.get('observedGeneration'))
+         and service.get('generation') is not None, 'C1A_GENERATION_MISMATCH')
+    def rev(v):
+        return isinstance(v,str) and v.rsplit('/',1)[-1]==REV
+    need(rev(service.get('latestReadyRevision')) and rev(service.get('latestCreatedRevision')),
+         'C1A_V2_REVISION_CHANGED')
+    template=service.get('template')
+    need(isinstance(template,dict) and template.get('serviceAccount')==SA,
+         'C1A_V2_SA_CHANGED')
+    containers=template.get('containers')
+    need(isinstance(containers,list) and len(containers)==1
+         and isinstance(containers[0],dict) and containers[0].get('image')==IMAGE,
+         'C1A_V2_IMAGE_CHANGED')
+    need(not containers[0].get('env') and not template.get('volumes'),
+         'C1A_V2_ENV_OR_VOLUME_CHANGED')
+    targets=service.get('trafficStatuses')
+    need(isinstance(targets,list) and len(targets)==1
+         and isinstance(targets[0],dict) and targets[0].get('percent')==100
+         and rev(targets[0].get('revision')) and not targets[0].get('tag'),
+         'C1A_V2_TRAFFIC_STATUS_CHANGED')
+    desired=service.get('traffic')
+    need(isinstance(desired,list) and len(desired)==1
+         and desired[0].get('percent')==100 and not desired[0].get('tag'),
+         'C1A_V2_DESIRED_TRAFFIC_CHANGED')
+    return etag
+
+def service_iam_ok(p):
+    need(isinstance(p,dict) and not p.get('bindings'), 'C1A_DIRECT_IAM_NOW_CHANGED')
+
+def eventarc_ok(items):
+    need(isinstance(items,list), 'C1A_EVENTARC_LIST_UNVERIFIED')
+    for trigger in items:
+        need(isinstance(trigger,dict),'C1A_EVENTARC_ITEM_INVALID')
+        dest=trigger.get('destination')
+        need(isinstance(dest,dict),'C1A_EVENTARC_DESTINATION_UNKNOWN')
+        run=dest.get('cloudRun') or dest.get('cloud_run')
+        if isinstance(run,dict):
+            target=run.get('service')
+            need(isinstance(target,str) and bool(target), 'C1A_EVENTARC_DESTINATION_UNKNOWN')
+            need(target.rsplit('/',1)[-1]!=SERVICE,'C1A_EVENTARC_TRIGGER_DEPENDENCY')
+        elif run is not None:
+            raise Stop('C1A_EVENTARC_DESTINATION_UNKNOWN')
+    return True
+
+class NoRedirect(request.HTTPRedirectHandler):
+    def redirect_request(self,req,fp,code,msg,headers,newurl):
+        return None
+
+def http_json(token,method,path,params=None):
+    url=BASE+path
+    if params: url+='?'+parse.urlencode(params)
+    req=request.Request(url,headers={'Authorization':'Bearer '+token,
+                    'Accept':'application/json','User-Agent':'OLDX-C1A-guarded-service-cleanup/1'},
+                    method=method)
+    opener=request.build_opener(request.ProxyHandler({}),
+            request.HTTPSHandler(context=ssl.create_default_context()),NoRedirect())
+    try:
+        with opener.open(req,timeout=20) as response:
+            status=response.status
+            raw=response.read(MAX_BODY+1)
+    except error.HTTPError as exc:
+        raise Stop(method+'_HTTP_'+str(exc.code)) from None
+    except (error.URLError,TimeoutError) as exc:
+        raise Stop(method+'_NETWORK_UNCERTAIN_'+type(exc).__name__) from None
+    need(len(raw)<=MAX_BODY,method+'_HTTP_RESPONSE_TOO_LARGE')
+    need(status==200,'HTTP_UNEXPECTED_STATUS_'+str(status))
+    try:return json.loads(raw)
+    except (ValueError,UnicodeError):raise Stop(method+'_INVALID_RESPONSE_JSON')
+
+def cli_json(gcloud,args):
+    cmd=[gcloud,'--quiet','--account='+OWNER,'--project='+PROJECT,*args,'--format=json']
+    r=subprocess.run(cmd,capture_output=True,timeout=20,stdin=subprocess.DEVNULL)
+    need(r.returncode==0 and len(r.stdout)<=MAX_BODY and len(r.stderr)<=MAX_BODY,
+         'C1A_LIVE_CLI_READ_FAILED')
+    try:return json.loads(r.stdout)
+    except (UnicodeError,ValueError):raise Stop('C1A_LIVE_CLI_JSON_INVALID')
+
+def get_token(gcloud):
+    p=subprocess.run([gcloud,'--quiet','--account='+OWNER,'auth','print-access-token'],
+                     stdin=subprocess.DEVNULL,capture_output=True,timeout=20)
+    need(p.returncode==0,'C1A_OWNER_TOKEN_UNAVAILABLE')
+    s=p.stdout.decode('ascii','strict').strip()
+    need(bool(re.fullmatch(r'[A-Za-z0-9._~-]{40,4096}',s)),'C1A_OWNER_TOKEN_INVALID')
+    return s
+
+def local_selfcheck():
+    # Isolated synthetic metadata only, no Cloud API, credentials or deletion.
+    expected={
+        'name':FULL,'uid':UID,'etag':'synthetic-etag',
+        'reconciling':False,'invokerIamDisabled':False,
+        'terminalCondition':{'state':'CONDITION_SUCCEEDED'},
+        'generation':'1','observedGeneration':'1',
+        'latestReadyRevision':REV,'latestCreatedRevision':REV,
+        'template':{'serviceAccount':SA,'containers':[{'image':IMAGE}]},
+        'traffic':[{'percent':100,'revision':REV}],
+        'trafficStatuses':[{'percent':100,'revision':REV}]
+    }
+    need(inspect_current(expected)=='synthetic-etag','LOCAL_GUARD_POSITIVE_FAILED')
+    omit=dict(expected)
+    omit.pop('reconciling')
+    need(inspect_current(omit)=='synthetic-etag','LOCAL_GUARD_ABSENT_FALSE_FAILED')
+    bad_condition=dict(expected,terminalCondition={'state':'CONDITION_FAILED'})
+    try:
+        inspect_current(bad_condition)
+    except Stop:
+        pass
+    else:
+        raise Stop('LOCAL_GUARD_FAILED_CONDITION_ACCEPTED')
+    for attribute,bad_value in [('uid','other-uid'),('invokerIamDisabled',True),
+                                 ('reconciling',True)]:
+        bad=dict(expected,**{attribute:bad_value})
+        try:
+            inspect_current(bad)
+        except Stop:
+            continue
+        raise Stop('LOCAL_GUARD_NEGATIVE_FAILED_'+attribute)
+    need(eventarc_ok([{'destination':{'cloudRun':{'service':'unrelated-service'}}}]),
+         'LOCAL_GUARD_EVENTARC_NEGATIVE_FAILED')
+    for service in (SERVICE,FULL):
+        try:
+            eventarc_ok([{'destination':{'cloudRun':{'service':service}}}])
+        except Stop:
+            continue
+        raise Stop('LOCAL_GUARD_EVENTARC_DEPENDENCY_MISSED')
+    need(service_iam_ok({'bindings':[]}) is None,
+         'LOCAL_GUARD_IAM_POSITIVE_FAILED')
+    try:
+        service_iam_ok({'bindings':[{'role':'roles/run.invoker','members':['allUsers']}]})
+    except Stop:
+        return True
+    raise Stop('LOCAL_GUARD_IAM_NEGATIVE_FAILED')
+
+def main():
+    os.umask(0o077)
+    if sys.argv[1:]!=['--delete-c1a-service-only-option-b-once']:
+        print('C1A_SERVICE_DELETE_RESULT=STOP_FLAG_REQUIRED')
+        return 2
+    try:
+        need(local_selfcheck(), 'LOCAL_GUARD_SELFTEST_FAILED')
+    except (Stop, ValueError, TypeError) as e:
+        print('C1A_SERVICE_DELETE_RESULT=STOP_LOCAL_GUARDS')
+        print('C1A_REASON='+str(e))
+        return 2
+    print('C1A_LOCAL_GUARDS=PASS_SYNTHETIC_NO_CLOUD')
+    home=Path.home()
+    try:
+        need(platform.system()=='Linux' and 'microsoft' not in platform.release().lower()
+             and os.geteuid()!=0 and not home.is_symlink(),'CLOUD_SHELL_REQUIRED')
+        gcloud=shutil.which('gcloud')
+        need(gcloud and Path(gcloud).is_file() and not gcloud.startswith('/mnt/'),
+             'GCLOUD_NOT_FOUND')
+        validate_preflight(home)
+        validate_confirmed_diagnostic(home)
+        validate_owner_accepted_eventarc_exception(home)
+        need(datetime.now(timezone.utc) < datetime(2026,11,28,17,49,tzinfo=timezone.utc),
+             'ORIGINAL_C1A_RETENTION_WINDOW_EXPIRED')
+        marker=home/DELETE_MARKER
+        need(not marker.exists() and not marker.is_symlink(),'DELETE_ONESHOT_ALREADY_CONSUMED')
+        evidence=home/('oldx-c1a-service-delete-'+datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%SZ'))
+        need(not evidence.exists() and not evidence.is_symlink(),'EVIDENCE_COLLISION')
+    except (Stop,OSError,ValueError,TypeError) as exc:
+        print('C1A_SERVICE_DELETE_RESULT=STOP_PREFLIGHT')
+        print('C1A_REASON='+str(exc) if isinstance(exc,Stop) else 'C1A_REASON=INVALID_EVIDENCE')
+        return 2
+    evidence.mkdir(mode=0o700)
+    fd=os.open(marker,os.O_EXCL|os.O_CREAT|os.O_WRONLY|getattr(os,'O_NOFOLLOW',0),0o600)
+    with os.fdopen(fd,'w') as fh:
+        fh.write('ATTEMPT_CONSUMED\nEVIDENCE='+str(evidence)+'\n')
+    state,reason='STOP','UNDETERMINED'
+    write_sent=False
+    etag_verified=False
+    try:
+        token=get_token(gcloud)
+        live=http_json(token,'GET',FULL)
+        etag=inspect_current(live)
+        # Do not save access token or raw private API payload in GitHub or stdout.
+        (evidence/'current-service-redacted.json').write_text(json.dumps({
+            'uid_match':True,'etag_sha256':__import__('hashlib').sha256(etag.encode()).hexdigest(),
+            'revision':REV,'image_digest':IMAGE.rsplit('@',1)[-1],
+            'iam_check_enabled':True},sort_keys=True)+'\n')
+        policy=cli_json(gcloud,['run','services','get-iam-policy',SERVICE,'--region='+REGION])
+        service_iam_ok(policy)
+        # OWNER OPTION B EXCEPTION (26 Nov 2026):
+        # Eventarc API absent from successful enabled-services listing.
+        # An Eventarc dependency inventory was NOT obtained; historical
+        # trigger references may exist. Risk accepted for THIS SERVICE ONLY.
+        # Never represent skipped Eventarc inventory as a negative scan.
+        (evidence/'option-b-limits.json').write_text(json.dumps({
+            'owner_accepted_unknown_eventarc_dependency_risk': True,
+            'eventarc_dependency_inventory': 'UNVERIFIED_NOT_QUERIED',
+            'api_enabled_list_prior_result': 'NOT_IN_ENABLED_LIST',
+            'target_service': FULL,
+            'service_account_delete_authorized': False,
+            'registry_image_delete_authorized': False
+        },sort_keys=True)+'\n')
+        # API v2 validation with SAME etag; no deletion yet.
+        probe=http_json(token,'DELETE',FULL,{'etag':etag,'validateOnly':'true'})
+        need(isinstance(probe,dict) and isinstance(probe.get('name'),str)
+             and probe['name'].startswith(f'projects/{PROJECT}/locations/{REGION}/operations/'),
+             'C1A_DELETE_VALIDATION_RESPONSE_UNVERIFIED')
+        etag_verified=True
+        # ONE real etag-conditional DELETE attempt; after this line, error can mean
+        # unknown write outcome. Do not blindly retry.
+        write_sent=True
+        op=http_json(token,'DELETE',FULL,{'etag':etag})
+        need(isinstance(op,dict) and isinstance(op.get('name'),str)
+             and op['name'].startswith(f'projects/{PROJECT}/locations/{REGION}/operations/'),
+             'C1A_DELETE_OPERATION_UNVERIFIED')
+        (evidence/'operation.json').write_text(json.dumps({
+            'name':op['name'], 'done':bool(op.get('done',False)),
+            'has_error':bool(op.get('error'))
+        },sort_keys=True)+'\n')
+        if op.get('error'):
+            reason='DELETE_OPERATION_REPORTED_ERROR'
+        elif op.get('done') is True:
+            state,reason='DELETE_OPERATION_DONE_NEEDS_READBACK','AWAIT_INDEPENDENT_SERVICE_ABSENCE_CHECK'
+        else:
+            state,reason='DELETE_ACCEPTED_PENDING_COMPLETION','AWAIT_INDEPENDENT_OPERATION_AND_SERVICE_CHECK'
+    except (Stop,OSError,ValueError,TypeError,subprocess.TimeoutExpired) as exc:
+        reason=str(exc) if isinstance(exc,Stop) else type(exc).__name__
+        if write_sent: state='WRITE_OUTCOME_UNKNOWN_STOP'
+    finally:
+        with marker.open('a') as fh:
+            fh.write('RESULT='+state+'\nREASON='+reason+'\nWRITE_ATTEMPTED='+str(write_sent)+'\n')
+        (evidence/'summary.json').write_text(json.dumps({
+            'result':state,'reason':reason,
+            'etag_checked_and_validate_only_passed':etag_verified,
+            'delete_attempted':write_sent,'service':SERVICE,
+            'sa_deleted':False,'image_deleted':False,'repo_deleted':False,
+            'eventarc_dependency_inventory':'UNVERIFIED_OWNER_ACCEPTED',
+            'option_b_scope':'C1A_SERVICE_ONLY'
+        },sort_keys=True)+'\n')
+    print('C1A_OPTION_B_EVENTARC_RISK=OWNER_ACCEPTED_UNVERIFIED')
+    print('C1A_EVENTARC_CHECK=NOT_RUN_BY_EXPLICIT_EXCEPTION')
+    print('C1A_SERVICE_DELETE_RESULT='+state)
+    print('C1A_REASON='+reason)
+    print('C1A_WRITE_ATTEMPTED='+str(write_sent).upper())
+    print('C1A_SERVICE_ACCOUNT_DELETED=NO')
+    print('C1A_REGISTRY_IMAGE_DELETED=NO')
+    print('C1A_UNRELATED_RESOURCES_CHANGED=NONE_REQUESTED')
+    return 0 if state.startswith('DELETE_') else 2
+
+if __name__=='__main__':
+    sys.exit(main())

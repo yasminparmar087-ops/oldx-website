@@ -1,5 +1,11 @@
 # OLDX Step 05 — Actual temporary Eventarc Viewer grant/revoke succeeded, all-location listing FAILED
 
+## New owner screenshot — offline marker guard STOP, NOT an Eventarc retry
+
+The user ran the **local Python-only** snippet from the prior handoff to inspect saved Eventarc error data. Its observable terminal output ended **`STOP: MARKER_MISMATCH`**; the snippet exited during its **marker subset assertion**, before reading the existing `summary.json`, `eventarc-all-locations.exit`, or `eventarc-all-locations.stderr`. Therefore **the saved Eventarc CLI error is still unclassified**. This is a new **offline inspection failure** only; it is **NOT a Cloud IAM/revoke failure**, not a fresh Eventarc API call, not a new deletion attempt and does not supersede the previous actual `C1A_EVENTARC_REVOKE=REMOVED_AND_VERIFIED` Cloud Shell readback. Do not assert what exact marker field differed; screenshot does not show its contents.
+
+**Next zero-Cloud diagnostic**: inspect ONLY the consumed marker’s bounded length, owner/symlink state, presence of `ATTEMPT_CONSUMED`, `EVIDENCE=` pointer count, and whitelisted `RESULT`, `REASON`, `REVOKE` values, without printing the evidence path or private IAM payload. Compare exact expected `RESULT=STOP_WITH_REVOKE_VERIFIED`, `REASON=EVENTARC_ALL_LOCATIONS_NONZERO`, `REVOKE=REMOVED_AND_VERIFIED` separately. If mismatch, preserve all original bytes for reconciliation, never change the marker or loosen guard blindly. **No `gcloud`, no IAM add/remove, no service DELETE, no reruns.**
+
 **26 Nov 2026 IST.** Owner screenshot in authenticated `yasminparmar087@cloudshell` (project `oldx-staging`) after the immutable script at `360dd60b6541e2f4cdbbc5583a3f4d75a94b2426`. This record supersedes prior `NOT_EXECUTED` wording in [original temp-viewer plan](OLDX_STEP05_C1A_TEMP_EVENTARC_VIEWER_OWNER_APPROVAL_AND_ONE_SHOT_2026-11-26.md). This assistant has not itself made Google Cloud calls.
 
 ## Exact actual screenshot

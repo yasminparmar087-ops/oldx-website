@@ -1,5 +1,10 @@
 # OLDX — One consolidated launch execution plan (13 November 2026)
 
+## 26 Nov 2026 — ACTUAL H1B G1 READ_ONLY_WITH_LIMITS; G1 ONE-SHOT CONSUMED; NEXT G2 WSL AUTH/PUSH SEPARATELY AUTHORIZED ONLY
+
+Owner Cloud Shell G1 screenshot: all seven queried Project and four Registry testIamPermissions entries `RETURNED`; `H1B_G1_RESULT=READ_ONLY_WITH_LIMITS`, `H1B_G1_FUTURE_NEW_SA_ACTAS=NOT_YET_TESTABLE`, `H1B_G1_WSL_AUTH=NOT_CONFIGURED`, `H1B_G1_CLOUD_RESOURCE_WRITES=NONE`. G1 distinct one-shot consumed, DO NOT rerun/reset. H1A local image retained; no build/scan repeat; C1A service already removed, leftover SA/image retained (references unknown); Cloud Shell HOME reports 100% full. Fastest next NEW gate requires explicit narrowly scoped approval for isolated native-WSL OAuth/Docker host auth and ONE exact old-H1A image Registry push, immutable remote digest verification before any W1–W6. G1 permission results are NOT live W1–W6 authority; H2/production NO-GO. Full screenshot transcription, no-repeat source and limits: [Owner screenshot G1 actual PASS and G2 next gate](docs/OLDX_STEP05_H1B_G1_OWNER_SCREENSHOT_PASS_AND_G2_FASTPATH_2026-11-26.md).
+
+
 ## 26 Nov 2026 — OWNER REQUESTS FAST Step05 H1B ROUTE; C1A LEFTOVER SA/IMAGE RETAIN, NEW G1 READ-ONLY PERMISSION SCRIPT PREPARED
 
 Owner latest Cloud Shell actual C1A residual metadata: `C1A_SA=EXACT_UID_PRESENT` (frozen uniqueId `102194769236111252832`), `C1A_IMAGE=METADATA_READ_OK` for frozen digest `sha256:612f3c02806a93d991127f87e34391646edf9bad251bb22b8aace90a434bc30a`, `C1A_OTHER_REFERENCES=NOT_YET_CHECKED`, `CLOUD_WRITES=NONE`; original Cloud Run C1A service already `CONFIRMED_REMOVED`. Keep both leftover assets untouched until separate other-reference verification and approval, do NOT let them block H1B. Owner says **"ok aagal vadho, pan zadapi rasta shodho"**. Prior H1A one local image build/SBOM/Grype/OFF runtime complete; S1/S1R/S2 native WSL SDK version PASS, S3B Owner Cloud Shell NEW candidate service/SA scoped list absent PASS; **ALL old one-shots consumed and must never be repeated**.

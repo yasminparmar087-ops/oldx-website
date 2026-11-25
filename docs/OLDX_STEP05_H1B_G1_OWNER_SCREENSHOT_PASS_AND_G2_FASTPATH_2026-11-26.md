@@ -43,3 +43,15 @@ H1B_G1_CLOUD_RESOURCE_WRITES=NONE
 **Present checkpoint:** `H1B_G1=READ_ONLY_WITH_LIMITS_ACTUALLY_RUN_CONSUMED`; `H1B_G2=AWAITING_EXPLICIT_OWNER_WSL_LOGIN_AND_PUSH_CONSENT`; `H1B_REMOTE_IMAGE_DIGEST=UNKNOWN`; `H1B_NEW_CLOUD_WRITES=NONE`; `H1B_W1-W6=NO_GO`; `STEP05=NOT_COMPLETE`; `H2/PRODUCTION=NO_GO`.
 
 Canonical preceding source: [G1 fastpath preparation](OLDX_STEP05_H1B_FASTPATH_AFTER_C1A_CONFIRMED_2026-11-26.md); [G0–G6 guardrails](OLDX_STEP05_H1B_FASTPATH_FINAL_OPERATION_AND_C1A_DECISION_2026-11-26.md). No GitHub `main` changes, cloud changes, SDK authentication, build/push/deploy, or runtime probes were performed by the assistant in this review.
+
+## Verified existing native WSL SDK paths for the NEXT authorized session
+
+The previously completed S2 runner source `scripts/step05-h1b-native-gcloud-s2-version-once-20261125.py` confirms:
+- WSL distro: `OLDX-Ubuntu-24.04`, user `root` (owner S2 screenshot).
+- Native CLI: `/root/oldx-tools/native-gcloud-594.0.1/google-cloud-sdk/bin/gcloud`.
+- Bundled Python: `/root/oldx-tools/native-gcloud-594.0.1/google-cloud-sdk/platform/bundledpythonunix/bin/python3`.
+- Historical S2-only isolated config: `/root/oldx-tools/native-gcloud-594.0.1-s2-isolated-config`; preserve its old receipts rather than repurpose it or touch Windows credentials.
+
+**Only once the owner explicitly authorizes new G2 login:** from Windows CMD, enter `wsl -d OLDX-Ubuntu-24.04 -u root`. Use a **new**, separately private G2 `CLOUDSDK_CONFIG` rather than the S2 receipt directory. Launch the exact native `gcloud auth login yasminparmar087@gmail.com --no-launch-browser` with `CLOUDSDK_PYTHON` set to the bundled Python absolute path; validate principal after success, without printing access/refresh tokens, OAuth codes or private browser URLs into GitHub/screenshots. User participation in Google's browser authorization is required. DO NOT actually authenticate or configure Docker before distinct consent. Never call the Windows-mounted gcloud from WSL.
+
+Google official authenticated workflow checked 26 Nov 2026: https://docs.cloud.google.com/sdk/gcloud/reference/auth/login ; https://docs.cloud.google.com/artifact-registry/docs/docker/authentication . Host-restricted Docker credential helper requires ensuring the native `gcloud` is in `PATH` for Docker and a dedicated Docker config to avoid modifying default auth. Push authorization, collision-safe tag selection and immutable remote digest verification remain independent; **NO pushes performed**.

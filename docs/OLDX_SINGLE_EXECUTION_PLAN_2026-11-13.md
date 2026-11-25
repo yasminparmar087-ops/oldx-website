@@ -1,5 +1,19 @@
 # OLDX — One consolidated launch execution plan (13 November 2026)
 
+## 26 Nov 2026 ~01:37 IST — C1A OPTION B CLOUD RUN SERVICE DELETION INDEPENDENTLY CONFIRMED; NO FURTHER DELETE
+
+Owner screenshot of exact separate one-shot read-only verification `6036b39261f7092fb7c64cb756868f9573b875f1`:
+```text
+C1A_OPERATION_STATE=DONE_NO_ERROR
+C1A_SERVICE_STATE=404_NOT_FOUND
+C1A_READBACK_RESULT=CONFIRMED_REMOVED
+C1A_REASON=OPERATION_SUCCESS_AND_C1A_SERVICE_404
+C1A_CLOUD_WRITES=NONE
+C1A_SERVICE_ACCOUNT_DELETED=NO
+C1A_REGISTRY_IMAGE_DELETED=NO
+```
+**FINAL: `oldx-step05-gateway` Cloud Run service deleted** from `oldx-staging/asia-south1`; long-running operation DONE_NO_ERROR and exact service GET 404. Old service UID `bf441d37-e39b-4afd-b4c8-0e6edee7269b`. Original accepted DELETE had `WRITE_ATTEMPTED=TRUE`; readback one-shot `~/.oldx-step05-c1a-option-b-service-delete-readback-once-20261126` now CONSUMED. **NEVER rerun any DELETE, readback, old C1A probe, marker reset, Eventarc grant, scans or builds.** Owner deliberately accepted historical Eventarc unknown risk only for exact C1A service; no Eventarc zero-inventory claim. Prior Eventarc Viewer temporary IAM role `REMOVED_AND_VERIFIED`. C1A dedicated runtime SA `oldx-step05-gateway@oldx-staging.iam.gserviceaccount.com` (historical uniqueId `102194769236111252832`) and pinned container image digest `sha256:612f3c02806a93d991127f87e34391646edf9bad251bb22b8aace90a434bc30a` **NOT DELETED**; require distinct dependency read inventory before any separate exact-resource cleanup. No shared repo deletion. Other Cloud Run `oldx-owner-read`, H1B W1–W6/H2/production and Firebase/IAM remain NO-GO unless individually authorized. **C1A service cleanup complete != Step05 overall complete.** [Canonical owner screenshot and final result](docs/OLDX_STEP05_C1A_OPTION_B_SERVICE_DELETION_CONFIRMED_2026-11-26.md), commit `8b3cf4258086742b243e145dac2045fe523b19c1`.
+
 ## 26 Nov 2026 ~01:32 IST — C1A OPTION B GUARDED CLOUD RUN DELETE ACTUALLY ACCEPTED; NEVER DELETE AGAIN; READBACK PENDING
 
 Owner Google Cloud Shell screenshot after pinned `388a485b72ebdb7885176dba3ceb839b0202fba8` Option B cleanup script: `C1A_LOCAL_GUARDS=PASS_SYNTHETIC_NO_CLOUD`, `C1A_OPTION_B_EVENTARC_RISK=OWNER_ACCEPTED_UNVERIFIED`, `C1A_EVENTARC_CHECK=NOT_RUN_BY_EXPLICIT_EXCEPTION`, `C1A_SERVICE_DELETE_RESULT=DELETE_ACCEPTED_PENDING_COMPLETION`, `C1A_REASON=AWAIT_INDEPENDENT_OPERATION_AND_SERVICE_CHECK`, **`C1A_WRITE_ATTEMPTED=TRUE`**, SA/image deleted NO. All exact UID/etag, image/revision/SA/generation/traffic/health/direct-IAM and validateOnly gates succeeded, one C1A-only etag-conditional DELETE accepted as async operation. This is **NOT proof yet of service absence or operation success**. **CRITICAL: NEVER reissue Cloud Run DELETE, rerun any old one-shot or delete markers.** Unique Option B marker `~/.oldx-step05-c1a-option-b-conditional-service-delete-once-20261126` CONSUMED, saved private `operation.json` under marker's EVIDENCE path. No new IAM/Eventarc changes, other services/H1B remain protected.

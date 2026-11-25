@@ -129,7 +129,9 @@ def eventarc_ok(items):
         need(isinstance(dest,dict),'C1A_EVENTARC_DESTINATION_UNKNOWN')
         run=dest.get('cloudRun') or dest.get('cloud_run')
         if isinstance(run,dict):
-            need(run.get('service')!=SERVICE,'C1A_EVENTARC_TRIGGER_DEPENDENCY')
+            target=run.get('service')
+            need(isinstance(target,str) and bool(target), 'C1A_EVENTARC_DESTINATION_UNKNOWN')
+            need(target.rsplit('/',1)[-1]!=SERVICE,'C1A_EVENTARC_TRIGGER_DEPENDENCY')
         elif run is not None:
             raise Stop('C1A_EVENTARC_DESTINATION_UNKNOWN')
     return True

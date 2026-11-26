@@ -124,5 +124,26 @@ export function createStagingMarketplaceRepository(options={}){
 export function createStagingMarketplacePublicRepository(options={}){
  if(options.enabled!==true)return Object.freeze({list:async()=>fail('UNAVAILABLE'),detail:async()=>fail('UNAVAILABLE')});
  const b=requireStagingMarketplaceBinding(options.binding),sdk=createStagingPublicQuerySdk({binding:b,Filter:options.Filter}),core=marketplaceCore({...options,sdk},b);
+ // Future bounded synthetic source host can bind a single server-owned ID.
+ // No collection query or foreign product read in that scoped mode.
+ if(options.productScopeId!==undefined){
+  const scoped=options.productScopeId;if(!safeId(scoped))throw Error('Product scope unavailable');
+  return Object.freeze({
+   detail(input,context){
+    const r=copyRecord(input,['kind','id']);
+    return r?.kind==='product'&&r.id===scoped?core.detail(r,context):Promise.resolve(fail('UNAVAILABLE'));
+   },
+   async list(input,context){
+    const r=copyRecord(input,['kind','limit','category','storeId','cursor']);
+    if(!r||r.kind!=='product'||!Number.isInteger(r.limit)||r.limit<1||r.limit>24||
+     r.category!==''&&!STORE_CATEGORY_IDS.includes(r.category)||r.storeId!==null&&!safeId(r.storeId))return fail('INVALID_REQUEST');
+    if(r.cursor!==null)return fail('CURSOR_INVALID');
+    const found=await core.detail({kind:'product',id:scoped},context);
+    if(found.ok!==true)return found.code==='UNAVAILABLE'?{ok:true,items:[],nextCursor:null,publicationEpoch:0}:found;
+    const row=found.profile,match=(!r.category||row.category===r.category)&&(r.storeId===null||row.storeId===r.storeId);
+    return {ok:true,items:match?[row]:[],nextCursor:null,publicationEpoch:row.revision};
+   }
+  });
+ }
  return Object.freeze({list:core.list,detail:core.detail});
 }

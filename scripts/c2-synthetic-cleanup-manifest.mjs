@@ -28,3 +28,38 @@ export function prepareC2SyntheticCleanupManifest({enabled=false,projectId,datab
  return out;
 }
 
+
+
+// PURE evidence reconciliation, never a delete provider or ownership proof.
+// Trusted future host must capture real native-schema linkage/version evidence.
+export function reconcileC2SyntheticCleanup({enabled=false,manifest,readbacks=[],results=[]}={}){
+ const stop=reason=>({decision:'STOP',authorized:false,reason});
+ const m=copyRecord(manifest,['decision','authorized','projectId','databaseId','runId','actors','records','requires','excluded']);
+ if(enabled!==true||m?.decision!=='DRAFT_ONLY'||m.authorized!==false)return stop('DISABLED_OR_MANIFEST');
+ const draft=prepareC2SyntheticCleanupManifest({enabled:true,projectId:m.projectId,databaseId:m.databaseId,runId:m.runId,actors:m.actors,records:m.records});
+ if(draft.decision!=='DRAFT_ONLY'||!Array.isArray(readbacks)||!Array.isArray(results)||readbacks.length!==draft.records.length||results.length>draft.records.length)return stop('SCOPE');
+ const rows=new Map(),outcomes=new Map();
+ for(const raw of readbacks){
+  const r=copyRecord(raw,['path','ownerUid','runId','updateTime','exists','dependencies']);
+  if(!r||typeof r.path!=='string'||rows.has(r.path)||typeof r.exists!=='boolean'||!Array.isArray(r.dependencies)||r.dependencies.length>32||r.dependencies.length!==0)return stop('DEPENDENCY_OR_READBACK');
+  rows.set(r.path,r);
+ }
+ for(const raw of results){
+  const r=copyRecord(raw,['path','updateTime','status']);
+  if(!r||outcomes.has(r.path)||!['DELETED_CONFIRMED','FAILED','UNKNOWN'].includes(r.status))return stop('OUTCOME');
+  outcomes.set(r.path,r);
+ }
+ const paths=new Set(draft.records.map(r=>r.path));if([...rows.keys(),...outcomes.keys()].some(p=>!paths.has(p)))return stop('FOREIGN_PATH');
+ const completed=[],pending=[],uncertain=[];
+ for(const row of draft.records){
+  const r=rows.get(row.path),outcome=outcomes.get(row.path);
+  if(!r||r.ownerUid!==row.ownerUid||r.runId!==row.runId||r.updateTime!==row.updateTime||outcome&&outcome.updateTime!==row.updateTime)return stop('OWNER_OR_VERSION');
+  if(outcome?.status==='DELETED_CONFIRMED'){
+   if(r.exists!==false)return stop('DELETE_NOT_CONFIRMED');completed.push(row.path);
+  }else if(outcome){uncertain.push(row.path);}
+  else{if(!r.exists)return stop('UNEXPLAINED_ABSENCE');pending.push(row.path);}
+ }
+ // Unknown/failed deletion never licenses retry. All output remains a draft.
+ return {decision:uncertain.length?'PARTIAL_STOP':pending.length?'DRAFT_READY':'DRAFT_COMPLETE',authorized:false,
+  completed,pending,uncertain,requires:'independent real-schema ownership/dependency/version verification and separate delete authority; no automatic retry'};
+}

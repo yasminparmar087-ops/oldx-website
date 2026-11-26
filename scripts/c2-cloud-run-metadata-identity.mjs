@@ -27,7 +27,7 @@ function decodeClaims(token) {
     return claims;
   } catch { return null; }
 }
-async function boundedToken(response, url) {
+async function boundedToken(response, url, wait, signal) {
   if (!(response instanceof Response) || response.status !== 200 || !response.ok || response.redirected
     || response.url && response.url !== url || response.headers.get('Metadata-Flavor') !== 'Google'
     || !response.body) deny();
@@ -37,13 +37,13 @@ async function boundedToken(response, url) {
   const chunks = []; let total = 0;
   try {
     for (;;) {
-      const {done, value} = await reader.read();
+      const {done, value} = await wait(()=>reader.read());
       if (done) break;
       total += value.byteLength;
       if (total > 8192) deny();
       chunks.push(value);
     }
-  } finally { await reader.cancel().catch(() => {}); }
+  } finally { void reader.cancel().catch(() => {}); }
   const bytes = new Uint8Array(total); let cursor = 0;
   for (const chunk of chunks) { bytes.set(chunk, cursor); cursor += chunk.byteLength; }
   try { return new TextDecoder('utf-8', {fatal:true}).decode(bytes).trim(); }
@@ -68,11 +68,19 @@ export function createC2CloudRunMetadataIdentity({enabled=false,serviceAccount,
     const abort = () => controller.abort();
     signal?.addEventListener('abort', abort, {once:true});
     if (signal?.aborted) abort();
+    const stopped = new Promise((_,reject)=>{
+      controller.signal.addEventListener('abort',()=>reject(Error('Stopped')),{once:true});
+      if(controller.signal.aborted)reject(Error('Stopped'));
+    });
+    stopped.catch(()=>{});
+    const wait = operation => Promise.race([Promise.resolve().then(()=>{
+      if(controller.signal.aborted)deny();return operation();
+    }),stopped]);
     const timer = setTimeout(abort, 1500);
     try {
-      const response = await fetchMetadata(url, {method:'GET',headers:{'Metadata-Flavor':'Google'},
-        signal:controller.signal,redirect:'error',cache:'no-store',credentials:'omit'});
-      const token = await boundedToken(response, url);
+      const response = await wait(()=>fetchMetadata(url, {method:'GET',headers:{'Metadata-Flavor':'Google'},
+        signal:controller.signal,redirect:'error',cache:'no-store',credentials:'omit'}));
+      const token = await boundedToken(response, url, wait, controller.signal);
       const claims = decodeClaims(token);
       const fresh = now();
       const seconds = Math.floor(fresh / 1000);
@@ -84,7 +92,11 @@ export function createC2CloudRunMetadataIdentity({enabled=false,serviceAccount,
         claims.exp - claims.iat > 3600 || claims.iat > seconds + 5 ||
         seconds - claims.iat > 60 || claims.exp * 1000 <= fresh + 5000 ||
         claims.exp * 1000 > fresh + 3600000) deny();
-      return Object.freeze({token,principal:serviceAccount,audience,expiresAtMs:claims.exp * 1000});
+      // Google ID token lifetime remains signed/unchanged. The website assertion
+      // envelope is a LOCAL short lease matching the independent verifier age.
+      const expiresAtMs=audience===assertionAudience?Math.min(claims.exp*1000,claims.iat*1000+60000):claims.exp*1000;
+      if(expiresAtMs<=fresh+5000)deny();
+      return Object.freeze({token,principal:serviceAccount,audience,expiresAtMs});
     } catch { deny(); }
     finally {clearTimeout(timer); signal?.removeEventListener('abort',abort);}
   }

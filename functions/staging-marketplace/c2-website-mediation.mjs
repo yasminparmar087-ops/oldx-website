@@ -55,8 +55,8 @@ export function createC2WebsiteMediator({enabled=false,websiteOrigin,allowedOrig
 // EXTERNAL prerequisite. Full independently signed website identity is verified;
 // stripped IAM bytes and the mediated-origin header NEVER establish principal.
 export function createC2PrivateGatewayHost({enabled=false,privateGatewayOrigin,mediatorPrincipal,websiteIdentity={},allowedOrigins,gatewayOptions={},now=Date.now}={}){
- gatewayOptions=gatewayOptions&&typeof gatewayOptions==='object'?gatewayOptions:{};
- websiteIdentity=websiteIdentity&&typeof websiteIdentity==='object'?websiteIdentity:{};
+ gatewayOptions=gatewayOptions&&typeof gatewayOptions==='object'?Object.freeze({...gatewayOptions,requestSigning:Object.freeze({...gatewayOptions.requestSigning})}):{};
+ websiteIdentity=websiteIdentity&&typeof websiteIdentity==='object'?Object.freeze({...websiteIdentity}):{};
  allowedOrigins=origins(allowedOrigins)?Object.freeze([...allowedOrigins]):[];
  const keys=createGoogleGatewayPublicKeyResolver({enabled:enabled===true,issuer:websiteIdentity?.issuer,fetchRequest:websiteIdentity?.fetchRequest,now});
  const verify=createGatewayAttestationVerifier({...websiteIdentity,enabled:enabled===true,iamAudience:privateGatewayOrigin,expectedPrincipal:mediatorPrincipal,resolvePublicKey:keys,now});

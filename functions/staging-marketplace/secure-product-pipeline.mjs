@@ -1,3 +1,4 @@
+import {requireC2EnabledReleaseControl} from '../../scripts/c2-enabled-release-control.mjs';
 import {createAttestedMarketplaceGateway,createTrustedMarketplaceBackend} from './trusted-host.mjs';
 import {createStagingMarketplaceRuntime} from './runtime.mjs';
 import {createSecureStagingMarketplacePublicRuntime} from './public-runtime.mjs';
@@ -21,7 +22,7 @@ export function createStep05Gateway({enabled=false,requestSigning={},fetchBacken
  const hop=createProofBoundGatewayHop({enabled:true,backendOrigin:options.backendOrigin,signRequestProof:signer,fetchBackend});
  return createAttestedMarketplaceGateway({...options,enabled:true,now,fetchBackend:hop});
 }
-export function createStep05Backend({enabled=false,audience,gatewayServiceAccount,googleIdentity={},requestVerification={},runtimeOptions={},guestPolicy,cursorKey,nonceRetentionMs=300000,now=Date.now}={}){
+function composeStep05Backend({enabled=false,audience,gatewayServiceAccount,googleIdentity={},requestVerification={},runtimeOptions={},guestPolicy,cursorKey,nonceRetentionMs=300000,now=Date.now}={},publicationEnabled=false){
  const off=()=>createTrustedMarketplaceBackend();
  if(enabled!==true)return off();
  try{
@@ -48,11 +49,33 @@ export function createStep05Backend({enabled=false,audience,gatewayServiceAccoun
   };
   const proof=createMarketplaceRequestProofVerifier({...requestVerification,enabled:true,consumeNonce,authorizeBeforeNonce,now});
   if(typeof proof!=='function')return off();
-  const commandRuntime=createStagingMarketplaceRuntime({...options,enabled:true,publicationEnabled:false,
+  const commandRuntime=createStagingMarketplaceRuntime({...options,enabled:true,publicationEnabled,
    createMediaBindings:options.createMediaBindings??(b=>createStagingMarketplaceMedia({enabled:true,binding:b}))});
   const publicRuntime=createSecureStagingMarketplacePublicRuntime({...options,enabled:true,guestPolicy,cursorKey});
   const inner=createTrustedMarketplaceBackend({enabled:true,audience,gatewayServiceAccount,
    verifyInvoker:verifyIdentity,commandRuntime,publicRuntime,now});
   return createProofBoundBackendHop({enabled:true,audience,gatewayServiceAccount,verifyAttestation:verifyIdentity,verifyRequestProof:proof,backend:inner,now});
+ }catch{return off();}
+}
+
+// Existing contract/deployed callers ALWAYS remain publication-OFF.
+export const createStep05Backend=options=>composeStep05Backend(options,false);
+// Future H2 SOURCE composition only; no SDK/listener/env or operational approval.
+// Real host must independently verify runtime SA/IAM and bind trusted providers.
+export function createC2EnabledProductBackend({enabled=false,releaseControl,runtimeServiceAccount,runtimeImage,...options}={}){
+ const off=()=>createTrustedMarketplaceBackend();
+ if(enabled!==true)return off();
+ try{
+  const control=requireC2EnabledReleaseControl(releaseControl);
+  if(runtimeServiceAccount!==control.runtimePrincipal||runtimeImage!==control.runtimeImage||typeof options.runtimeOptions?.createMediaBindings!=='function')return off();
+  const original=options.runtimeOptions.adminAuth;
+  if(typeof original?.verifyIdToken!=='function')return off();
+  const adminAuth={app:original.app,async verifyIdToken(...args){
+   const claims=await original.verifyIdToken(...args);
+   if(!control.isActorAllowed(claims?.uid))throw Error('C2_ACTOR_SCOPE_DENIED');
+   return claims;
+  }};
+  return control.wrap(composeStep05Backend({...options,enabled:true,runtimeOptions:{...options.runtimeOptions,
+   adminAuth,allocateId:()=>control.productId,productScopeId:control.productId}},true));
  }catch{return off();}
 }

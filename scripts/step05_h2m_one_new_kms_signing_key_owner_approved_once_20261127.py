@@ -17,6 +17,7 @@ import re
 import ssl
 import subprocess
 import sys
+import time
 from datetime import datetime, timezone
 from pathlib import Path
 from urllib import error, request
@@ -44,9 +45,10 @@ GET_RING = HOST + RING
 CREATE_KEY = HOST + RING + "/cryptoKeys?cryptoKeyId=" + KEY_ID + "&skipInitialVersionCreation=false"
 GET_KEY = HOST + KEY
 GET_VERSIONS = HOST + KEY + "/cryptoKeyVersions?pageSize=10"
+GET_VERSION = HOST + KEY + "/cryptoKeyVersions/1"
 ALLOWED = {
     ("GET", GET_RING), ("POST", CREATE_RING), ("POST", CREATE_KEY),
-    ("GET", GET_KEY), ("GET", GET_VERSIONS),
+    ("GET", GET_KEY), ("GET", GET_VERSIONS), ("GET", GET_VERSION),
 }
 
 
@@ -271,12 +273,27 @@ def main():
         need(isinstance(versions, list) and len(versions) == 1,
              "KEY_VERSION_COUNT_NOT_EXACTLY_ONE")
         v = versions[0]
-        need(isinstance(v, dict) and v.get("name") == KEY + "/cryptoKeyVersions/1"
-             and v.get("state") == "ENABLED"
+        need(isinstance(v, dict)
+             and v.get("name") == KEY + "/cryptoKeyVersions/1"
              and v.get("algorithm") == ALGORITHM
              and v.get("protectionLevel") == "SOFTWARE",
-             "INITIAL_VERSION_STATE_OR_ALGORITHM_UNVERIFIED")
+             "INITIAL_VERSION_ALGORITHM_UNVERIFIED")
         version = v["name"]
+        # Google documents initial ASYMMETRIC version PENDING_GENERATION.
+        # Poll GET-only, at most 12 times; never create another version.
+        for i in range(12):
+            if v.get("state") == "ENABLED":
+                break
+            need(v.get("state") == "PENDING_GENERATION",
+                 "INITIAL_VERSION_UNEXPECTED_STATE")
+            time.sleep(3)
+            code, v = rest("GET", GET_VERSION, token)
+            need(code == 200, "INITIAL_VERSION_GET_HTTP_" + str(code))
+            need(v.get("name") == version and v.get("algorithm") == ALGORITHM
+                 and v.get("protectionLevel") == "SOFTWARE",
+                 "INITIAL_VERSION_METADATA_DRIFT")
+        need(v.get("state") == "ENABLED",
+             "INITIAL_VERSION_STILL_PENDING_AFTER_BOUNDED_GETS")
         result = "PASS_ONE_NEW_RING_KEY_SOFTWARE_VERSION_VERIFIED"
         reason = "EXACT_POST_CREATE_READBACKS_CONFIRMED"
     except (Stop, OSError, ValueError, TypeError, UnicodeError) as exc:

@@ -24,9 +24,13 @@ const jsonHeaders = {'content-type':'application/json; charset=utf-8',
 // Never construct origin from Host, Forwarded or X-Forwarded-* headers.
 export function createC2WebsiteNodeHandler({enabled=false,websiteOrigin,allowedOrigins,
   mediator,timeoutMs=5000}={}) {
+  // Freeze the reviewed origin list at host construction; the caller's array
+  // may be mutated later and must never expand the trusted CORS boundary.
+  const approvedOrigins = Array.isArray(allowedOrigins) && allowedOrigins.length > 0 &&
+    allowedOrigins.length <= 8 && allowedOrigins.every(origin)
+      ? Object.freeze([...allowedOrigins]) : Object.freeze([]);
   const ready = enabled === true && origin(websiteOrigin) &&
-    Array.isArray(allowedOrigins) && allowedOrigins.length > 0 && allowedOrigins.length <= 8 &&
-    allowedOrigins.every(origin) && allowedOrigins.includes(websiteOrigin) &&
+    approvedOrigins.length > 0 && approvedOrigins.includes(websiteOrigin) &&
     typeof mediator?.fetch === 'function' && Number.isInteger(timeoutMs) &&
     timeoutMs >= 1 && timeoutMs <= 5000;
   return async (req,res) => {
@@ -51,7 +55,7 @@ export function createC2WebsiteNodeHandler({enabled=false,websiteOrigin,allowedO
       seen.add(key);
     }
     const caller=req.headers.origin;
-    if (typeof caller !== 'string' || !allowedOrigins.includes(caller))
+    if (typeof caller !== 'string' || !approvedOrigins.includes(caller))
       return send(...Object.values(failure(403,'DENIED')));
     if(req.method==='OPTIONS' && req.headers['content-length'] !== undefined && req.headers['content-length'] !== '0')
       return send(...Object.values(failure(400,'INVALID_PREFLIGHT')));
@@ -100,7 +104,7 @@ export function createC2WebsiteNodeHandler({enabled=false,websiteOrigin,allowedO
       }}
       const extra={};
       const corsOrigin=result.headers.get('access-control-allow-origin');
-      if (corsOrigin===caller && allowedOrigins.includes(corsOrigin)) {
+      if (corsOrigin===caller && approvedOrigins.includes(corsOrigin)) {
         extra['access-control-allow-origin']=corsOrigin;
         for(const key of ['access-control-allow-methods','access-control-allow-headers','vary']) {
           const value=result.headers.get(key);if(value && value.length<=200) extra[key]=value;

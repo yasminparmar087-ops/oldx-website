@@ -105,6 +105,7 @@ def list_state(code,data,field):
     if code!=200:return {"status":"UNKNOWN_HTTP_"+str(code)}
     rows=data.get(field,[])
     if not isinstance(rows,list):return {"status":"UNKNOWN_SCHEMA"}
+    if data.get("unreachable"):return {"status":"PARTIAL_UNREACHABLE","first_page_count":len(rows)}
     if data.get("nextPageToken"):return {"status":"PARTIAL_PAGINATED","first_page_count":len(rows)}
     return {"status":"FIRST_PAGE_COMPLETE","count":len(rows)}
 def collect(token):
@@ -218,7 +219,7 @@ def main():
                 print("OLDX_H2R_"+key.upper()+"="+str(value))
         print("OLDX_H2R_H2_ENABLED=NOT_ATTEMPTED")
         print("OLDX_H2R_SA_KMS_DB_STORAGE_WRITES=NONE")
-        print("OLDX_H2R_NO_SIGNING_OR_KEYS_FETCHED=TRUE")
+        print("OLDX_H2R_NO_SIGNING_OR_PRIVATE_KEY_BYTES_REQUESTED=TRUE")
         print("OLDX_H2R_DO_NOT_REPEAT=TRUE")
     return 0 if status=="READ_ONLY_METADATA_WITH_LIMITS" else 2
 

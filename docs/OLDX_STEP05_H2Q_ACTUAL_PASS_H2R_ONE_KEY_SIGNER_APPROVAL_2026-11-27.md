@@ -42,3 +42,27 @@ python3 -B "$d/h2r.py" --owner-approved-exact-h2r-one-key-gateway-signer-iam-gra
 Expected only on real success: `OLDX_H2R_RESULT=PASS_EXACT_ONE_CRYPTOKEY_GATEWAY_SIGNER_BINDING_VERIFIED`; `ONE_KEY_POLICY_POST_ATTEMPTED=TRUE`, `READBACK_VERIFIED=TRUE`, `OTHER_CLOUD_WRITES_KMS_SIGN_SA_KEYS_RUN=NONE`, `DO_NOT_REPEAT=TRUE`. No additional Cloud work without new scoped consent.
 
 **CURRENT:** H2Q actual PASS, H2R OWNER_APPROVED_SOURCE_READY_NOT_EXECUTED, Step05 ACTIVE, H2/PRODUCTION NO-GO.
+
+## 27 Nov 2026 ~01:16 IST — H2R ACTUAL OWNER CLOUD PASS (LATEST, supersedes pre-run statements)
+
+Owner supplied a WSL screenshot after executing pinned source commit `0b7c1f4dd397046544c47feee01c729d83ca5248`, blob `044d1f1622241efb9865e56cb9bdaa1064ac4848`. The screenshot shows the hash check and Python AST command followed by the following actual output:
+
+~~~text
+OLDX_H2R_RESULT=PASS_EXACT_ONE_CRYPTOKEY_GATEWAY_SIGNER_BINDING_VERIFIED
+OLDX_H2R_REASON=ONE_SETIAM_POLICY_ETAG_GUARDED_READBACK
+OLDX_H2R_PROJECT=oldx-staging
+OLDX_H2R_GATEWAY_UID=107238619872767759560
+OLDX_H2R_FRESH_PREIMAGE_VERIFIED=TRUE
+OLDX_H2R_ONE_KEY_POLICY_POST_ATTEMPTED=TRUE
+OLDX_H2R_SET_RESPONSE_VERIFIED=TRUE
+OLDX_H2R_READBACK_VERIFIED=TRUE
+OLDX_H2R_OTHER_CLOUD_WRITES_KMS_SIGN_SA_KEYS_RUN=NONE
+OLDX_H2R_H2_PRODUCTION=NO_GO
+OLDX_H2R_DO_NOT_REPEAT=TRUE
+~~~
+
+**ACTUAL VERIFIED:** KMS CryptoKey `projects/oldx-staging/locations/asia-south1/keyRings/oldx-c2-h2-signing/cryptoKeys/oldx-c2-attestation-rs256` has exactly one direct `roles/cloudkms.signer` member `serviceAccount:oldx-c2-private-gateway@oldx-staging.iam.gserviceaccount.com`, UID `107238619872767759560`. Fresh H2Q preimage/etag was checked, policy set response validated, and fresh GET readback confirmed the exact binding. No project or ring IAM modification, mediator/backend grant, SA key, KMS asymmetricSign, Run, H2 activation or production by this script. No evidence of **effective runtime signing** yet; folder/org/group/deny scope still not checked.
+
+**Consumed:** H2R one-shot marker `/root/.oldx-step05-h2r-gateway-single-key-signer-grant-once-20261127`. NEVER run H2R/H2Q/H2P2/other consumed one-shots again, never remove markers, never repeat policy grant. H2R is the single IAM binding gate DONE, not Step05 overall DONE.
+
+**Next gate H2S** must prove an *authenticated actual private Gateway runtime*, bearing the newly verified Gateway service-account identity (not the WSL Owner OAuth account and not an impersonated SA JSON key), can perform **one** bounded synthetic `CryptoKeyVersion /1:asymmetricSign` while checking `verifiedDigestCrc32c`, returned `signatureCrc32c`, public SPKI fingerprint `69a50043b9979b8b695ca4dc426bcb58d14666b0dc2da27ce823f57f53d46aba`, and RSA-SHA256 verification. Google KMS `roles/cloudkms.signer` grants `useToSign` but **not** `viewPublicKey`; use previously pinned public key as independent verifier and separately review key-version status provider. No runtime/host or KMS sign has yet been approved or executed. Avoid Owner-credential sign which cannot validate the Gateway IAM binding; avoid creating SA JSON keys or granting Token Creator solely for a probe.

@@ -26,4 +26,30 @@ Require existing isolated Yasmin owner WSL project/session; H2P2 successful loca
 
 References: [Project getIamPolicy](https://docs.cloud.google.com/resource-manager/reference/rest/v3/projects/getIamPolicy), [Key Ring getIamPolicy](https://docs.cloud.google.com/kms/docs/reference/rest/v1/projects.locations.keyRings/getIamPolicy), [CryptoKey getIamPolicy](https://docs.cloud.google.com/kms/docs/reference/rest/v1/projects.locations.keyRings.cryptoKeys/getIamPolicy).
 
-**Current authorization:** Source-only planning and GitHub docs permitted. **H2Q Cloud IAM reads are NOT owner-approved or run; H2Q execution script has NOT yet been pushed**. No IAM grant, KMS signing, runtime deployment, product activation or production GO. Step05 ACTIVE, H2/production NO-GO.
+## 27 Nov 2026 — H2Q exact three policy reads OWNER APPROVED, SOURCE READY, UNEXECUTED
+
+Owner explicitly answered **"ha manjuri chhe"** to the three **read-only** IAM policy requests above, including the project `POST :getIamPolicy` (a read, **not** a write), Key Ring `GET :getIamPolicy`, and CryptoKey `GET :getIamPolicy`. No approval for `setIamPolicy`, service account changes, signing, deployment, Firebase, H2 enablement or production. H2P2 success already established; its one-shot is consumed.
+
+- **Exact new source:** `scripts/step05_h2q_three_level_iam_policies_readonly_once_20261127.py`
+- **Immutable source commit:** `4d9f871f86c7bb3d523a8f877639d4b8594eff5a`
+- **Verified Git blob:** `b003bbc6b8838674136b799f9bde6015dd7acb82`
+- Static scope audit PASS: validates H2P2 owner WSL marker/private receipt and all 3 immutable UIDs, exact Yasmin owner, isolated WSL SDK and `oldx-staging`; one exclusive H2Q marker before all Cloud reads, exact 3-method+URL allowlist, no redirect/retries, strict policy parsing and version-3 request. Handles empty version-0 policy only with empty bindings.
+- Private original 3 policy bodies/etags are retained **locally in root-owned evidence folder**, not uploaded to GitHub; CLI output and repo can contain only sanitized binding/condition counts and etag hash. IAM grants/execution still `NONE`. Do not share OAuth token/raw policies.
+- Source GitHub blob and source constraints readback confirmed; **Python AST/runtime and Google Cloud API calls NOT executed yet**. Operator command includes AST parse before entering script. Any network/error/status `STOP` after H2Q marker => **do not repeat** or clear markers.
+- Reading project/ring/key policies **does not establish effective access** from folder/org/group/deny policies or verify dynamic conditions. A role grant needs separate identity & IAM policy review and consent.
+
+### Exactly one Ubuntu WSL root paste — under this specific consent
+
+~~~bash
+umask 077
+d=$(mktemp -d /root/oldx-h2q-source.XXXXXXXX) &&
+curl --fail --silent --show-error --retry 0 --max-redirs 0 --max-time 40 --proto '=https' --output "$d/h2q.py" 'https://raw.githubusercontent.com/yasminparmar087-ops/oldx-website/4d9f871f86c7bb3d523a8f877639d4b8594eff5a/scripts/step05_h2q_three_level_iam_policies_readonly_once_20261127.py' &&
+test "$(git hash-object "$d/h2q.py")" = 'b003bbc6b8838674136b799f9bde6015dd7acb82' &&
+python3 -B -c 'import ast,sys; ast.parse(open(sys.argv[1],encoding="utf-8").read())' "$d/h2q.py" &&
+python3 -B "$d/h2q.py" --owner-approved-exact-h2q-three-readonly-iam-policies-once
+~~~
+
+**Expected qualified read-only success:** `OLDX_H2Q_RESULT=READ_ONLY_THREE_POLICY_LEVELS_WITH_LIMITS` and 3 `_READ=VERIFIED` lines. `OLDX_H2Q_IAM_GRANTS_KMS_SIGN_SA_KEYS_RUN=NONE`, `OLDX_H2Q_CLOUD_WRITES=NONE`, `OLDX_H2Q_DO_NOT_REPEAT=TRUE`. A PASS is a policy **metadata** outcome, not KMS signing authorization or hosted H2 readiness. On STOP after any attempt, preserve the one-shot receipts and request distinct read-only reconciliation approval.
+
+**Current:** `H2Q=OWNER_APPROVED_SOURCE_READY_NOT_EXECUTED`; `STEP05=ACTIVE`, `H2/PRODUCTION=NO_GO`.
+

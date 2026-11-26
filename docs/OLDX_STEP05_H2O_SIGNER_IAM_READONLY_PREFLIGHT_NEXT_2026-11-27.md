@@ -1,6 +1,6 @@
 # OLDX Step05 H2O — next exact identity + KMS CryptoKey IAM metadata gate (SOURCE ONLY)
 
-**27 Nov 2026 IST; BAJUTO public brand, OLDX technical identities.** Canonical H2N result: [actual H2N public SPKI SHA256 PASS](OLDX_STEP05_H2M_PASS_H2N_PUBLIC_PIN_SOURCE_NEXT_2026-11-27.md). H2N fingerprint is `69a50e43b9979b8b695ca4dc426bcb58d14666b0dc2da27ce823f57f53d46aba`, exact KMS CryptoKeyVersion `/1`, CRC32C verified. **H2N/H2M/H2L/H2K and all earlier cloud one-shots CONSUMED: NEVER RERUN or clear markers.**
+**27 Nov 2026 IST; BAJUTO public brand, OLDX technical identities.** Canonical H2N result: [actual H2N public SPKI SHA256 PASS](OLDX_STEP05_H2M_PASS_H2N_PUBLIC_PIN_SOURCE_NEXT_2026-11-27.md). H2N fingerprint is `69a50043b9979b8b695ca4dc426bcb58d14666b0dc2da27ce823f57f53d46aba`, exact KMS CryptoKeyVersion `/1`, CRC32C verified. **H2N/H2M/H2L/H2K and all earlier cloud one-shots CONSUMED: NEVER RERUN or clear markers.**
 
 ## Trusted runtime binding proposal, NOT an actual Google principal inventory
 
@@ -17,8 +17,8 @@ The narrowest practical **predefined** KMS role proposal is `roles/cloudkms.sign
 
 Script: `scripts/step05_h2o_signer_identity_key_iam_metadata_once_20261127.py`
 
-- **Source commit:** `d12ab24e0351edfcc75bcbf0b38f207947a9d03f`
-- **Verified Git blob:** `413f69949f3d8a7611e405b453df6b491136f3c2`
+- **Source commit:** `c01660085584177e6fcea648584897f0eea2a4ef`
+- **Verified Git blob:** `1f325738a5478490a14496ef6702ac1e10f5fa2d`
 - Limited to existing Owner's isolated root WSL Google config; validates H2N local PASS receipt, exact key, fingerprint, Google account and project.
 - **Exactly 2 NEW HTTPS GETs**, no retries, no redirect: (1) IAM ServiceAccounts LIST at `https://iam.googleapis.com/v1/projects/oldx-staging/serviceAccounts?pageSize=100&fields=accounts%28email%2CuniqueId%2Cdisabled%29%2CnextPageToken` selecting only 3 candidate emails from complete page; (2) KMS `https://cloudkms.googleapis.com/v1/projects/oldx-staging/locations/asia-south1/keyRings/oldx-c2-h2-signing/cryptoKeys/oldx-c2-attestation-rs256:getIamPolicy` to examine direct key bindings only. **This is a new identity-specific narrow-field query**, not a re-run of consumed old broad H2R inventory, whose archived summary had counts but no trusted exact new identities/UIDs.
 - Key policy may contain other members: no raw IAM memberships/credentials are printed or put in GitHub; local sanitized report includes only identity presence/UID, direct signer membership and other-signer counts; no IAM policy mutation and NO signing.
@@ -33,8 +33,8 @@ Script: `scripts/step05_h2o_signer_identity_key_iam_metadata_once_20261127.py`
 ~~~bash
 umask 077
 d=$(mktemp -d /root/oldx-h2o-source.XXXXXXXX) &&
-curl --fail --silent --show-error --retry 0 --max-redirs 0 --max-time 40 --proto '=https' --output "$d/h2o.py" 'https://raw.githubusercontent.com/yasminparmar087-ops/oldx-website/d12ab24e0351edfcc75bcbf0b38f207947a9d03f/scripts/step05_h2o_signer_identity_key_iam_metadata_once_20261127.py' &&
-test "$(git hash-object "$d/h2o.py")" = '413f69949f3d8a7611e405b453df6b491136f3c2' &&
+curl --fail --silent --show-error --retry 0 --max-redirs 0 --max-time 40 --proto '=https' --output "$d/h2o.py" 'https://raw.githubusercontent.com/yasminparmar087-ops/oldx-website/c01660085584177e6fcea648584897f0eea2a4ef/scripts/step05_h2o_signer_identity_key_iam_metadata_once_20261127.py' &&
+test "$(git hash-object "$d/h2o.py")" = '1f325738a5478490a14496ef6702ac1e10f5fa2d' &&
 python3 -B -c 'import ast,sys; ast.parse(open(sys.argv[1],encoding="utf-8").read())' "$d/h2o.py" &&
 python3 -B "$d/h2o.py" --owner-approved-two-new-h2o-iam-metadata-gets-once
 ~~~
@@ -42,3 +42,11 @@ python3 -B "$d/h2o.py" --owner-approved-two-new-h2o-iam-metadata-gets-once
 **Interpretation:** `OLDX_H2O_RESULT=READ_ONLY_EXACT_SIGNER_IDENTITY_AND_KEY_POLICY_WITH_LIMITS` is only metadata, NOT effective IAM verification. `OLDX_H2O_CLOUD_WRITES=NONE`. Screenshot ONLY sanitized `OLDX_H2O_*` lines; no auth tokens or private JSON. Any STOP = do not repeat, preserve marker/receipt. Next decide exact new-only SA creation (if needed), private service identity, key-level least predefined binding after **separate finite owner approval**; actual KMS sign/hosted Product gate stays NO-GO.
 
 `STEP05=ACTIVE; H2O=OWNER_APPROVED_SOURCE_READY_NOT_EXECUTED; H2/PRODUCTION=NO_GO`.
+
+## 27 Nov 2026 ~00:44 IST — H2O pre-request STOP and exact-source correction
+
+Owner WSL screenshot after the originally pinned source `d12ab24e0...` returned `OLDX_H2O_RESULT=STOP_BEFORE_REQUEST`, `REASON=H2N_PIN_MISMATCH`, `CLOUD_WRITES=NONE`. The preflight rejected the incorrectly transcribed H2N fingerprint before obtaining OAuth, before the H2O one-shot marker, and before any H2O Cloud GET. **No H2O API reads or IAM writes happened in that attempt.** H2N/H2M PASS and markers remain intact.
+
+Directly reexamined original H2N screenshot: correct first 8 digits `69a50043`, not the earlier assistant's `69a50e43` transcription. Remaining digits unchanged. Correct full SPKI hash `69a50043b9979b8b695ca4dc426bcb58d14666b0dc2da27ce823f57f53d46aba`. H2N's locally generated fingerprint/receipt was correct; the error was in the assistant's GitHub H2N note and subsequently hard-coded H2O check. The original H2O source never made a Cloud request and its H2O marker was not created on this STOP path.
+
+**Recovery (source-only):** corrected only H2O constant to exact screenshot hash; no trust/IAM/URL/logic relaxation. New source immutable commit `c01660085584177e6fcea648584897f0eea2a4ef`, blob `1f325738a5478490a14496ef6702ac1e10f5fa2d`. Pinned command above now points to corrected script. Owner's prior two-GET approval has NOT been consumed (no GET attempted) and applies to this unchanged exact read-only scope; use single corrected script once after hash verification. If next STOP is after marker/GET, never retry or delete marker.

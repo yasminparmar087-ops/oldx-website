@@ -26,9 +26,9 @@ The old `oldx-c2-mediator@oldx-staging.iam.gserviceaccount.com` SA UID `11544522
 - Strict non-scope: **NO** CryptoKey `setIamPolicy`, IAM grant, SA key, signing request, Cloud Run service/deployment, Firebase/Auth/Firestore/Storage, billing settings, prod or H2 enable. A successful create is just identity scaffolding, **not** managed identities bound to trusted workloads.
 - Source statically inspected and GitHub blob verified; Python AST/runtime/local Google calls **NOT yet tested**. Must be checked by operator command before any cloud action.
 
-This is **3 new IAM resource writes**, distinct from previously approved H2O reads, and needs **new explicit Owner approval for exactly these 3 creations and readbacks**, including possible partial state. Default SA creation itself does not grant project roles; later service usage may be billable. Permission `iam.serviceAccounts.create` is required; authorization is NOT proven by H2O. Google docs: https://docs.cloud.google.com/iam/docs/reference/rest/v1/projects.serviceAccounts/create ; https://docs.cloud.google.com/iam/docs/reference/rest/v1/projects.serviceAccounts/get .
+**27 Nov 2026 — OWNER EXPLICIT H2P1 APPROVAL RECEIVED:** Owner replied **“ha manjuri chhe”** to creation of exactly THREE new accounts listed above in `oldx-staging`, with the three fresh 404 reads and immediate UID readbacks, accepting the one-shot partial-STOP behavior. This is separate from H2O read authorization; it covers **at most three ServiceAccounts.create writes only**. Live execution still **NOT ATTEMPTED**, and no IAM role or Service Account key creation, KMS grant/sign, Run/Firebase/production changes are authorized. Default SA creation itself does not grant project roles; later service usage may be billable. Permission `iam.serviceAccounts.create` is required; authorization is NOT proven by H2O. Google docs: https://docs.cloud.google.com/iam/docs/reference/rest/v1/projects.serviceAccounts/create ; https://docs.cloud.google.com/iam/docs/reference/rest/v1/projects.serviceAccounts/get .
 
-### Single Owner Ubuntu WSL root paste — ONLY AFTER EXACT H2P1 APPROVAL
+### Single Owner Ubuntu WSL root paste — under exact H2P1 approval now received
 
 ~~~bash
 umask 077
@@ -39,6 +39,6 @@ python3 -B -c 'import ast,sys; ast.parse(open(sys.argv[1],encoding="utf-8").read
 python3 -B "$d/h2p1.py" --owner-explicitly-approved-only-three-new-h2-runtime-sa-creates
 ~~~
 
-Expected fully verified `OLDX_H2P1_RESULT=PASS_THREE_NEW_H2_RUNTIME_SERVICE_ACCOUNTS_CREATED_VERIFIED`; 3 UID receipts; `OLDX_H2P1_IAM_GRANTS_KEYS_KMS_SIGN_RUN=NONE`. On STOP do not repeat or clear markers; preserve evidence for new *read-only* reconciliation before any new consent. No guaranteed complete batch. `STEP05=ACTIVE`, `H2P1=SOURCE_READY_NOT_AUTHORIZED_OR_EXECUTED`, `H2/PRODUCTION=NO_GO`.
+Expected fully verified `OLDX_H2P1_RESULT=PASS_THREE_NEW_H2_RUNTIME_SERVICE_ACCOUNTS_CREATED_VERIFIED`; 3 UID receipts; `OLDX_H2P1_IAM_GRANTS_KEYS_KMS_SIGN_RUN=NONE`. On STOP do not repeat or clear markers; preserve evidence for new *read-only* reconciliation before any new consent. No guaranteed complete batch. `STEP05=ACTIVE`, `H2P1=OWNER_APPROVED_SOURCE_READY_NOT_EXECUTED`, `H2/PRODUCTION=NO_GO`.
 
 Next after H2P1 ACTUAL PASS: choose the exact **CryptoKey-level** KMS signer-only role and effective inherited IAM status, source-check preimage/etag/rollback; separate owner consent for any KMS policy write, then real host bindings and one finite private synthetic acceptance. Do not assume CryptoKeyVersion IAM binding supports a version-specific grant; runtime pin remains `/1` with public SPKI hash `69a50043b9979b8b695ca4dc426bcb58d14666b0dc2da27ce823f57f53d46aba`.

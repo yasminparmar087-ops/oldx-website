@@ -26,9 +26,9 @@ Add **ONE** `roles/cloudkms.signer` IAM policy binding for **only**:
 - No org/folder/group/deny effective-IAM conclusion, no claims of working signing, no asymmetricSign, SA JSON keys, Cloud Run deployment or identity binding, Firebase, Firestore, photos, DNS, Product H2 enabled run or production launch. Any separately required status/metadata reader is NOT implicitly granted.
 - Google official reference: [setIamPolicy replaces policy and uses etag](https://docs.cloud.google.com/kms/docs/reference/rest/v1/projects.locations.keyRings.cryptoKeys/setIamPolicy), [KMS least privilege](https://docs.cloud.google.com/kms/docs/iam), [IAM effective policy limitations](https://docs.cloud.google.com/iam/docs/troubleshoot-policies).
 
-**New owner authorization is REQUIRED before any H2R Cloud request:** prior H2Q owner approval was for **three read-only policies only**. H2R is **one new IAM grant/write** and cannot inherit that consent. Explicit Owner consent must identify the single exact member, role, CryptoKey and bounded GET/readback behavior. One-shot no-auto-retry is a possible partial-outcome risk.
+**27 Nov 2026 — exact H2R OWNER WRITE APPROVAL RECEIVED; NOT EXECUTED:** Owner replied **“ha manjuri chhe”** to the single proposed `roles/cloudkms.signer` policy binding for `serviceAccount:oldx-c2-private-gateway@oldx-staging.iam.gserviceaccount.com` (UID `107238619872767759560`) on only CryptoKey `projects/oldx-staging/locations/asia-south1/keyRings/oldx-c2-h2-signing/cryptoKeys/oldx-c2-attestation-rs256`, including one fresh read-only preimage GET and one read-only verification GET. This is separate from earlier H2Q read consent. No access to project/keyring/mediator/backend; no signing operation, SA keys, deployment or production. **Consent recorded does not mean the IAM write was attempted or succeeded.**
 
-### One Ubuntu root WSL paste ONLY AFTER exact H2R grant approval
+### One Ubuntu root WSL paste — within the now-approved exact H2R grant
 
 ~~~bash
 umask 077
@@ -41,4 +41,4 @@ python3 -B "$d/h2r.py" --owner-approved-exact-h2r-one-key-gateway-signer-iam-gra
 
 Expected only on real success: `OLDX_H2R_RESULT=PASS_EXACT_ONE_CRYPTOKEY_GATEWAY_SIGNER_BINDING_VERIFIED`; `ONE_KEY_POLICY_POST_ATTEMPTED=TRUE`, `READBACK_VERIFIED=TRUE`, `OTHER_CLOUD_WRITES_KMS_SIGN_SA_KEYS_RUN=NONE`, `DO_NOT_REPEAT=TRUE`. No additional Cloud work without new scoped consent.
 
-**CURRENT:** H2Q actual PASS, H2R SOURCE_READY_UNAPPROVED_UNRUN, Step05 ACTIVE, H2/PRODUCTION NO-GO.
+**CURRENT:** H2Q actual PASS, H2R OWNER_APPROVED_SOURCE_READY_NOT_EXECUTED, Step05 ACTIVE, H2/PRODUCTION NO-GO.

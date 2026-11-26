@@ -174,7 +174,11 @@ def accounts_summary(data):
     for item in items:
         need(isinstance(item, dict), "IAM_ACCOUNT_ITEM_SCHEMA")
         email = item.get("email")
-        need(isinstance(email, str) and bool(SA_PATTERN.fullmatch(email))
+        # Existing project inventory may include Google-managed/default SAs
+        # outside the proposed user-managed oldx-staging suffix. Validate
+        # their structure without granting or selecting any of them.
+        need(isinstance(email, str) and len(email) <= 320
+             and bool(re.fullmatch(r"[A-Za-z0-9._+-]{1,100}@[A-Za-z0-9.-]{1,180}", email))
              and email not in by_email, "IAM_ACCOUNT_EMAIL_UNEXPECTED")
         uid = item.get("uniqueId")
         need(isinstance(uid, str) and bool(re.fullmatch(r"\d{10,32}", uid)),

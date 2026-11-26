@@ -194,7 +194,7 @@ def read_policy(method, url, token):
 def summarize(policy, level):
     need(isinstance(policy, dict), "POLICY_OBJECT_MALFORMED")
     version = policy.get("version", 1)
-    need(isinstance(version, int) and version in (1, 3),
+    need(type(version) is int and version in (0, 1, 3),
          "IAM_POLICY_VERSION_UNEXPECTED")
     bindings = policy.get("bindings", [])
     need(isinstance(bindings, list) and len(bindings) <= 1000,
@@ -234,6 +234,8 @@ def summarize(policy, level):
             counts["other_direct_signer_member_count"] += sum(m != gw for m in mem)
     if counts["conditional_binding_count"]:
         need(version == 3, "IAM_CONDITIONAL_POLICY_VERSION_NOT_3")
+    if version == 0:
+        need(not bindings, "IAM_VERSION_ZERO_WITH_BINDINGS")
     need(counts["member_count"] <= 200000, "IAM_MEMBER_COUNT_TOO_LARGE")
     return {
         "scope": {

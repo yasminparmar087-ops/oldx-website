@@ -19,11 +19,13 @@ Google Cloud [Create Service Accounts](https://docs.cloud.google.com/iam/docs/se
 - If Gateway remains absent in new complete list or has mismatched data: **STOP with no Backend creation**. If Backend creation returns ambiguous outcome or bounded readback fails: **STOP, no retry of create**. Later reconciliation would need new evidence and consent.
 - New script was **GitHub readback verified and statically guard-inspected**; **Python AST/runtime and Google API execution have NOT occurred**. Thus no H2P2 account state or Google permission is yet established.
 
-### New separate Owner consent REQUIRED before execution
+### 27 Nov 2026 — Exact H2P2 owner consent RECEIVED; execution NOT YET ATTEMPTED
+
+Owner explicitly replied **“ha manjuri chhe”** to the narrowly described **H2P2** recovery: a fresh project-only SA listing, numeric-UID readbacks of already-attempted Mediator/Gateway, exact Backend absence GET, and, **only if all pass**, exactly ONE new Backend Service Account creation with bounded GET-only verification. Consent does **not** cover Gateway recreation, retrying H2P1, Service Account keys, KMS signing, IAM grants, Cloud Run deployment, Firebase or production. The script still has **NOT been run**; do not claim success before operator results.
 
 This is **not** covered by prior H2P1 one-shot (consumed) or H2O metadata consent. It authorizes a finite new set of narrowly scoped **IAM read-only reconciliations** plus **at most one new BACKEND account creation**, conditional on Gateway + Mediator UID confirmation; includes up to five read-only post-create GETs and bounded backoff. It does **not** authorize any Gateway recreate, project/crypto IAM grant, signing or deployment. A new service account resource may have administrative implications; no user-managed key or recurring VM/Cloud Run cost is caused by this script alone.
 
-### ONE root Ubuntu WSL paste — ONLY AFTER this exact new consent
+### ONE root Ubuntu WSL paste — under the now-confirmed, exact H2P2 consent
 
 ~~~bash
 umask 077
@@ -36,4 +38,4 @@ python3 -B "$d/h2p2.py" --owner-explicitly-approved-h2p2-reconcile-and-one-backe
 
 **Success only if all three numerically verified:** `OLDX_H2P2_RESULT=PASS_GATEWAY_RECONCILED_AND_ONE_BACKEND_CREATED_VERIFIED` and `OLDX_H2P2_BACKEND_READBACK_VERIFIED=TRUE`. No result or STOP can be treated as H2/production acceptance. DO NOT rerun any one-shot or clear markers.
 
-**Current status:** `H2P1=PARTIAL_STOP_ACTUAL`, `H2P2=SOURCE_READY_UNAPPROVED_UNRUN`, `STEP05=ACTIVE`, `H2/PRODUCTION=NO_GO`. After H2P2 actual success the remaining technical gap is properly scoped CryptoKey-level signing permission, effective IAM and trusted hosted Product integration, not more SA creations.
+**Current status:** `H2P1=PARTIAL_STOP_ACTUAL`, `H2P2=OWNER_APPROVED_SOURCE_READY_NOT_EXECUTED`, `STEP05=ACTIVE`, `H2/PRODUCTION=NO_GO`. After H2P2 actual success the remaining technical gap is properly scoped CryptoKey-level signing permission, effective IAM and trusted hosted Product integration, not more SA creations.

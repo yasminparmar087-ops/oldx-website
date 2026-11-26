@@ -18,11 +18,11 @@ Checks: version name, ENABLED state, SOFTWARE protection, RSA_SIGN_PKCS1_2048_SH
 - Source statically inspected (GET-only, exact URL, H2M marker, no repeat); **Python AST parse and new actual WSL execution not yet verified**.
 - Official KMS API: https://docs.cloud.google.com/kms/docs/reference/rest/v1/projects.locations.keyRings.cryptoKeys.cryptoKeyVersions/getPublicKey
 
-## OWNER APPROVAL STILL REQUIRED FOR THIS NEW READ SCOPE
+## 27 Nov 2026 — OWNER EXPLICITLY APPROVED THE TWO READ-ONLY H2N GETs (NOT EXECUTED)
 
-Prior H2M approval covered new KMS resource creation and bounded post-create readbacks, **not a new getPublicKey/pin stage**. Per FAST TRACK AMBER boundary, ask one explicit owner consent to these exact two read-only GET requests and local computation/save. Do not run until consent received. No additional Cloud resource creation or IAM roles needed by this source; API may still report 403, which remains UNKNOWN.
+Prior H2M approval covered new KMS resource creation and bounded post-create readbacks, **not a new getPublicKey/pin stage**. Owner explicitly replied **"ha manjuri chhe"** to precisely these two new read-only KMS GET requests and local public SPKI SHA256 calculation/storage. This approval is NOW RECEIVED, limited to the two listed exact URLs, under the existing isolated Owner WSL. No IAM, signing, key creation, resource changes, hosted H2 or production authorized. Execution remains **NOT ATTEMPTED**; do not infer a Google API PASS. No additional Cloud resource creation or IAM roles needed by this source; API may still report 403, which remains UNKNOWN.
 
-### One paste for Owner WSL root — ONLY AFTER new H2N read-only consent
+### One paste for Owner WSL root — under now-approved H2N read-only scope
 
 ~~~bash
 umask 077

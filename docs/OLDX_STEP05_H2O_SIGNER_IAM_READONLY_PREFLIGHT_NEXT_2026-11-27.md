@@ -26,9 +26,9 @@ Script: `scripts/step05_h2o_signer_identity_key_iam_metadata_once_20261127.py`
 - A new exclusive one-shot marker `/root/.oldx-step05-h2o-signing-identity-and-key-policy-readonly-once-20261127` is consumed before first GET; never re-run/reset after STOP/timeout.
 - This source was statically read back and scope-checked, but **not Python AST/runtime tested against live Google APIs** and is NOT proof of any actual accounts/IAM.
 
-**Owner approval for this new exact read scope is STILL REQUIRED.** Previous H2N permission was only for two KMS version/publicKey GETs; generic `ok aagal vadho` authorizes source-only work, not H2O Google calls. No service account creation/disable/enable/delete, IAM grants/role changes, Service Usage, signing, Run, Firebase/Auth, Storage, billing or production is authorized.
+**Owner explicit H2O approval RECEIVED on 27 Nov 2026:** the Owner replied `ha manjuri chhe` to exactly TWO new read-only GET requests: the bounded `oldx-staging` IAM Service Accounts metadata list and the direct IAM policy read for the single named KMS CryptoKey, plus sanitized local analysis. This is distinct from previously consumed H2N. **Approval received is NOT live execution:** Google API requests are NOT yet attempted. No service-account create/enable/disable, IAM grant, signing, deploy or production operations are within this approval. No service account creation/disable/enable/delete, IAM grants/role changes, Service Usage, signing, Run, Firebase/Auth, Storage, billing or production is authorized.
 
-### ONE owner WSL paste ONLY AFTER explicit scoped H2O read-only consent
+### ONE owner WSL paste — H2O read-only scope now explicitly approved
 
 ~~~bash
 umask 077
@@ -41,4 +41,4 @@ python3 -B "$d/h2o.py" --owner-approved-two-new-h2o-iam-metadata-gets-once
 
 **Interpretation:** `OLDX_H2O_RESULT=READ_ONLY_EXACT_SIGNER_IDENTITY_AND_KEY_POLICY_WITH_LIMITS` is only metadata, NOT effective IAM verification. `OLDX_H2O_CLOUD_WRITES=NONE`. Screenshot ONLY sanitized `OLDX_H2O_*` lines; no auth tokens or private JSON. Any STOP = do not repeat, preserve marker/receipt. Next decide exact new-only SA creation (if needed), private service identity, key-level least predefined binding after **separate finite owner approval**; actual KMS sign/hosted Product gate stays NO-GO.
 
-`STEP05=ACTIVE; H2O=SOURCE_READY_UNAPPROVED_UNRUN; H2/PRODUCTION=NO_GO`.
+`STEP05=ACTIVE; H2O=OWNER_APPROVED_SOURCE_READY_NOT_EXECUTED; H2/PRODUCTION=NO_GO`.

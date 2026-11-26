@@ -1,29 +1,37 @@
 # OLDX FAST TRACK — Current resume checkpoint
 
-**Updated 26 Nov 2026 IST — workflow-only change; no new application/cloud execution.**
-Repo: yasminparmar087-ops/oldx-website | Branch: security-hardening-review.
-Read [permanent operating policy](OLDX_FAST_TRACK_POLICY.md) first; this is the short mutable index. Latest dated evidence takes priority if a concurrent session has moved ahead. Preserve original [master 15-step plan](OLDX_SINGLE_EXECUTION_PLAN_2026-11-13.md) and [historical handoff](OLDX_CURRENT_HANDOFF.md).
+**Updated 26 Nov 2026, latest H2 G2–G6 provider-readiness preparation.**
+Repository: `yasminparmar087-ops/oldx-website`. Branch: **`security-hardening-review`** ONLY.
 
-## Public brand — BAJUTO (26 Nov 2026 IST)
-- Owner-selected working public brand: **BAJUTO** (બાજુટો / बाजुटो); OLDX remains the internal technical project. [Canonical brand decision, trademark evidence, domain and minimum-change plan](OLDX_BAJUTO_REBRAND_PLAN.md).
-- Owner will purchase bajuto.in in 1–2 days; **NOT PURCHASED**. No branding implementation, registration filing, DNS, cloud or production change today. Preliminary trademark checks favorable, not legal clearance; one abandoned mark unresolved.
-- Continue engineering critical path below without repeating completed work. After actual domain purchase confirmation, scope only necessary public-facing branding and domain-dependent security changes; preserve technical IDs and existing approval gates. Future chats using either OLDX or BAJUTO refer to this same project.
+Follow [permanent fast-track policy](OLDX_FAST_TRACK_POLICY.md), [AGENTS.md](../AGENTS.md), [master 15-step plan](OLDX_SINGLE_EXECUTION_PLAN_2026-11-13.md) and the newest dated actual evidence. Old entries superseded here remain in Git history and linked canonical receipts. Avoid the 570K+ historical AGENTS read unless a relevant specific detail is missing. No concurrency/force push/main modification.
 
-## Actual status and current critical path
-- Steps 01–04 administrative/decision exits recorded; Step 04 technical requirements carried into 05/13. Step 05 active, **not done**. Steps 06–12 contain source-only progress, actual hosted integrations and acceptance still needed. Step 13/14 pending, Android Step 15 separate.
-- H1A local image/build/SBOM/Grype/runtime complete PASS_WITH_LIMITS; 12 distinct HIGH, no Critical reported. Retained local H1A image, no rebuild or rescan. [H1A receipt](OLDX_STEP05_MAXIMUM_SAFE_SOURCE_EXECUTION_RECEIPT_2026-11-25.md).
-- Native WSL SDK working. H1B G1 actual READ_ONLY_WITH_LIMITS: 7 project + 4 registry requested permissions returned; new SA actAs unknown, WSL auth not configured; G1 consumed. [G1 actual](OLDX_STEP05_H1B_G1_OWNER_SCREENSHOT_PASS_AND_G2_FASTPATH_2026-11-26.md).
-- C1A old Cloud Run service confirmed removed; old SA and registry image retained, references unknown. Not a blocker for H1B; no repeat deletion/readback, no shared deletion. [C1A confirmed](OLDX_STEP05_C1A_OPTION_B_SERVICE_DELETION_CONFIRMED_2026-11-26.md), [residual assets](OLDX_STEP05_C1A_SA_IMAGE_METADATA_PRESENT_DEPENDENCY_PENDING_2026-11-26.md).
-- Last reviewed pre-policy branch HEAD 9bc857cf5ed56fe0a0cff9b219d3593b46d3a9fd (docs checkpoint; not a new source CI assertion).
-- Owner approved G2 native WSL OAuth + isolated Docker helper for asia-south1-docker.pkg.dev + one retained H1A push with remote digest verification. G2A source prepared, actual operator execution NOT evidenced in latest reviewed docs. [Exact G2A command and G2B boundary](OLDX_STEP05_H1B_G2_OWNER_APPROVED_WSL_LOGIN_ONE_SHOT_SOURCE_2026-11-26.md).
+## ONE current critical-path action
 
-## One next action
-Check if a newer G2A result has been saved/supplied. If none, use existing pinned G2A owner-approved WSL login script (no repeat consent, no new script). After actual G2A PASS, prepare reviewed G2B retained-image push as already approved; exact immutable digest proof. W1–W6 SA/Cloud Run/IAM/hosted probes, H2 and production not authorized by G2. Later bounded batch needs precise independent consent.
+**H2 provider readiness metadata-only, one WSL read-only execution.** Source:
+`scripts/step05_h2_provider_readonly_inventory_once_20261126.py`;
+pinned commit `a97d83e57824f168bc2e2c978cc545aeb885d68b`, Git blob `490095ca85821b22b5f2f4b4270b41986a08eb81`.
+Full selected binding gaps, exact no-heredoc one-paste, and STOP rules: [H2 provider-readiness packet](OLDX_STEP05_H2_G2_G6_PROVIDER_READINESS_METADATA_GATE_2026-11-26.md).
 
-## NO-REPEAT / independent work
-- Do not replay H1A build/SBOM/scan/runtime, S1/S1R/S2/S3B setup/preflights, G1 or C1A consumed attempts. Never reset markers. Do not move image to full Cloud Shell HOME.
-- Reuse existing Product UI Step 06 source-only work, and prepare independently unblocked P0 integration within recorded authorizations; later Steps 07–12 source-only execution must respect any latest narrower sequencing decision. No new unapproved live access. [Store gap Issue #22](https://github.com/yasminparmar087-ops/oldx-website/issues/22).
-- Production **HOLD/NO-GO**. No new code CI claim, deployment, Firebase/IAM/Billing or real data changes in workflow update.
+**It is SOURCE PREPARED, NOT owner executed.** Only HTTPS GET project/regional service identities count, regional KMS keyring/cryptoKey metadata, default Firestore DB metadata, Firebase Auth config, Cloud Storage bucket inventory. No deployed service/SA/KMS key creation, IAM changes, Media/Firebase writes, hosted request probes or public access. If 403/partial/unknown => report as UNKNOWN, not absent. Outputs sanitized `OLDX_H2R_*` only; no tokens. Do not invoke any previously consumed one-shot.
 
-## Update this block after meaningful progress
-Timestamp | current branch/code SHA and actual CI | active step | verified outcome + receipt link | approval scope/consumed actions | one next action | independent P0 | production status. Replace rather than append; preserve old details in Git history/linked receipts. Verify save. Do not store secrets. Newer dated actual evidence overrides stale entries, reconcile before any write.
+## Verified actual status (latest evidence first)
+
+- **Codex G2–G6 source batch pushed and GitHub HEAD confirmed** at `45f20e8ba0dcc84e4106c998060f4639cbe3ce5e` before the later documentation/readiness commits. Eleven **distinct** new focused test groups PASS *in aggregate* on local Node26, after targeted fixes; **not** full hosted H2 acceptance or one last 11-group run. [Detailed receipt](OLDX_STEP05_C2_SOURCE_ONLY_ENABLED_SLICE_GAP_AND_ONE_PASS_IMPLEMENTATION_PACKET_2026-11-24.md). Default-OFF source contract, independent approval/budget requirements, reused Product lifecycle, IAM/Auth/media/cleanup interfaces; existing legacy backend still publication-OFF. No web UI new public route, cloud enablement, KMS or real media binding. G2–G6 active provider blockers documented.
+- **C2 G1 Origin immutable-snapshot source fix + focused regression actual 1 PASS, 0 FAIL** in the previously retained Node24 Docker image, no Node install/new image. [Actual receipt](OLDX_STEP05_C2_G1_ORIGIN_SNAPSHOT_ACTUAL_TEST_PASS_2026-11-26.md). No repeat.
+- **H1B private compiled-OFF Cloud Run trial actual PASS**: one new service created, Owner-only Invoker, four HTTP statuses anonymous403/owner200/owner API503/off/unmatched404, same-session exact service UID/etag-guarded deletion CONFIRMED. [Actual receipt](OLDX_STEP05_H1B_W3_W6_ACTUAL_PRIVATE_PROBES_PASS_SERVICE_DELETED_2026-11-26.md).
+- New test SA `oldx-c2-mediator@oldx-staging.iam.gserviceaccount.com`, immutable UID `115445220422157278526`, **DISABLED**, NOT deleted, exact readback on **26 Nov 2026 22:14:17 IST**. [Actual receipt](OLDX_STEP05_H1B_W6SA_ACTUAL_DISABLED_24H_HOLD_2026-11-26.md). Earliest separate 24h dependency-review **27 Nov 2026 22:14:17 IST**, not automatic deletion. Do not touch it during present H2 inventory beyond broad project SA listing.
+- Frozen H1B G2B verified image `sha256:576a1faa599459ed9b1cdeccc01a3adc2076dffff617bec42f38df7d3a75663e` remains retained. H1A build/SBOM/Grype/runtime PASS_WITH_LIMITS; 12 HIGH in scoped private OFF experiment, not H2 risk acceptance. Older C1A Run service already deleted; C1A SA/image retained with unknown external references. Do not modify them.
+- **H2 enabled hosted seller/buyer Product vertical slice NOT VERIFIED**; source-only local synthetic create/publish/buyer/edit/withdraw works within fixtures but real KMS/Auth/Firebase/media/TTL/IAM/provenance and independent approval binding missing. `STEP05=IN_PROGRESS`, `H2=NO_GO`, `PRODUCTION=NO_GO`.
+
+## Provider bindings to decide after real metadata inventory
+
+Exactly three distinct runtime principals, trusted server host and audience/Invoker edges; dedicated `asia-south1` KMS ASYMMETRIC_SIGN RSA-SHA256 version and pinned public key; real Firestore `(default)`/Auth and least-privilege runtimes; managed moderated single photo and cleanup; durable atomic run/nonce/TTL with exact dependent-resource cleanup; independently verified owner authorization and enabled-image security/rollback. No H2 pilot without separate new narrowly bounded owner consent.
+
+## BAJUTO public brand (independent)
+
+Owner working public name **BAJUTO** (બાજુટો / बाजुटो), internal technical IDs remain OLDX. Domain `bajuto.in` **not confirmed purchased**; previous owner intent was purchase in 1–2 days. [Brand decision](OLDX_BAJUTO_REBRAND_PLAN.md). No DNS, trademark, rebrand deployment or product route change based on that intent.
+
+## Strict no-repeat and two lanes
+
+- Never repeat consumed H1A build/scan, G1/G2A/G2B, W0/W1/W3V/W3–W6/W6SA, C2 Origin test, old C1A deletion, old source suites, Cloud billing checks or IAM testing without distinct new evidence and consent. Never reset markers. Preserve private local receipts/credentials in Owner WSL; GitHub only sanitized status/hashes.
+- While H2 metadata decision awaits Owner, approved independent source-only P0 website work may continue as long as no conflicting code writer or live/cloud authorization is inferred. Keep Gujarati/Hindi/English UI and Capacitor compatibility. Step05 technical exit remains gated by real authenticated enabled hosted product flow. Steps13/14 separate launch decision and Step15 Android.

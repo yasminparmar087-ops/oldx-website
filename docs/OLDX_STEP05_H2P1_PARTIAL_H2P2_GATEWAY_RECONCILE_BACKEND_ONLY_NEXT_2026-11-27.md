@@ -39,3 +39,35 @@ python3 -B "$d/h2p2.py" --owner-explicitly-approved-h2p2-reconcile-and-one-backe
 **Success only if all three numerically verified:** `OLDX_H2P2_RESULT=PASS_GATEWAY_RECONCILED_AND_ONE_BACKEND_CREATED_VERIFIED` and `OLDX_H2P2_BACKEND_READBACK_VERIFIED=TRUE`. No result or STOP can be treated as H2/production acceptance. DO NOT rerun any one-shot or clear markers.
 
 **Current status:** `H2P1=PARTIAL_STOP_ACTUAL`, `H2P2=OWNER_APPROVED_SOURCE_READY_NOT_EXECUTED`, `STEP05=ACTIVE`, `H2/PRODUCTION=NO_GO`. After H2P2 actual success the remaining technical gap is properly scoped CryptoKey-level signing permission, effective IAM and trusted hosted Product integration, not more SA creations.
+
+## 27 Nov 2026 ~01:01 IST — OWNER H2P2 ACTUAL PASS, THREE DEDICATED SAs VERIFIED
+
+Owner submitted WSL terminal screenshot after executing the pinned script at source commit `53bd2864eb9b7fb374ad0fe901ff4c2e2eeee20b` and verifying blob `2cd4731290abfd14d31b8c9602549f73a97334ef`. Actual sanitized results:
+
+~~~text
+OLDX_H2P2_RESULT=PASS_GATEWAY_RECONCILED_AND_ONE_BACKEND_CREATED_VERIFIED
+OLDX_H2P2_REASON=PREVIOUS_GATEWAY_UID_AND_BACKEND_NEW_UID_VERIFIED
+OLDX_H2P2_MEDIATOR_VERIFIED=TRUE
+OLDX_H2P2_MEDIATOR_UID=100779414920484819274
+OLDX_H2P2_GATEWAY_VERIFIED=TRUE
+OLDX_H2P2_GATEWAY_UID=107238619872767759560
+OLDX_H2P2_BACKEND_CREATE_ATTEMPTED=TRUE
+OLDX_H2P2_BACKEND_READBACK_VERIFIED=TRUE
+OLDX_H2P2_BACKEND_UID=106984791114720194680
+OLDX_H2P2_GATEWAY_CREATE_REPEATED=FALSE
+OLDX_H2P2_IAM_GRANTS_KMS_SIGN_RUN_SA_KEYS=NONE
+OLDX_H2P2_H2_PRODUCTION=NO_GO
+OLDX_H2P2_DO_NOT_REPEAT=TRUE
+~~~
+
+**Identity mapping now verified in oldx-staging:**
+
+| Role | Exact service account email | Google immutable uniqueId | H2 status |
+|---|---|---|---|
+| Mediator | `oldx-c2-web-mediator@oldx-staging.iam.gserviceaccount.com` | `100779414920484819274` | VERIFIED enabled |
+| Gateway | `oldx-c2-private-gateway@oldx-staging.iam.gserviceaccount.com` | `107238619872767759560` | VERIFIED enabled |
+| Backend | `oldx-c2-product-backend@oldx-staging.iam.gserviceaccount.com` | `106984791114720194680` | VERIFIED enabled |
+
+H2P1's transient Gateway 404 has now been resolved by exact project list and numeric-ID readback; Gateway was **not** recreated. The sole new resource added by H2P2 was Backend, also readback-verified by numeric UID. All three identities are distinct; no user-managed SA keys or IAM grant issued by either creation script. H2P2 one-shot marker `/root/.oldx-step05-h2p2-partial-three-sa-reconcile-backend-only-once-20261127` now consumed: **NEVER repeat H2P1/H2P2, remove their markers, or recreate any of the three SAs.** Old H1B trial SA `oldx-c2-mediator@oldx-staging.iam.gserviceaccount.com` UID `115445220422157278526` remains DISABLED and untouched.
+
+**NEXT critical dependency:** exact CryptoKey-level `roles/cloudkms.signer` on `projects/oldx-staging/locations/asia-south1/keyRings/oldx-c2-h2-signing/cryptoKeys/oldx-c2-attestation-rs256` for **only** the verified `oldx-c2-private-gateway@oldx-staging.iam.gserviceaccount.com` (immutable UID `107238619872767759560`). **No IAM grant yet.** Fresh key policy/etag, inherited IAM scope and resource-level role review are needed before a separate scoped owner authorization for any IAM write. The Google [KMS official role table](https://docs.cloud.google.com/kms/docs/reference/permissions-and-roles) states `roles/cloudkms.signer` grants **sign**, but **not** public-key verification. Previous assistant prose that it included verification was incorrect; do not use `signerVerifier` unless truly required. KMS signing adapter may require separate status metadata permission/provider binding rather than expanding signer permissions. `STEP05=ACTIVE`, `H2/PRODUCTION=NO_GO`.

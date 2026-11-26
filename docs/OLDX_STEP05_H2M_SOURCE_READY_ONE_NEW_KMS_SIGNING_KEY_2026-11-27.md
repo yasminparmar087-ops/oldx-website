@@ -14,11 +14,11 @@
 - Local sanitized receipt (no credentials), fail-closed on unexpected identity, token, response, metadata, state, missing ring or partial result. Marker consumed even on partial write; never automatically delete/recreate.
 - **Explicit non-scope:** no IAM grant/role, no signing, no public/private key fetch, no Run image/service, Firebase/Auth/Firestore/Storage, DNS, billing settings, H2 enablement, or production changes. H1B trial SA UID 115445220422157278526 remains disabled/not deleted.
 
-## Required owner decision BEFORE running
+## Owner exact H2M approval RECEIVED — execution still not attempted
 
-This creation is NEW and billable, distinct from prior KMS API-only consent. One active SOFTWARE key version costs about **US$0.06/month plus key operations** (USD list; currency/taxes may differ). Keys/rings cannot simply be renamed. Only explicit approval of both exact resources plus initial version authorizes the paste below. Generic “continue” is NOT sufficient. Official docs: https://cloud.google.com/kms/pricing ; https://docs.cloud.google.com/kms/docs/reference/rest/v1/projects.locations.keyRings/create ; https://docs.cloud.google.com/kms/docs/reference/rest/v1/projects.locations.keyRings.cryptoKeys/create ; https://docs.cloud.google.com/kms/docs/create-key .
+This creation is NEW and billable, distinct from prior KMS API-only consent. One active SOFTWARE key version costs about **US$0.06/month plus key operations** (USD list; currency/taxes may differ). Keys/rings cannot simply be renamed. Owner explicitly replied **“ha manjuri chhe”** on 27 Nov 2026 to the proposal for exactly ONE new ring and ONE new key with ONE initial SOFTWARE RSA signing version in oldx-staging/asia-south1. This is the separate H2M consent that was previously missing; no further approval is required for these two exact creation requests and bounded verification, provided all source guards pass. The approval does NOT cover IAM, sign, deployment, activation, production or further key versions. Generic “continue” never widens this scope. Official docs: https://cloud.google.com/kms/pricing ; https://docs.cloud.google.com/kms/docs/reference/rest/v1/projects.locations.keyRings/create ; https://docs.cloud.google.com/kms/docs/reference/rest/v1/projects.locations.keyRings.cryptoKeys/create ; https://docs.cloud.google.com/kms/docs/create-key .
 
-**ONE paste AFTER explicit scoped approval** in existing owner Ubuntu WSL root prompt (not Windows SDK Shell; no new SDK install, Docker image or Cloud Shell work):
+**ONE paste under the now-explicit owner H2M approval** in existing owner Ubuntu WSL root prompt (not Windows SDK Shell; no new SDK install, Docker image or Cloud Shell work):
 
 ~~~bash
 umask 077
@@ -35,4 +35,4 @@ Never repeat after marker, STOP, error, hang or ambiguous response. Preserve pri
 
 After actual verified H2M key creation, new read-only version/public SPKI pin followed by separately consented signer-only IAM, Firebase Auth config 403 resolution, distinct H2 runtime principals/Invoker/audiences, managed photo, durable nonce/budget + TTL, independent release approval, enabled image provenance, real hosted seller→buyer→edit→withdraw and rollback. Do not repeat 11 previous focused test groups or H1B frozen OFF image.
 
-**Checkpoint:** H2M=SOURCE_READY_UNAPPROVED_UNRUN; H2/PRODUCTION=NO_GO; branch=security-hardening-review; public brand=BAJUTO, internal IDs=OLDX; bajuto.in purchase not yet confirmed.
+**Checkpoint:** H2M=OWNER_APPROVED_SOURCE_READY_NOT_EXECUTED; H2/PRODUCTION=NO_GO; branch=security-hardening-review; public brand=BAJUTO, internal IDs=OLDX; bajuto.in purchase not yet confirmed.

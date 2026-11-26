@@ -53,3 +53,34 @@ python3 -B "$d/h2q.py" --owner-approved-exact-h2q-three-readonly-iam-policies-on
 
 **Current:** `H2Q=OWNER_APPROVED_SOURCE_READY_NOT_EXECUTED`; `STEP05=ACTIVE`, `H2/PRODUCTION=NO_GO`.
 
+
+## 27 Nov 2026 ~01:08 IST — H2Q OWNER ACTUAL THREE-POLICY READ PASS (latest)
+
+Owner WSL screenshot after immutable H2Q source `4d9f871f86c7bb3d523a8f877639d4b8594eff5a` / blob `b003bbc6b8838674136b799f9bde6015dd7acb82` explicitly reported:
+
+~~~text
+OLDX_H2Q_RESULT=READ_ONLY_THREE_POLICY_LEVELS_WITH_LIMITS
+OLDX_H2Q_REASON=PROJECT_RING_KEY_DIRECT_POLICIES_NOT_FULL_EFFECTIVE_IAM
+OLDX_H2Q_PROJECT=oldx-staging
+OLDX_H2Q_PROJECT_READ=VERIFIED
+OLDX_H2Q_PROJECT_BINDINGS=17
+OLDX_H2Q_PROJECT_CONDITIONAL=1
+OLDX_H2Q_PROJECT_GATEWAY_SIGNER_BINDINGS=0
+OLDX_H2Q_RING_READ=VERIFIED
+OLDX_H2Q_RING_BINDINGS=0
+OLDX_H2Q_RING_CONDITIONAL=0
+OLDX_H2Q_RING_GATEWAY_SIGNER_BINDINGS=0
+OLDX_H2Q_KEY_READ=VERIFIED
+OLDX_H2Q_KEY_BINDINGS=0
+OLDX_H2Q_KEY_CONDITIONAL=0
+OLDX_H2Q_KEY_GATEWAY_SIGNER_BINDINGS=0
+OLDX_H2Q_ORG_FOLDER_GROUP_DENY_EFFECTIVE_IAM=NOT_CHECKED
+OLDX_H2Q_IAM_GRANTS_KMS_SIGN_SA_KEYS_RUN=NONE
+OLDX_H2Q_CLOUD_WRITES=NONE
+OLDX_H2Q_H2_PRODUCTION=NO_GO
+OLDX_H2Q_DO_NOT_REPEAT=TRUE
+~~~
+
+**Conclusions:** three direct IAM policies READ successfully; no direct Key/Ring bindings, project has 17 with one conditional binding (not to be modified). The H2Q script stored private raw policies and etags in a root-owned local WSL evidence folder, NOT in GitHub. The result is NOT a full effective-IAM evaluation (folder, org, group, deny, access boundaries remain unverified). H2Q one-shot marker `/root/.oldx-step05-h2q-three-iam-policy-reads-once-20261127` is CONSUMED — NEVER rerun/reset H2Q or older H2P2 etc.
+
+**Next separate owner decision (H2R):** propose only a guarded, one-CryptoKey IAM grant of `roles/cloudkms.signer` for `serviceAccount:oldx-c2-private-gateway@oldx-staging.iam.gserviceaccount.com` (UID `107238619872767759560`). Requires H2Q exact local evidence, fresh key-policy GET + unchanged etag/policy preimage, one `setIamPolicy` POST only, then a read-only exact-policy GET back. No broader role, no project/ring changes, no signing, no Run, no production. **H2R NOT AUTHORIZED OR EXECUTED**. Signing alone does not establish hosted Product readiness; backend must separately bind its trusted account and version/status provider.

@@ -1,5 +1,10 @@
 # OLDX Step05 H1B G2A — Owner WSL pre-login STOP; safe Python symlink guard v2
 
+## 26 Nov 2026 — G2A V2 LOGIN VERIFICATION EOF; OLD MARKER CONSUMED; NEW TTY-BASED RECOVERY SOURCE PREPARED (NOT EXECUTED)
+
+Owner output: `Once finished, enter the verification code provided in your browser`, then `gcloud crashed (EOFError): EOF when reading a line` and `H1B_G2A_RESULT=STOP_AFTER_MARKER`. v2's interactive login inherited exhausted heredoc STDIN, not a verified IAM/account failure. Original G2A marker `/root/.oldx-h1b-g2-wsl-owner-login-once-20261126` CONSUMED and two isolated config dirs created; **DO NOT rerun v1/v2, remove markers or rework any old S1/S2/G1/H1A/C1A steps**. NEW single recovery script first pinned commit `90b03e2bd1f3e0b850c053b6382ad46cb5ee8a87`, Git blob `1e325acc6c3479b4c516857634ac63e82c055f46`, separate `~/.oldx-h1b-g2a-terminal-stdin-recovery-once-20261126` marker, verifies old marker and isolated configs then explicitly passes `/dev/tty` to Google owner login. No Cloud/WSL execution by assistant, no push/SA/IAM/deploy. G2B still NOT attempted; W1–W6/H2/production NO-GO. Owner run one-paste instructions and stop boundaries: [G2A v2 EOF after marker; exact terminal-backed one-shot recovery](docs/OLDX_STEP05_H1B_G2A_TERMINAL_EOF_RECOVERY_2026-11-26.md).
+
+
 **26 Nov 2026 ~21:23 IST.** User submitted screenshot after running the previously approved G2A first attempt within `OLDX-Ubuntu-24.04` as root. Screenshot: `H1B_G2A_RESULT=STOP`, `H1B_G2A_REASON=BUNDLED_PYTHON_NOT_PRESENT`, returned to `root@DESKTOP-6AUQN5U:/mnt/c/Users/Yasmin Parmar#`. Ubuntu MOTD warning `mv: cannot stat '/var/run/motd.new'` appeared on WSL startup but is unrelated to the reported script STOP; it does not prove a failed WSL launch.
 
 ## Exact evidence and bounded interpretation

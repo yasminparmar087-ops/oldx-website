@@ -45,14 +45,18 @@ Owner WSL screenshot shows the previously SHA-verified source was executed for t
 OLDX_H2N_RESULT=PASS_PUBLIC_SPKI_PIN_VERIFIED_READONLY
 OLDX_H2N_REASON=EXACT_VERSION_RSA2048_AND_SHA256_CONFIRMED
 OLDX_H2N_VERSION=projects/oldx-staging/locations/asia-south1/keyRings/oldx-c2-h2-signing/cryptoKeys/oldx-c2-attestation-rs256/cryptoKeyVersions/1
-OLDX_H2N_SPKI_SHA256=69a50e43b9979b8b695ca4dc426bcb58d14666b0dc2da27ce823f57f53d46aba
+OLDX_H2N_SPKI_SHA256=69a50043b9979b8b695ca4dc426bcb58d14666b0dc2da27ce823f57f53d46aba
 OLDX_H2N_PEM_CRC32C=VERIFIED
 OLDX_H2N_CLOUD_WRITES=NONE
 OLDX_H2N_SIGN_IAM_H2_PRODUCTION=NOT_ATTEMPTED
 OLDX_H2N_DO_NOT_REPEAT=TRUE
 ~~~
 
-**ACTUAL verified by owner screenshot:** exact /1 version state/algorithm/protection match in H2N source, 2048-bit RSA public key strict DER/PEM parse, Google-reported PEM CRC32C verified, public SPKI DER SHA-256 pinned to `69a50e43b9979b8b695ca4dc426bcb58d14666b0dc2da27ce823f57f53d46aba`. This **public** fingerprint is safe to retain in GitHub; no OAuth tokens, private keys or local private receipts uploaded. `public-spki.pem` remains on owner WSL in its private evidence directory, not in GitHub. H2N actual PASS does not imply KMS asymmetricSign was called, signer runtime has access, Firebase/Auth/media data is configured, hosted Product works, or production is ready.
+**ACTUAL verified by owner screenshot:** exact /1 version state/algorithm/protection match in H2N source, 2048-bit RSA public key strict DER/PEM parse, Google-reported PEM CRC32C verified, public SPKI DER SHA-256 pinned to `69a50043b9979b8b695ca4dc426bcb58d14666b0dc2da27ce823f57f53d46aba`. This **public** fingerprint is safe to retain in GitHub; no OAuth tokens, private keys or local private receipts uploaded. `public-spki.pem` remains on owner WSL in its private evidence directory, not in GitHub. H2N actual PASS does not imply KMS asymmetricSign was called, signer runtime has access, Firebase/Auth/media data is configured, hosted Product works, or production is ready.
 
 **DO NOT repeat H2N** or reset `/root/.oldx-step05-h2n-public-spki-pin-readonly-once-20261127` and any H2M/H2L/H2K/earlier one-shot markers. Step05 remains ACTIVE, H2/production NO-GO. Next *independent* gate: ground exact signer-only runtime principal and permissions/IAM attachment scope and separate targeted owner consent before any new Cloud IAM write or signing. Do not automatically enable the disabled prior H1B experimental Service Account UID 115445220422157278526, remove old SA/image, or activate H2.
 
+
+## 27 Nov 2026 ~00:44 IST — SHA-256 transcription correction (not a new KMS read)
+
+Upon seeing the subsequent H2O `STOP_BEFORE_REQUEST/H2N_PIN_MISMATCH`, reexamined **the same original owner H2N screenshot**: SHA256 was `69a50043b9979b8b695ca4dc426bcb58d14666b0dc2da27ce823f57f53d46aba` (starts `69a50043`), **not** assistant's earlier erroneous `69a50e43` transcription. The correction above changes only GitHub notes and H2O expected pin, not the original KMS public key, local H2N evidence or already completed one-shot. H2N remains ACTUAL PASS, no new KMS GET/sign or IAM write. Source correction commit `c01660085584177e6fcea648584897f0eea2a4ef`.

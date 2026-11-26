@@ -33,7 +33,7 @@ OLD_DISABLED = "oldx-c2-mediator@oldx-staging.iam.gserviceaccount.com"
 KEY = ("projects/oldx-staging/locations/asia-south1/keyRings/"
        "oldx-c2-h2-signing/cryptoKeys/oldx-c2-attestation-rs256")
 VERSION = KEY + "/cryptoKeyVersions/1"
-SPKI_PIN = "69a50e43b9979b8b695ca4dc426bcb58d14666b0dc2da27ce823f57f53d46aba"
+SPKI_PIN = "69a50043b9979b8b695ca4dc426bcb58d14666b0dc2da27ce823f57f53d46aba"
 ROLE = "roles/cloudkms.signer"
 SDK = ROOT / "oldx-tools/native-gcloud-594.0.1/google-cloud-sdk"
 CLI = SDK / "bin/gcloud"

@@ -51,3 +51,18 @@ H1B_G2R_RESULT=LOGIN_AND_ISOLATED_DOCKER_HELPER_READY
 
 ## Next step
 After observed recovery success only, prepare G2B single retained-H1A image tag/push and remote digest reconciliation **within previously explicit owner G2 consent**, with collision/identity/digest fail-closed controls. No G2B push has yet occurred. Separate H1B W1–W6 approval remains mandatory; old C1A residual SA/image remain retained; H2/production NO-GO.
+
+## Preferred next paste — NO heredoc at all (simpler)
+
+For the owner to avoid any remaining confusion over STDIN, use the following **ordinary Ubuntu shell statements** at the `root@...#` prompt. The last `bash "$f"` inherits the actual terminal's STDIN, and the recovery script additionally attaches OAuth input to `/dev/tty`. Each command is chained with `&&`, so failed source integrity or syntax checks prevent execution.
+
+```bash
+umask 077
+d=$(mktemp -d /root/oldx-h1b-g2r-source.XXXXXXXX) &&
+curl --fail --silent --show-error --retry 0 --max-redirs 0 --max-time 40 --proto '=https' --output "$d/recovery.sh" 'https://raw.githubusercontent.com/yasminparmar087-ops/oldx-website/90b03e2bd1f3e0b850c053b6382ad46cb5ee8a87/scripts/step05_h1b_g2a_recover_terminal_stdin_once_20261126.sh' &&
+test "$(git hash-object "$d/recovery.sh")" = '1e325acc6c3479b4c516857634ac63e82c055f46' &&
+bash -n "$d/recovery.sh" &&
+bash "$d/recovery.sh" --h1b-g2a-terminal-stdin-recovery-once
+```
+
+This no-heredoc alternative is preferred over the earlier heredoc example; both load the SAME pinned recovery script. **Use one invocation only.** Do not enter the script twice, and do not reuse the already failed old v2 verification URL or code.

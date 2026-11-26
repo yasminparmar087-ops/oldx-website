@@ -4,6 +4,11 @@
 Repo: yasminparmar087-ops/oldx-website | Branch: security-hardening-review.
 Read [permanent operating policy](OLDX_FAST_TRACK_POLICY.md) first; this is the short mutable index. Latest dated evidence takes priority if a concurrent session has moved ahead. Preserve original [master 15-step plan](OLDX_SINGLE_EXECUTION_PLAN_2026-11-13.md) and [historical handoff](OLDX_CURRENT_HANDOFF.md).
 
+## Public brand — BAJUTO (26 Nov 2026 IST)
+- Owner-selected working public brand: **BAJUTO** (બાજુટો / बाजुटो); OLDX remains the internal technical project. [Canonical brand decision, trademark evidence, domain and minimum-change plan](OLDX_BAJUTO_REBRAND_PLAN.md).
+- Owner will purchase bajuto.in in 1–2 days; **NOT PURCHASED**. No branding implementation, registration filing, DNS, cloud or production change today. Preliminary trademark checks favorable, not legal clearance; one abandoned mark unresolved.
+- Continue engineering critical path below without repeating completed work. After actual domain purchase confirmation, scope only necessary public-facing branding and domain-dependent security changes; preserve technical IDs and existing approval gates. Future chats using either OLDX or BAJUTO refer to this same project.
+
 ## Actual status and current critical path
 - Steps 01–04 administrative/decision exits recorded; Step 04 technical requirements carried into 05/13. Step 05 active, **not done**. Steps 06–12 contain source-only progress, actual hosted integrations and acceptance still needed. Step 13/14 pending, Android Step 15 separate.
 - H1A local image/build/SBOM/Grype/runtime complete PASS_WITH_LIMITS; 12 distinct HIGH, no Critical reported. Retained local H1A image, no rebuild or rescan. [H1A receipt](OLDX_STEP05_MAXIMUM_SAFE_SOURCE_EXECUTION_RECEIPT_2026-11-25.md).

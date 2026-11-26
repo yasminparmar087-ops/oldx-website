@@ -239,14 +239,19 @@ def probe(url,method,identity=None):
 
 def cleanup_service(token,session,uid):
     """Exactly one DELETE attempt when current uid, label, etag, image and SA match."""
-    if not uid:
-        return "STOP_MANUAL_RECOVERY_NO_KNOWN_NEW_UID"
     try:
         st,service=api("GET",SURL,token)
         if st==404:
-            return "SERVICE_ALREADY_ABSENT_404"
+            return "NEW_SERVICE_ABSENT_404_NO_DELETE_NEEDED"
         require(st==200,"CLEANUP_RUN_GET_HTTP_"+str(st))
-        inspect_service(service,session,uid)
+        # Recover only this freshly created service from a cryptographically random
+        # one-session label; never delete on name alone or an unknown UID.
+        if uid is None:
+            require(service.get("creator") in (OWNER,None),
+                    "UNKNOWN_CREATED_SERVICE_OWNER")
+            uid=inspect_service(service,session)
+        else:
+            inspect_service(service,session,uid)
         pol=direct_policy(token)
         require(not pol.get("bindings",[]) or exact_owner_only(pol),
                 "UNEXPECTED_DIRECT_IAM_BINDINGS_STOP_DELETE")

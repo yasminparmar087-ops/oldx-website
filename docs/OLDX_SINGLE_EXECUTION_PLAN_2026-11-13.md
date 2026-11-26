@@ -1,5 +1,10 @@
 # OLDX — One consolidated launch execution plan (13 November 2026)
 
+## 26 Nov 2026 ~21:23 IST — G2A V1 STOP BEFORE LOGIN; PYTHON SYMLINK GUARD CORRECTED V2, NOT EXECUTED
+
+Owner WSL screenshot shows original G2A `H1B_G2A_RESULT=STOP`/`H1B_G2A_REASON=BUNDLED_PYTHON_NOT_PRESENT` during preflight; no login, marker creation, Docker image inspect, Registry push, IAM or Cloud resource write occurred within the script. Prior successful S2 allowed a symlink resolving within native SDK while v1 rejected every symlink via `! -L`, a plausible (not yet independently proven) reason. **DO NOT RERUN V1 or any older one-shots.** NEW G2A v2 source commit `8fc2fb5e32c828bc8c9d18330e436159318eaa5c`, blob `2577a278a30e011bb1c6cab24171a9def981fd00`, resolves Python via `readlink -e` and requires executable root-owned target strictly within canonical root-owned SDK. Same existing G2A once-marker preserved, checks absent; no reset. Owner's existing G2 approval applies, v2 NOT YET run, no Cloud writes. If v2 passes preflight, supervised owner browser login and isolated single-host Docker helper only; G2B single retained-image push still awaits successful G2A. Canonical new one-paste and safety boundaries: [G2A actual pre-login STOP, safe Python symlink v2 and exact NEW WSL paste](docs/OLDX_STEP05_H1B_G2A_PYTHON_SYMLINK_PREFLIGHT_STOP_V2_2026-11-26.md). H1B W1–W6/H2/production NO-GO.
+
+
 ## Permanent workflow overlay — 26 Nov 2026
 
 All future OLDX sessions follow [FAST TRACK POLICY](OLDX_FAST_TRACK_POLICY.md) and update [short current checkpoint](OLDX_FAST_TRACK_CURRENT.md). These are the mandatory entrypoints for efficient execution and continuity, not replacements for this 15-step master roadmap or scoped owner approvals. Latest dated actual evidence governs over stale historical snapshots. No launch gate, deployment permission, IAM/cost/resource consent, technical exit criterion or sequencing restriction is silently changed. Production HOLD/NO-GO. Avoid repeated historical tests and oversized handoff reads; preserve exact receipts and update this master only for genuine step/decision changes.

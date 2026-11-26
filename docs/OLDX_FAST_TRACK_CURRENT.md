@@ -7,12 +7,9 @@ Follow [permanent fast-track policy](OLDX_FAST_TRACK_POLICY.md), [AGENTS.md](../
 
 ## ONE current critical-path action
 
-**H2 provider readiness metadata-only, one WSL read-only execution.** Source:
-`scripts/step05_h2_provider_readonly_inventory_once_20261126.py`;
-pinned commit `a97d83e57824f168bc2e2c978cc545aeb885d68b`, Git blob `490095ca85821b22b5f2f4b4270b41986a08eb81`.
-Full selected binding gaps, exact no-heredoc one-paste, and STOP rules: [H2 provider-readiness packet](OLDX_STEP05_H2_G2_G6_PROVIDER_READINESS_METADATA_GATE_2026-11-26.md).
+**H2R actual metadata inventory PASS_WITH_LIMITS / KMS and Firebase Auth config 403 UNKNOWN — do NOT repeat.** Owner WSL screenshot 26 Nov 23:07 IST: project ACTIVE, Cloud Run/SAs/Storage FIRST_PAGE_COMPLETE, Firestore `(default)` metadata visible; KMS key rings and Auth config returned HTTP403 (cannot infer absent), H2 bindings and approval verifier missing, H2/production NO-GO.
 
-**It is SOURCE PREPARED, NOT owner executed.** Only HTTPS GET project/regional service identities count, regional KMS keyring/cryptoKey metadata, default Firestore DB metadata, Firebase Auth config, Cloud Storage bucket inventory. No deployed service/SA/KMS key creation, IAM changes, Media/Firebase writes, hosted request probes or public access. If 403/partial/unknown => report as UNKNOWN, not absent. Outputs sanitized `OLDX_H2R_*` only; no tokens. Do not invoke any previously consumed one-shot.
+Next exactly ONE **new** local saved-evidence summary + scoped two-permission project query (READ-ONLY, NO IAM WRITE): `scripts/step05_h2_two_permission_and_saved_receipt_once_20261126.py` pinned commit `6aba3e75c4493611fea5a51c00fd8c6b5093a7d9`, verified blob `bf11763e14ceb778990616d17e9e0475ea3679c2`. Reads previously saved sanitized JSON for counts and uses one `testIamPermissions` for `cloudkms.keyRings.list` and `firebaseauth.configs.get`. [Actual H2R result, exact H2P one-paste and STOP boundaries](OLDX_STEP05_H2_ACTUAL_403_FOLLOWUP_TWO_PERMISSIONS_FROM_SAVED_EVIDENCE_2026-11-26.md). **H2P SOURCE PREPARED NOT OWNER-RUN.** No repeat IAM G1 or full H2R GET inventory, no CLI login changes, cloud resource changes or H2 enablement. Missing project-level permissions only hints; role changes require separate explicit approval.
 
 ## Verified actual status (latest evidence first)
 

@@ -75,6 +75,8 @@ def call(method,url,token,body=None):
         code=exc.code
         exc.close()
         return code,{}
+    except (error.URLError,TimeoutError,ssl.SSLError):
+        raise Stop("GOOGLE_API_NETWORK_OR_TIMEOUT_STOP") from None
 
 def gcloud_env():
     must(sys.argv[1:]==["--w1-single-new-no-key-sa-once"],"EXACT_FLAG_REQUIRED")

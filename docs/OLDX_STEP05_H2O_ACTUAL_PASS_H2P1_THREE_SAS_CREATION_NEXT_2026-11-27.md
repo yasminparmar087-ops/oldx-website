@@ -42,3 +42,28 @@ python3 -B "$d/h2p1.py" --owner-explicitly-approved-only-three-new-h2-runtime-sa
 Expected fully verified `OLDX_H2P1_RESULT=PASS_THREE_NEW_H2_RUNTIME_SERVICE_ACCOUNTS_CREATED_VERIFIED`; 3 UID receipts; `OLDX_H2P1_IAM_GRANTS_KEYS_KMS_SIGN_RUN=NONE`. On STOP do not repeat or clear markers; preserve evidence for new *read-only* reconciliation before any new consent. No guaranteed complete batch. `STEP05=ACTIVE`, `H2P1=OWNER_APPROVED_SOURCE_READY_NOT_EXECUTED`, `H2/PRODUCTION=NO_GO`.
 
 Next after H2P1 ACTUAL PASS: choose the exact **CryptoKey-level** KMS signer-only role and effective inherited IAM status, source-check preimage/etag/rollback; separate owner consent for any KMS policy write, then real host bindings and one finite private synthetic acceptance. Do not assume CryptoKeyVersion IAM binding supports a version-specific grant; runtime pin remains `/1` with public SPKI hash `69a50043b9979b8b695ca4dc426bcb58d14666b0dc2da27ce823f57f53d46aba`.
+
+## 27 Nov 2026 ~00:55 IST — H2P1 ACTUAL PARTIAL STOP (latest owner screenshot)
+
+Owner ran exact SHA-verified `06e970d20fb944f90d75fac71d6cb8617d4727d4` source, Git blob `3707bef2cc485d4eacd68bd4927b8150ce68a1d7`, using the separate exact three-SA creation consent. **NOT a clean PASS**. Actual screenshot:
+
+~~~text
+OLDX_H2P1_RESULT=STOP_AFTER_MARKER
+OLDX_H2P1_REASON=GATEWAY_READBACK_HTTP_404
+OLDX_H2P1_PROJECT=oldx-staging
+OLDX_H2P1_MEDIATOR_STATE=VERIFIED_NEW_ENABLED
+OLDX_H2P1_MEDIATOR_UID=100779414920484819274
+OLDX_H2P1_GATEWAY_STATE=ATTEMPTED_UNVERIFIED
+OLDX_H2P1_BACKEND_STATE=NOT_ATTEMPTED
+OLDX_H2P1_CREATE_ATTEMPT_COUNT=2
+OLDX_H2P1_VERIFIED_NEW_ACCOUNT_COUNT=1
+OLDX_H2P1_IAM_GRANTS_KEYS_KMS_SIGN_RUN=NONE
+OLDX_H2P1_H2_PRODUCTION=NO_GO
+OLDX_H2P1_DO_NOT_REPEAT=TRUE
+~~~
+
+**Interpretation:** Mediator `oldx-c2-web-mediator@oldx-staging.iam.gserviceaccount.com` newly created and readback verified with immutable numeric UID above. Gateway `oldx-c2-private-gateway@oldx-staging.iam.gserviceaccount.com` create POST **was attempted and returned success sufficiently far to reach GET**, but immediate exact-email readback returned HTTP 404; gateway existence, propagation and UID now **UNKNOWN**, not absent. Backend `oldx-c2-product-backend@oldx-staging.iam.gserviceaccount.com` was **never attempted**, not created by this script. NO IAM grants/keys/KMS signing/Run/production changes. H2P1 one-shot marker /root/.oldx-step05-h2p1-three-h2-runtime-service-accounts-owner-once-20261127 **CONSUMED**; NEVER rerun/recreate gateway or clear marker. Keep private local receipts.
+
+**Official Google Cloud guidance:** IAM may not immediately resolve a newly created service account. Google says to use exponential-backoff reads; [Create service accounts](https://docs.cloud.google.com/iam/docs/service-accounts-create). For immediate reference, [Manage access](https://docs.cloud.google.com/iam/docs/manage-access-service-accounts) recommends numeric unique ID over email. This explains a *plausible* 404, not proof of creation.
+
+**Next recovery:** new tightly scoped source-first H2P2 conditional reconcile. It must read exact names/UIDs first and MUST NOT resend Gateway create; only after confirming Gateway UID and Mediator pinned UID and Backend fresh absence may it optionally create **one BACKEND**, with new separate owner consent. Bounded GET-only post-create propagation checks may use numeric UID. If still missing/uncertain, STOP, no writes. H2P2 NOT APPROVED or run. Step05 ACTIVE, H2 and production NO-GO.

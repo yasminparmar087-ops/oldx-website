@@ -1,3 +1,5 @@
+import {createC2StagingRunBudget} from '../../scripts/c2-staging-run-budget.mjs';
+import {createStagingMarketplaceBinding} from '../../scripts/staging-marketplace-context.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {createHash,generateKeyPairSync,sign,privateEncrypt,constants} from 'node:crypto';
@@ -231,4 +233,17 @@ test('NEW C2 media ownership and legacy-publication OFF stay closed under new co
  f.f.seed(m.assets,'synthetic_photo_1234567890',asset);f.useLegacy();
  await f.model.save(photo,'publish');assert.equal(f.model.snapshot().command.status,'unavailable');
  assert.equal(f.f.get(c.privateRecords,'product_'+id).published,false);f.integration.destroy();
+});
+
+test('NEW durable run budget reuses native atomic counters across two provider instances',async()=>{
+ const f=fixture(),binding=createStagingMarketplaceBinding(f.options.runtimeOptions);
+ const config={enabled:true,binding,runId:'budget',contractDigest:'b'.repeat(64),maxRequests:2,expiresAtMs:baseTime+10000,now:()=>baseTime};
+ const a=createC2StagingRunBudget(config),b=createC2StagingRunBudget(config);
+ const input={runId:'budget',operation:'save',projectId:'oldx-staging',databaseId:'(default)',expiresAtMs:baseTime+10000,limits:{maxRequests:2,maxActors:2,maxProducts:1,maxPhotos:1}};
+ assert.equal((await a(input)).allowed,true);assert.equal((await b(input)).allowed,true);assert.equal((await a(input)).allowed,false);
+ const freshGrant=createC2StagingRunBudget({...config,contractDigest:'c'.repeat(64)});
+ assert.equal((await freshGrant(input)).allowed,false);
+ assert.equal((await b({...input,databaseId:'foreign'})).allowed,false);
+ assert.equal((await createC2StagingRunBudget()(input)).allowed,false);
+ f.integration.destroy();
 });

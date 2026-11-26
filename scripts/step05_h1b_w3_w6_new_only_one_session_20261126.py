@@ -137,7 +137,7 @@ def inspect_service(s,session,expected_uid=None):
     if expected_uid is not None:
         require(uid==expected_uid,"NEW_SERVICE_UID_CHANGED")
     require(s.get("labels",{}).get("oldx-session")==session,"SESSION_LABEL_MISMATCH")
-    require(s.get("invokerIamDisabled") is False,"IAM_INVOKER_CHECK_DISABLED")
+    require(s.get("invokerIamDisabled",False) is False,"IAM_INVOKER_CHECK_DISABLED")
     require(s.get("ingress")=="INGRESS_TRAFFIC_ALL","INGRESS_MISMATCH")
     template=s.get("template") or {}
     require(template.get("serviceAccount")==SA,"RUNTIME_SA_MISMATCH")
@@ -320,9 +320,12 @@ def main():
         require(st==200,"SERVICE_READBACK_AFTER_IAM_FAILED")
         inspect_service(s,session,uid)
         uri=s.get("uri")
-        require(isinstance(uri,str) and bool(re.fullmatch(
-           r"https://[a-z0-9-]+(?:-[a-z0-9-]+)*[.]run[.]app",uri)),
-           "EXPECTED_RUN_APP_URI_UNVERIFIED")
+        require(isinstance(uri,str),"EXPECTED_RUN_APP_URI_MISSING")
+        u=parse.urlsplit(uri)
+        require(u.scheme=="https" and u.hostname is not None and
+                u.hostname.endswith(".run.app") and not u.username and
+                not u.password and u.port is None and u.path in ("","/") and
+                not u.query and not u.fragment,"EXPECTED_RUN_APP_URI_UNVERIFIED")
         print("H1B_W3W6_STAGE=FOUR_BOUNDED_NEW_SERVICE_ONLY_PROBES",flush=True)
         # Four HTTP requests total; no HTTP retries, no real data/secret payload.
         code=probe(uri+"/health","GET");probes+=1
@@ -369,7 +372,9 @@ def main():
         print("H1B_W3W6_SERVICE_CLEANUP="+cleanup)
         print("H1B_W3W6_SA_CLEANUP=RETAIN_PENDING_DEPENDENCY_GUARDS")
         print("H1B_W3W6_REGISTRY_IMAGE=RETAIN_NOT_REPUSHED")
-        print("H1B_W3W6_RESULT="+outcome)
+        print("H1B_W3W6_RESULT="+("PASS_PRIVATE_OFF_FOUR_PROBES_AND_SERVICE_DELETED_SA_RETAINED"
+              if outcome=="PRIVATE_OFF_FOUR_PROBES_PASS_CLEANUP_PENDING" and
+              cleanup=="NEW_ONLY_RUN_SERVICE_DELETED_CONFIRMED" else outcome))
         print("H1B_W3W6_REASON="+reason)
         print("H1B_W3W6_DO_NOT_REPEAT=TRUE")
     return 0 if outcome=="PRIVATE_OFF_FOUR_PROBES_PASS_CLEANUP_PENDING" and \

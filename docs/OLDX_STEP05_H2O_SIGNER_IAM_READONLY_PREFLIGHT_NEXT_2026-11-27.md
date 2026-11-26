@@ -50,3 +50,27 @@ Owner WSL screenshot after the originally pinned source `d12ab24e0...` returned 
 Directly reexamined original H2N screenshot: correct first 8 digits `69a50043`, not the earlier assistant's `69a50e43` transcription. Remaining digits unchanged. Correct full SPKI hash `69a50043b9979b8b695ca4dc426bcb58d14666b0dc2da27ce823f57f53d46aba`. H2N's locally generated fingerprint/receipt was correct; the error was in the assistant's GitHub H2N note and subsequently hard-coded H2O check. The original H2O source never made a Cloud request and its H2O marker was not created on this STOP path.
 
 **Recovery (source-only):** corrected only H2O constant to exact screenshot hash; no trust/IAM/URL/logic relaxation. New source immutable commit `c01660085584177e6fcea648584897f0eea2a4ef`, blob `1f325738a5478490a14496ef6702ac1e10f5fa2d`. Pinned command above now points to corrected script. Owner's prior two-GET approval has NOT been consumed (no GET attempted) and applies to this unchanged exact read-only scope; use single corrected script once after hash verification. If next STOP is after marker/GET, never retry or delete marker.
+
+## 27 Nov 2026 ~00:49 IST — OWNER ACTUAL H2O READ-ONLY SUCCESS (LATEST)
+
+Owner supplied WSL terminal screenshot after exact corrected H2O commit `c01660085584177e6fcea648584897f0eea2a4ef` SHA-matched and Python AST check; the previously documented STOP-before-request was separately preserved, not repeated. Actual sanitized H2O output:
+
+~~~text
+OLDX_H2O_RESULT=READ_ONLY_EXACT_SIGNER_IDENTITY_AND_KEY_POLICY_WITH_LIMITS
+OLDX_H2O_REASON=DIRECT_ACCOUNT_LIST_AND_KEY_POLICY_NOT_EFFECTIVE_IAM
+OLDX_H2O_ACCOUNT_LIST_SCOPE=COMPLETE_VISIBLE_PAGE
+OLDX_H2O_MEDIATOR=NOT_IN_COMPLETE_PROJECT_LIST
+OLDX_H2O_GATEWAY=NOT_IN_COMPLETE_PROJECT_LIST
+OLDX_H2O_BACKEND=NOT_IN_COMPLETE_PROJECT_LIST
+OLDX_H2O_KEY_POLICY_SCOPE=EXACT_CRYPTOKEY_DIRECT_POLICY_ONLY
+OLDX_H2O_GATEWAY_DIRECT_SIGNER=FALSE
+OLDX_H2O_INHERITED_IAM=NOT_CHECKED
+OLDX_H2O_IAM_GRANT=NOT_ATTEMPTED
+OLDX_H2O_CLOUD_WRITES=NONE
+OLDX_H2O_H2_PRODUCTION=NO_GO
+OLDX_H2O_DO_NOT_REPEAT=TRUE
+~~~
+
+**Actual evidence conclusion:** all three newly proposed service-account emails are absent in the complete visible first page of the exact **oldx-staging** project account list. This is not absence globally or in other projects. The KMS CryptoKey direct policy has no direct binding for the proposed Gateway signer; inherited project/folder/organization IAM is **not checked**, so effective signer permission remains unknown. No role changes, SA creation, KMS signing, host activation or production writes were attempted. The H2O one-shot marker is now consumed: /root/.oldx-step05-h2o-signing-identity-and-key-policy-readonly-once-20261127. Never rerun/reset H2O, or previous H2N/H2M/H2L/H2K etc.
+
+**Next:** prepare a separately authorized, exact three-account creation-only H2P1, requiring prior H2O actual local saved evidence and fresh exact-name absence checks. Do **not** bind KMS signing or create keys during this new stage; that is a distinct future scoped decision. No IAM write approval has been granted yet. Step05 IN_PROGRESS, H2/PRODUCTION NO-GO.

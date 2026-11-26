@@ -36,3 +36,25 @@ Never repeat after marker, STOP, error, hang or ambiguous response. Preserve pri
 After actual verified H2M key creation, new read-only version/public SPKI pin followed by separately consented signer-only IAM, Firebase Auth config 403 resolution, distinct H2 runtime principals/Invoker/audiences, managed photo, durable nonce/budget + TTL, independent release approval, enabled image provenance, real hosted seller→buyer→edit→withdraw and rollback. Do not repeat 11 previous focused test groups or H1B frozen OFF image.
 
 **Checkpoint:** H2M=OWNER_APPROVED_SOURCE_READY_NOT_EXECUTED; H2/PRODUCTION=NO_GO; branch=security-hardening-review; public brand=BAJUTO, internal IDs=OLDX; bajuto.in purchase not yet confirmed.
+
+## 27 Nov 2026 ~00:30 IST — OWNER ACTUAL H2M SUCCESS (LATEST)
+
+Owner supplied a WSL terminal screenshot after executing the previously pinned and hash-verified H2M source. Earlier "NOT RUN" statements above are historical; this newest actual result supersedes them.
+
+~~~text
+OLDX_H2M_RESULT=PASS_ONE_NEW_RING_KEY_SOFTWARE_VERSION_VERIFIED
+OLDX_H2M_REASON=EXACT_POST_CREATE_READBACKS_CONFIRMED
+OLDX_H2M_PROJECT=oldx-staging
+OLDX_H2M_REGION=asia-south1
+OLDX_H2M_RING_CREATE_ATTEMPTED=TRUE
+OLDX_H2M_KEY_CREATE_ATTEMPTED=TRUE
+OLDX_H2M_RING_READBACK_VERIFIED=TRUE
+OLDX_H2M_KEY_READBACK_VERIFIED=TRUE
+OLDX_H2M_VERSION=projects/oldx-staging/locations/asia-south1/keyRings/oldx-c2-h2-signing/cryptoKeys/oldx-c2-attestation-rs256/cryptoKeyVersions/1
+OLDX_H2M_IAM_SIGN_H2_PRODUCTION_WRITES=NONE
+OLDX_H2M_DO_NOT_REPEAT=TRUE
+~~~
+
+**ACTUAL PASS:** one exact region-scoped KMS ring, one SOFTWARE RSA-2048 PKCS1 SHA-256 ASYMMETRIC_SIGN CryptoKey and initial version /1 readback verified. Source commit dbe9de386f865d828aeb81d0ba61791d54f956dd; Git blob c6939b54eb54412bc4e23fdc2411cf962dcdb949. The screenshot shows the command verified source hash before execution. No IAM/signing/Run/Firebase/production changes by this script. H2M one-shot marker /root/.oldx-step05-h2m-new-ring-key-one-create-once-20261127 now CONSUMED. DO NOT RERUN H2M/H2L/H2K/H2F/H2E/H2P/H2R or clear markers. Do not recreate key/version or automatically clean up.
+
+**NEXT:** New bounded H2N read-only KMS version metadata + getPublicKey with RSA SPKI SHA256 pin and integrity checks, **under separate exact Owner approval for new cloud reads**. No signing, IAM, media, H2 or production. Step05 remains ACTIVE; H2/production NO-GO.

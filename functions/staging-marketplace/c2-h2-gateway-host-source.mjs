@@ -15,6 +15,10 @@ const hostUnavailable=()=>Object.freeze({
     code:'H2_GATEWAY_NOT_AUTHORIZED'}},{status:503,headers:{
     'cache-control':'private, no-store'}});},
 });
+const exactOrigin=v=>{try{const u=new URL(v);return u.protocol==='https:'&&u.origin===v&&!u.username&&!u.password&&!u.search&&!u.hash&&u.pathname==='/';}catch{return false;}};
+const audience=v=>typeof v==='string'&&v.length>=1&&v.length<=512&&
+  !/[\\s\\u0000-\\u001f\\u007f]/.test(v);
+const origins=v=>Array.isArray(v)&&v.length>0&&v.length<=8&&v.every(exactOrigin);
 const hostImage=s=>typeof s==='string'&&
   /^asia-south1-docker\.pkg\.dev\/oldx-staging\/oldx-staging-images\/[a-z0-9][a-z0-9_-]{0,80}@sha256:[a-f0-9]{64}$/.test(s)&&
   !['576a1faa599459ed9b1cdeccc01a3adc2076dffff617bec42f38df7d3a75663e',
@@ -35,6 +39,16 @@ export function createC2H2GatewayHostSource({
   if(enabled!==true||runtimeServiceAccount!==C2_H2_GATEWAY_IDENTITY||
      runtimeServiceAccountUid!==C2_H2_GATEWAY_UID||
      !hostImage(runtimeImage)||mediatorPrincipal!==MEDIATOR||
+     !exactOrigin(privateGatewayOrigin)||!origins(allowedOrigins)||
+     !exactOrigin(gatewayOptions?.backendOrigin)||
+     gatewayOptions.backendOrigin===privateGatewayOrigin||
+     !audience(gatewayOptions?.attestationAudience)||
+     gatewayOptions.attestationAudience===gatewayOptions.backendOrigin||
+     gatewayOptions.attestationAudience===websiteIdentity?.attestationAudience||
+     !['https://accounts.google.com','accounts.google.com'].includes(websiteIdentity?.issuer)||
+     typeof websiteIdentity?.fetchRequest!=='function'||
+     [gatewayOptions?.getInvokerCredential,gatewayOptions?.getGatewayAttestation,
+       gatewayOptions?.fetchBackend].some(v=>typeof v!=='function')||
      gatewayOptions?.gatewayServiceAccount!==C2_H2_GATEWAY_IDENTITY)
     return hostUnavailable();
   const signer=createC2H2PrivateGatewaySigning({

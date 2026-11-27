@@ -46,6 +46,11 @@ export function createC2H2GatewayHostSource({
      !audience(gatewayOptions?.attestationAudience)||
      gatewayOptions.attestationAudience===gatewayOptions.backendOrigin||
      gatewayOptions.attestationAudience===websiteIdentity?.attestationAudience||
+     websiteIdentity?.identityType!=='google-service-account'||
+     websiteIdentity?.expectedPrincipal!==undefined&&
+       websiteIdentity.expectedPrincipal!==MEDIATOR||
+     websiteIdentity?.expectedSubject!=='100779414920484819274'||
+     !audience(websiteIdentity?.attestationAudience)||
      !['https://accounts.google.com','accounts.google.com'].includes(websiteIdentity?.issuer)||
      typeof websiteIdentity?.fetchRequest!=='function'||
      [gatewayOptions?.getInvokerCredential,gatewayOptions?.getGatewayAttestation,

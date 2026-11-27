@@ -50,3 +50,36 @@ bash "$d/recover.sh"
 The approval for source-only local preparation does **not** include live Cloud Run, KMS signing, Firestore permission, IAM role edits, image push or new spend. Later image base/provenance and separately authorized Gateway deployment remain unresolved.
 
 **Current checkpoint:** `H2U_ORIGINAL_CONTEXT_STAGE=STOP_EACCES_CONSUMED`, `H2U_PERMISSION_RECOVERY=SOURCE_READY_UNRUN`, `STEP05=ACTIVE`, `H2/PRODUCTION=NO_GO`.
+
+## 27 Nov 2026 ~22:00 IST — OWNER ACTUAL PERMISSION RECOVERY PASS (CONSUMED)
+
+Owner screenshot of root WSL after executing the **new** exact recovery wrapper commit `1dbf8514d5d500f601e146eb6a3fb106985f36a6`, verified Git blob `67afe4b1bea0aac3672fa95f9d1cd0bcbb73c604`:
+
+~~~text
+OLDX_H2U_CONTEXT_RECOVERY_CAUSE=NONROOT_MANIFEST_READ_EACCES
+OLDX_H2U_CONTEXT_RECOVERY_MANIFEST_SHA256=12a52acef6548e2e356a3b28aa045ed15924bca31fa09df2c32c375686d87acc
+OLDX_H2U_CONTEXT_RECOVERY_MANIFEST_COPY_MODE=0644_PRIVATE_PARENT
+OLDX_H2U_CONTEXT_RESULT=PASS_65_FILES_SOURCE_ONLY
+OLDX_H2U_CONTEXT_FILE_COUNT=65
+OLDX_H2U_CONTEXT_SOURCE_BYTES=349667
+OLDX_H2U_CONTEXT_MANIFEST_SHA256=12a52acef6548e2e356a3b28aa045ed15924bca31fa09df2c32c375686d87acc
+OLDX_H2U_CONTEXT_SHA256SUMS_SHA256=42081779fe50e3ea9bf8d47aa8613c09db33050d46027d757d24efc79a2f6ecc
+OLDX_H2U_CONTEXT_PACKAGE_JSON=PRIVATE_MODULE_NO_DEPS
+OLDX_H2U_CONTEXT_CONTAINERFILE=NOT_GENERATED
+OLDX_H2U_CONTEXT_BASE_DIGEST=NOT_SELECTED
+OLDX_H2U_CONTEXT_CLOUD_WRITES=NONE
+OLDX_H2U_CONTEXT_IMAGE_BUILDS_PULLS_SCANS=NONE
+OLDX_H2U_H2_PRODUCTION=NO_GO
+OLDX_H2U_CONTEXT_RECOVERY_LOG_SHA256=3ca6ca1aad1234a840d533fd8e1bea580b5addf471d3bf578f5cea22585d9f6e
+OLDX_H2U_CONTEXT_PERMISSION_RECOVERY=PASS_SOURCE_ONLY_WITH_LIMITS
+OLDX_H2U_CONTEXT_RECOVERY_EVIDENCE=/root/oldx-h2u-context-permission-recovery.kANeYR1S
+OLDX_H2U_CONTEXT_OLD_MARKER=UNCHANGED
+OLDX_H2U_CONTEXT_ORIGINAL_MANIFEST=UNCHANGED
+OLDX_H2U_CONTEXT_RECOVERY_CLOUD_WRITES=NONE
+OLDX_H2U_CONTEXT_RECOVERY_BUILDS_PULLS_SCANS=NONE
+OLDX_H2U_H2_PRODUCTION=NO_GO
+~~~
+
+**Verified observation scope:** exactly 65 existing hash-pinned source files staged into an isolated local OFF-only source context (349667 aggregate bytes). Minimal private ESM package metadata and SHA256SUMS produced. The copied manifest was readable to nonroot Docker; original manifest and consumed older marker remained untouched. No Dockerfile/Containerfile, release base-image digest, Docker image build, scan, registry push or Cloud Run host has been produced. Reported output hashes and evidence folder are owner screenshot-derived; their underlying files were not uploaded or rehashed here. The new recovery attempt marker `/root/.oldx-step05-h2u-context-manifest-permission-recovery-once-20261127` is **CONSUMED; DO NOT REPEAT**. Prior EACCES STOP remains an accurate historic record, but is superseded by this separate recovery PASS.
+
+**Next critical path:** new immutable trusted Node24 base-image digest and minimal nonroot Containerfile/release-plan source; then separately scoped owner approval for any actual build/push/Cloud Run deploy, IAM, Firestore or real KMS signing. No new Cloud authorization is inferred from offline recovery. `STEP05=ACTIVE; H2/PRODUCTION=NO_GO`.

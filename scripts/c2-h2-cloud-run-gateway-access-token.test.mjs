@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {createC2H2GatewayMetadataAccessToken} from './c2-h2-cloud-run-gateway-access-token.mjs';
+import {createC2H2MetadataBoundPrivateGatewayHostSource} from '../functions/staging-marketplace/c2-h2-gateway-runtime-credential-source.mjs';
 
 // NEW H2S credential-port tests only. Synthetic metadata Responses; no Google
 // metadata server, network, IAM, SA JSON keys or previous tests invoked.
@@ -51,6 +52,32 @@ test('NEW H2S credential port default OFF never fetches metadata',async()=>{
   });
   assert.equal(wrongUID.ready,false);
   assert.equal(calls,0);
+  const host=createC2H2MetadataBoundPrivateGatewayHostSource({
+    enabled:true,fetchMetadata:async()=>{calls++;throw Error('NETWORK_CALLED');},
+    hostOptions:{
+      runtimeServiceAccount:EMAIL,runtimeServiceAccountUid:UID,
+    },
+  });
+  assert.equal(host.ready,false);
+  assert.equal((await host.fetch(new Request('https://gateway.example.test/'))).status,503);
+  assert.equal(calls,0);
+  // Caller cannot smuggle an alternate credential source or getters into host.
+  const overridden=createC2H2MetadataBoundPrivateGatewayHostSource({
+    enabled:true,fetchMetadata:async()=>{calls++;throw Error('NETWORK_CALLED');},
+    hostOptions:{
+      runtimeServiceAccount:EMAIL,runtimeServiceAccountUid:UID,
+      getTrustedWorkloadCredential:async()=>({accessToken:'FAKE'}),
+    },
+  });
+  assert.equal(overridden.ready,false);
+  assert.equal(calls,0);
+  const accessors=Object.defineProperty({runtimeServiceAccount:EMAIL,
+    runtimeServiceAccountUid:UID},'runtimeImage',{
+      enumerable:true,get(){throw Error('GETTER_CALLED');},
+    });
+  assert.equal(createC2H2MetadataBoundPrivateGatewayHostSource({
+    enabled:true,hostOptions:accessors,fetchMetadata:async()=>{},
+  }).ready,false);
 });
 
 test('NEW H2S credential port exact email and OAuth token, single fetch pair',async()=>{

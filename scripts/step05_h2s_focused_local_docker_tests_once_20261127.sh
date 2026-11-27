@@ -6,7 +6,7 @@ set -Eeuo pipefail
 umask 077
 
 REPO='yasminparmar087-ops/oldx-website'
-SOURCE_COMMIT='66114ebf58147343051f6d0b28237eb3b206a5d9'
+SOURCE_COMMIT='bb3ea2fe1a581f00683c08f01a2a3c52d9637764'
 IMAGE='oldx-h1a-c2-mediator-off:local-20261124t195244z'
 RUN_DIR=''
 TEST_STARTED=FALSE
@@ -80,8 +80,28 @@ TEST_STARTED=TRUE
 container --test scripts/c2-h2-gateway-signing-source.test.mjs \
   2>&1 | tee "$RUN_DIR/new-h2s-focused-tests.log"
 
-# Exact three groups (not an unrelated broad test suite) validated by runner.
-# Node's TAP output records pass/fail; shell pipefail guards the exit status.
+# Require exactly THREE new passing test groups, zero failures/skip/todo.
+# Exit fails closed if Node's summary changes or tests silently do not run.
+grep -Eq '^# tests 3 "$RUN_DIR/new-h2s-focused-tests.log" |
+  awk '{print "OLDX_H2S_FOCUSED_TEST_LOG_SHA256="$1}'
+DONE=TRUE
+ "$RUN_DIR/new-h2s-focused-tests.log"
+grep -Eq '^# pass 3 "$RUN_DIR/new-h2s-focused-tests.log" |
+  awk '{print "OLDX_H2S_FOCUSED_TEST_LOG_SHA256="$1}'
+DONE=TRUE
+ "$RUN_DIR/new-h2s-focused-tests.log"
+grep -Eq '^# fail 0 "$RUN_DIR/new-h2s-focused-tests.log" |
+  awk '{print "OLDX_H2S_FOCUSED_TEST_LOG_SHA256="$1}'
+DONE=TRUE
+ "$RUN_DIR/new-h2s-focused-tests.log"
+grep -Eq '^# skipped 0 "$RUN_DIR/new-h2s-focused-tests.log" |
+  awk '{print "OLDX_H2S_FOCUSED_TEST_LOG_SHA256="$1}'
+DONE=TRUE
+ "$RUN_DIR/new-h2s-focused-tests.log"
+grep -Eq '^# todo 0 "$RUN_DIR/new-h2s-focused-tests.log" |
+  awk '{print "OLDX_H2S_FOCUSED_TEST_LOG_SHA256="$1}'
+DONE=TRUE
+ "$RUN_DIR/new-h2s-focused-tests.log"
 sha256sum "$RUN_DIR/new-h2s-focused-tests.log" |
   awk '{print "OLDX_H2S_FOCUSED_TEST_LOG_SHA256="$1}'
 DONE=TRUE

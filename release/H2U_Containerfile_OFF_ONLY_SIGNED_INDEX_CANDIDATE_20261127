@@ -1,0 +1,29 @@
+# BAJUTO / OLDX Step05 H2U: REVIEWED SOURCE-ONLY CANDIDATE
+# DO NOT BUILD, PUSH OR DEPLOY WITHOUT NEW SCOPED OWNER APPROVAL.
+# Not the historical H1A/H1B mediator image. H2U remains default-OFF.
+# Publisher-signed immutable multi-platform INDEX (verified Cosign v3.1.4):
+#   sha256:675c532423b908f9e56f9d60a4e62309b63cd2a3175acb90a46b96f7ee68e121
+# Verified linux/amd64 CHILD manifest selected by that index:
+#   sha256:774b396818c5dbc4d9aba312b84d548045939ca6efdadc840a928f205116fc74
+# Child metadata: linux/amd64, User 65532, EntryPoint /nodejs/bin/node.
+# Node24 binary version and derived-image CVEs still unverified.
+FROM --platform=linux/amd64 gcr.io/distroless/nodejs24-debian13@sha256:675c532423b908f9e56f9d60a4e62309b63cd2a3175acb90a46b96f7ee68e121
+
+WORKDIR /app
+# The INPUT must be precisely the already staged H2U manifest-derived
+# 65-file app/ tree (349667 bytes; SHA256SUMS attested separately).
+# Build preflight MUST check the exact source manifest and every file hash,
+# reject extra files, symlinks and source drift BEFORE attempting a build.
+# No npm install, shell, credentials, Owner evidence or historical image.
+COPY --chown=65532:65532 app/ /app/
+COPY --chown=65532:65532 package.json /app/package.json
+
+USER 65532:65532
+ENV NODE_ENV=production
+ENV OLDX_H2U_MODE=OFF
+ENV PORT=8080
+EXPOSE 8080
+
+# Do not replace the Node base ENTRYPOINT. Explicit CMD because the
+# base default CMD is UNKNOWN in the verified OCI child configuration.
+CMD ["scripts/c2-h2u-cloud-run-private-off-main.mjs"]

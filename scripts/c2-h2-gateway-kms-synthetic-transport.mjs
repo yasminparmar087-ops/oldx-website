@@ -5,7 +5,8 @@ import {c2Crc32c} from './c2-kms-request-signing.mjs';
 // workload identity and credential sources MUST be bound by the trusted Cloud
 // Run host. No ambient fetch, ADC in browser, JSON key, impersonation or retry.
 // Actual Cloud Run serviceAccount identity and image/Invoker provenance must
-// be independently confirmed. A returned "principal" is not attestation.
+// be independently confirmed. Durable consume-once budget MUST be atomic across
+// host instances; local Map/flag is not an acceptable hosted implementation. A returned "principal" is not attestation.
 const KEY_VERSION='projects/oldx-staging/locations/asia-south1/keyRings/oldx-c2-h2-signing/cryptoKeys/oldx-c2-attestation-rs256/cryptoKeyVersions/1';
 const GATEWAY='oldx-c2-private-gateway@oldx-staging.iam.gserviceaccount.com';
 const GATEWAY_UID='107238619872767759560';
@@ -20,10 +21,10 @@ const uintcrc=v=>typeof v==='string'&&/^(0|[1-9][0-9]{0,9})$/.test(v)&&Number(v)
 // roles/cloudkms.signer. Do NOT fabricate ENABLED or viewPublicKey privileges.
 export function createC2H2GatewayKmsSyntheticTransport({enabled=false,
   expectedGatewayEmail=GATEWAY,expectedGatewayUid=GATEWAY_UID,
-  keyVersion=KEY_VERSION,getTrustedWorkloadCredential,fetchKms,now=Date.now}={}){
+  keyVersion=KEY_VERSION,getTrustedWorkloadCredential,fetchKms,consumeDurableSignBudget,now=Date.now}={}){
   const ready=enabled===true&&expectedGatewayEmail===GATEWAY&&
     expectedGatewayUid===GATEWAY_UID&&keyVersion===KEY_VERSION&&
-    [getTrustedWorkloadCredential,fetchKms,now].every(x=>typeof x==='function');
+    [getTrustedWorkloadCredential,fetchKms,consumeDurableSignBudget,now].every(x=>typeof x==='function');
   let attempted=false;
   return Object.freeze({ready,expectedPrincipal:GATEWAY,
     keyVersion:KEY_VERSION,signEndpoint:ENDPOINT,
@@ -40,6 +41,15 @@ export function createC2H2GatewayKmsSyntheticTransport({enabled=false,
            Object.keys(payload.digest).join(',')!=='sha256')fail();
         const t=now();
         if(!Number.isSafeInteger(t)||t<0)fail();
+        // Cross-instance atomic budget is mandatory: a per-process attempted
+        // flag cannot restrict a scaled Cloud Run deployment to ONE KMS sign.
+        // Host supplies a durable transactional consume-once implementation.
+        const budget=await consumeDurableSignBudget(Object.freeze({
+          purpose:'oldx.h2.single-synthetic-sign.v1',
+          projectId:'oldx-staging',gatewayUid:GATEWAY_UID,
+          keyVersion:KEY_VERSION,maxSigns:1,
+        }),{signal});
+        if(signal?.aborted||budget?.allowed!==true)fail();
         // A host-provided trusted workload credential source must obtain the
         // token using the *attached Gateway runtime identity* (not Owner WSL).
         // Host identity must separately be verified via Cloud Run config/IAM.

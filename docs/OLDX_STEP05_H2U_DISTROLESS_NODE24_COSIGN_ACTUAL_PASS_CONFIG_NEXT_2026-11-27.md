@@ -29,10 +29,31 @@ A signature confirms the signed OCI index identity and its claims, **not** the r
 Use Docker's officially documented `docker buildx imagetools inspect --format '{{json .Image}}'` against the **immutable linux/amd64 child digest** (not mutable tag) to read remote OCI image configuration. This is a distinct registry **metadata-only** read, not a layer pull/build or source test. Validate `os=linux`, `architecture=amd64`, exact entrypoint, user UID, and CMD. Source: https://docs.docker.com/reference/cli/docker/buildx/imagetools/inspect/
 
 ~~~bash
+set -o pipefail
 docker buildx imagetools inspect \
   --format '{{json .Image}}' \
   'gcr.io/distroless/nodejs24-debian13@sha256:774b396818c5dbc4d9aba312b84d548045939ca6efdadc840a928f205116fc74' |
-python3 -c 'import json,sys; d=json.load(sys.stdin); c=d.get("config") or {}; print("OLDX_H2U_BASE_OS="+str(d.get("os","UNKNOWN"))); print("OLDX_H2U_BASE_ARCH="+str(d.get("architecture","UNKNOWN"))); print("OLDX_H2U_BASE_USER="+str(c.get("User","UNKNOWN"))); print("OLDX_H2U_BASE_ENTRYPOINT="+str(c.get("Entrypoint","UNKNOWN"))); print("OLDX_H2U_BASE_CMD="+str(c.get("Cmd","UNKNOWN"))); print("OLDX_H2U_BASE_LAYERS_PULL=NONE"); print("OLDX_H2U_BASE_IMAGE_BUILD=NONE")'
+python3 -c '
+import json, sys
+d = json.load(sys.stdin)
+c = d.get("config") or {}
+os_name = d.get("os", "UNKNOWN")
+arch = d.get("architecture", "UNKNOWN")
+user = c.get("User", c.get("user", "UNKNOWN"))
+entry = c.get("Entrypoint", c.get("entrypoint", "UNKNOWN"))
+cmd = c.get("Cmd", c.get("cmd", "UNKNOWN"))
+print("OLDX_H2U_BASE_OS="+str(os_name))
+print("OLDX_H2U_BASE_ARCH="+str(arch))
+print("OLDX_H2U_BASE_USER="+str(user))
+print("OLDX_H2U_BASE_ENTRYPOINT="+str(entry))
+print("OLDX_H2U_BASE_CMD="+str(cmd))
+if os_name != "linux" or arch != "amd64" or not isinstance(user, str) or not user or not isinstance(entry,list) or not entry:
+    print("OLDX_H2U_BASE_CONFIG=STOP_REVIEW_REQUIRED")
+    sys.exit(2)
+print("OLDX_H2U_BASE_CONFIG=READ_ONLY_PASS_WITH_LIMITS")
+print("OLDX_H2U_BASE_IMAGE_BUILDS_PULLS_SCANS=NONE")
+print("OLDX_H2U_H2_PRODUCTION=NO_GO")
+'
 ~~~
 
 If the result is incomplete, an unexpected user/entrypoint, or an error, STOP and review; **do not** assume success or execute the source image. A digest-pinned immutable configuration read is **not** a Node24 runtime launch/version test or base image signature re-verification. The source-only `release/H2U_Containerfile_OFF_ONLY_UNVERIFIED.template` retains its intentionally-invalid digest sentinel until configuration and release boundaries are documented and reviewed.

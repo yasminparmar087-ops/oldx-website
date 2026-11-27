@@ -34,7 +34,15 @@ OLDX_H2U_LOCAL_IMAGE_OLD_TESTS_REPEATED=NONE
 OLDX_H2U_H2_PRODUCTION=NO_GO
 ~~~
 
-The screenshot also lists SHA256 digests for the separate build, Node+UID and HTTP logs inside that evidence folder. Those logs are **local to the Owner**, not uploaded, and have not been independently rehashed by the assistant.
+Owner screenshot also printed three distinct local log digests (not independently rehashed by ChatGPT):
+
+~~~text
+build.log SHA256=e4c4fe177f13aaac3db89ac92883405632184a3d853a13b5b509a285f887caea
+node-and-uid.log SHA256=20b864bceda4d1f7027dfeb119fac742c44cde56b019c1bb2b3cab68ed84ce0a
+image-off-http.log SHA256=54605cdcdd7045f2ffef8e55d73f3bb82548be0d6aaef52287d243b43fa4327f
+~~~
+
+These logs remain **Owner-local** and the screenshot-derived SHA256 strings have not been independently recomputed by the assistant.
 
 - **One local image exists only on owner's Docker host**, named `oldx-h2u-private-off:local-20261127-one`.
 - **Exact image IID** printed by the runner: `sha256:4b1bd8a5cba33e96969f8f92ebd73b73f281b6ca5279fd2b14d3be8e9a5391f2`. The build output calls this an exported **manifest list** digest. Do **not** assume the local IID is already a remote registry digest or that a registry push has occurred.

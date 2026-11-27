@@ -38,6 +38,7 @@ export function createC2H2GatewayHostSource({
 }={}){
   if(enabled!==true||runtimeServiceAccount!==C2_H2_GATEWAY_IDENTITY||
      runtimeServiceAccountUid!==C2_H2_GATEWAY_UID||
+     !gatewayOptions||typeof gatewayOptions!=='object'||Array.isArray(gatewayOptions)||
      !hostImage(runtimeImage)||mediatorPrincipal!==MEDIATOR||
      !exactOrigin(privateGatewayOrigin)||!origins(allowedOrigins)||
      !exactOrigin(gatewayOptions?.backendOrigin)||

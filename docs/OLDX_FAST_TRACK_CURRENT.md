@@ -1,6 +1,6 @@
 # OLDX FAST TRACK — Current resume checkpoint
 
-**Updated 27 Nov 2026 evening, H2R actual PASS; H2S default-OFF Gateway source integration pushed, 3 new tests authored NOT executed.**
+**Updated 27 Nov 2026 evening, H2R actual PASS; H2S source & pinned local Node24 focused runner ready; tests NOT executed.**
 Repository: `yasminparmar087-ops/oldx-website`. Branch: **`security-hardening-review`** ONLY.
 
 Follow [permanent fast-track policy](OLDX_FAST_TRACK_POLICY.md), [AGENTS.md](../AGENTS.md), [master 15-step plan](OLDX_SINGLE_EXECUTION_PLAN_2026-11-13.md) and the newest dated actual evidence. Old entries superseded here remain in Git history and linked canonical receipts. Avoid the 570K+ historical AGENTS read unless a relevant specific detail is missing. No concurrency/force push/main modification.
@@ -18,6 +18,8 @@ Follow [permanent fast-track policy](OLDX_FAST_TRACK_POLICY.md), [AGENTS.md](../
 - `scripts/c2-h2-gateway-signing-source.test.mjs`, Git blob `5b87730f26335daf0efd845fc85d38b3dc1d197f`: **3 new offline focused test groups AUTHORED, NOT EXECUTED**; run only `node --test scripts/c2-h2-gateway-signing-source.test.mjs` in verified Node>=24.12 environment, no broad prior 11 test group repeats.
 
 **H2S STATUS = SOURCE-ONLY PREPARED, NOT HOSTED/TESTED/DEPLOYED/SIGNED.** Verified GitHub blob readback and static scope assertions only. Next remaining gates: Node24+ focused test, independently verified Cloud Run Gateway service/revision SA UID and image provenance, metadata workload credential binding, truly atomic durable sign budget, independent authenticated KMS key version status provider (signer role cannot read status/public key), private Invoker + signed audiences, rollback and short-lived Owner authorization. **No new Cloud IAM/Run or signing permission granted**. No Owner WSL OAuth sign, token creator, SA JSON keys, public routes or production. `STEP05=ACTIVE; H2/PRODUCTION=NO_GO`.
+
+**27 Nov 2026 — NEXT: exact 3 NEW H2S focused tests (OFFLINE local only), runner prepared NOT EXECUTED.** Script `scripts/step05_h2s_focused_local_docker_tests_once_20261127.sh` at commit `9f1c002a12c381f891a811ec8e096977ec5125ff`, Git blob `45b6ede2d0903f0f298a7f1e3986efc86aa22123`. [One WSL command, source snapshot hashes, Docker scope and output boundary](OLDX_STEP05_H2S_SOURCE_COMPOSITION_OFFLINE_CASES_2026-11-27.md). It pins immutable H2S branch commit `bb3ea2fe1a581f00683c08f01a2a3c52d9637764` (five file hashes verified at that ref; don't use latest main commit), uses **only cached** Node24 image `oldx-h1a-c2-mediator-off:local-20261124t195244z`, offline read-only unprivileged Docker with zero network and no pull/build/scan, validates Node >=24.12 and TAP exactly 3/3/0. User WSL has NOT run it; **TEST PASS NOT YET CLAIMED**. If image missing/source changed, STOP rather than rebuild or retest older passes. No Cloud/KMS/Run/Firebase/IAM/Production changes. H2S actual signing remains NO-GO.
 
 ## Verified actual status (latest evidence first)
 

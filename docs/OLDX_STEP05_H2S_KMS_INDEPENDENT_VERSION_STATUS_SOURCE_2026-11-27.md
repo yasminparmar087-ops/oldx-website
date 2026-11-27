@@ -44,3 +44,33 @@ Success only when exact `OLDX_H2S_VERSION_STATUS_NEW_TESTS=PASS_3_GROUPS` and TA
 Independent authenticated status reader (new approval required for access), exact private Gateway runtime revision attached to verified Gateway service-account UID `107238619872767759560`, immutable image digest, Invoker + audience, real Firestore one-sign tombstone writer and permanent retention/no TTL, and one separately approved synthetic KMS `:asymmetricSign` under **Gateway** credentials; all currently **unverified/unexecuted**. Avoid treating source readiness or mock tests as proof of hosted availability.
 
 **Status:** `H2S_STATUS_VERIFIER_SOURCE_READY_TESTS_NOT_RUN`, `H2R_ACTUAL_IAM_PASS`, `H2S_LEDGER_NODE24_3_OF_3_PASS`, `STEP05_ACTIVE`, `H2_PRODUCTION_NO_GO`.
+
+## 27 Nov 2026 ~21:14 IST — ACTUAL NEW KeyVersion status tests PASS 3/3
+
+Owner supplied screenshot from one-shot `scripts/step05_h2s_version_status_new_three_offline_once_20261127.sh` (source commit `73c5e2b4959b78f33863d807df5b02bca7b59ad2`, blob `db8033c1f7d9bbb5507ab4d8eba56dabd6132913`):
+
+~~~text
+OLDX_H2S_VERSION_STATUS_NODE=24.22.3
+OLDX_H2S_VERSION_STATUS_SOURCE=5c1245658dce41a65dd78ee3c2ef4b84eb01e4a4
+OLDX_H2S_ONLY_TEST=scripts/c2-h2-independent-kms-version-status.test.mjs
+TAP version 13
+ok 1 - NEW H2S status: default OFF, invalid time and name never read
+ok 2 - NEW H2S status: exact version metadata accepts pinned policy, rejects drift
+ok 3 - NEW H2S status: wrong public PEM/CRC fails closed; no caching or repeat
+# tests 3
+# pass 3
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+OLDX_H2S_VERSION_STATUS_LOG_SHA256=1c6b40e893af416c4499e0a293a3c279205f909769ee3b28bd1841647939edce
+OLDX_H2S_VERSION_STATUS_NEW_TESTS=PASS_3_GROUPS
+OLDX_H2S_VERSION_STATUS_EVIDENCE=/root/oldx-h2s-version-status-new.6Zj1UPbh
+OLDX_H2S_VERSION_STATUS_CLOUD_WRITES=NONE
+OLDX_H2S_VERSION_STATUS_BUILDS_PULLS_SCANS=NONE
+OLDX_H2S_H2_PRODUCTION=NO_GO
+~~~
+
+**Result:** all THREE new focused Node24 mock tests PASS, 0 fail; shell wrapper PASS. The SHA256 is screenshot-transcribed, not independently rehashed from the private WSL log. No real KMS GET, signed response, new IAM, Cloud Run or Firestore action. Status tests validate positive *metadata* and negative public-key/CRC scenarios, **not** a successful live pinned public-key positive. H2N historical owner two-GET fingerprint remains valid point-in-time evidence and its one-shot is consumed.
+
+**NO REPEAT:** Local marker `/root/oldx-h2s-version-status-new.6Zj1UPbh/one-shot-attempt.marker` CONSUMED. No rerun this suite, older H2S groups, H2N/H2R/H2Q/H2P2/Cloud one-shots, scans, builds or marker clearing. Next: independently authorized fresh key-status reader, real private Gateway revision identity/Invoker, and Firestore one-sign document authority; separately scoped approval for actual live cloud checks/signing.

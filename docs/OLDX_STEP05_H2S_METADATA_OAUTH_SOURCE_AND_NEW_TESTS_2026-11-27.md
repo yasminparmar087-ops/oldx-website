@@ -39,3 +39,35 @@ Only an actual `OLDX_H2S_METADATA_NEW_TESTS=PASS_3_GROUPS`, matching TAP tests3/
 **Current:** `H2R=ACTUAL_PASS`; `OLD_H2S_3_TESTS=ACTUAL_NODE_PASS_WRAPPER_STOP_CONSUMED`; `NEW_H2S_METADATA_SOURCE=GITHUB_STATIC_CHECKS_PASS_TESTS_UNRUN`; `STEP05=ACTIVE`; `H2/PRODUCTION=NO_GO`.
 
 **Next single critical decision:** independently verify actual Cloud Run H2 private Gateway service/revision+attached SA and image, and a separate key-version status authority/durable sign budget. Do not conflate prior C1A `oldx-step05-gateway` OFF-only service/old SA with newly verified H2 `oldx-c2-private-gateway` runtime; no H2 private Gateway deployment has yet been proved.
+
+## 27 Nov 2026 ~20:55 IST — ACTUAL NEW H2S METADATA FOCUSED TESTS PASS
+
+Owner root WSL screenshot after executing immutable local runner commit `be39ceaf4fc7ae9a52905692444020655a345546`, Git blob `7e41e6f4102187b015ceadb524ba87f4da7d401a`:
+
+~~~text
+OLDX_H2S_METADATA_NODE=24.22.3
+OLDX_H2S_METADATA_SOURCE_COMMIT=27d5ae3c19ce769d5e802c5e02d2b71648be00ff
+OLDX_H2S_METADATA_ONLY_TEST=scripts/c2-h2-cloud-run-gateway-access-token.test.mjs
+TAP version 13
+ok 1 - NEW H2S credential port default OFF never fetches metadata
+ok 2 - NEW H2S credential port exact email and OAuth token, single fetch pair
+ok 3 - NEW H2S credential port rejects wrong identity before OAuth, malformed token and invalid metadata
+# tests 3
+# pass 3
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+OLDX_H2S_METADATA_LOG_SHA256=c3690a533fff72d598691701c46c6dd29091ab8dad16d4e82e6b7f75d79e9289
+OLDX_H2S_METADATA_NEW_TESTS=PASS_3_GROUPS
+OLDX_H2S_METADATA_EVIDENCE=/root/oldx-h2s-metadata-three.GGkTnKgu
+OLDX_H2S_METADATA_CLOUD_WRITES=NONE
+OLDX_H2S_METADATA_IMAGE_BUILDS_PULLS_SCANS=NONE
+OLDX_H2S_H2_PRODUCTION=NO_GO
+~~~
+
+**Actual interpretation:** All 3 distinct NEW Node24.22.3 offline focused groups **PASS / 0 FAIL**; explicit TAP reporter allowed the shell wrapper final PASS. Immutable pinned source verified, no network within the cached Docker test container and no live Cloud API action. Reported log SHA256 comes from screenshot (not independently recalculated from the owner-local log).
+
+**NO REPEAT:** This new metadata one-shot local test is CONSUMED, including `/root/oldx-h2s-metadata-three.GGkTnKgu/one-shot-test-attempt.marker`. Never re-run, delete marker, re-run prior H2S/KMS IAM/H2Q/H2P2/Cloud probes, or rebuild previous image. Keep local log intact.
+
+**NEXT:** Private Gateway's actual Cloud Run host/revision/image/Invoker and attached UID have not been verified, despite source email and control-plane UID checks. Independent KeyVersion /1 status/SPKI/algorithm provider and durable cross-instance single-sign budget with real authorized Firestore transaction and cleanup are NOT bound. No Google KMS `:asymmetricSign`, new Cloud IAM or production execution authorized. `STEP05=ACTIVE; H2/PRODUCTION=NO_GO`.

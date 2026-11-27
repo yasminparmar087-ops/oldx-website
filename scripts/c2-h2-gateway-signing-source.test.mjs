@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import {createHash} from 'node:crypto';
 import {c2Crc32c} from './c2-kms-request-signing.mjs';
 import {createC2H2GatewayKmsSyntheticTransport} from './c2-h2-gateway-kms-synthetic-transport.mjs';
+import {createC2H2GatewayHostSource} from '../functions/staging-marketplace/c2-h2-gateway-host-source.mjs';
 import {createC2H2PrivateGatewaySigning,C2_H2_GATEWAY_IDENTITY,
   C2_H2_GATEWAY_UID,C2_H2_KMS_KEY_VERSION,C2_H2_KMS_SPKI_SHA256} from
   './c2-h2-private-gateway-signing-composition.mjs';
@@ -86,6 +87,17 @@ test('H2S: default OFF and composition rejects missing real trust providers',asy
   assert.equal(composed.ready,false);
   assert.deepEqual(composed.requestSigning,{});
   assert.equal(composed.runtimeServiceAccount,null);
+  const host=createC2H2GatewayHostSource({enabled:true,
+    runtimeServiceAccount:C2_H2_GATEWAY_IDENTITY,
+    runtimeServiceAccountUid:C2_H2_GATEWAY_UID,
+    runtimeImage:'asia-south1-docker.pkg.dev/oldx-staging/oldx-staging-images/c2-h2-gateway@sha256:'+'a'.repeat(64),
+    mediatorPrincipal:'oldx-c2-web-mediator@oldx-staging.iam.gserviceaccount.com',
+    privateGatewayOrigin:'https://gateway.example.test',
+    gatewayOptions:{gatewayServiceAccount:C2_H2_GATEWAY_IDENTITY},
+  });
+  assert.equal(host.ready,false);
+  const response=await host.fetch(new Request('https://gateway.example.test/api/staging/marketplace/list',{method:'POST'}));
+  assert.equal(response.status,503);
 });
 
 test('H2S: valid synthetic digest and CRC reaches one mocked KMS transport only',async()=>{

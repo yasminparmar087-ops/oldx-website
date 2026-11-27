@@ -35,3 +35,24 @@ bash "$d/smoke.sh"
 Successful actual output must include `OLDX_H2U_OFF_LISTENER_ONE_SHOT=PASS_WITH_LIMITS`, `OLDX_H2U_OFF_RUNTIME_HEALTH_STATUS=200_OFF`, `SAVE_STATUS=503_DISABLED`, `UNKNOWN_STATUS=404`, cloud writes NONE, image builds/pulls/scans NONE. On STOP preserve local evidence; do not retry/reset without separate focused diagnosis.
 
 **NEXT after the new smoke actual PASS (not before):** minimal source-only image packaging plan from exact Owner manifest (with 65 file-specific hashes), independent base-image digest and Node24 runtime pin, then separately approved image build and private Cloud Run Gateway service with proven IAM and trusted providers. `STEP05=ACTIVE; H2/PRODUCTION=NO_GO`.
+
+## Actual owner OFF-only listener result — 27 Nov 2026 ~21:48 IST
+
+Root WSL screenshot, immutable H2U runner `d823754cf52e8b7d221efd136d88c0c50045ca44`, Git blob `c178a74aad0a6f3fc01a4a18b8d49e13d45c0e22`; prior 65-file manifest pin `12a52acef6548e2e356a3b28aa045ed15924bca31fa09df2c32c375686d87acc`.
+
+~~~text
+OLDX_H2U_OFF_RUNTIME_SMOKE=PASS_LOCAL_LISTENER_WITH_LIMITS
+OLDX_H2U_OFF_RUNTIME_SOURCE_FILES=65
+OLDX_H2U_OFF_RUNTIME_HEALTH_STATUS=200_OFF
+OLDX_H2U_OFF_RUNTIME_SAVE_STATUS=503_DISABLED
+OLDX_H2U_OFF_RUNTIME_UNKNOWN_STATUS=404
+OLDX_H2U_OFF_RUNTIME_NETWORK=DOCKER_LOOPBACK_ONLY
+OLDX_H2U_OFF_LISTENER_LOG_SHA256=a8fc994e9a9462e209032bfb650e41861eaa5b8dc5508d9c89827cef0e3b0775
+OLDX_H2U_OFF_LISTENER_ONE_SHOT=PASS_WITH_LIMITS
+OLDX_H2U_OFF_LISTENER_EVIDENCE=/root/oldx-h2u-off-listener.eFWd0haw
+OLDX_H2U_OFF_LISTENER_CLOUD_WRITES=NONE
+OLDX_H2U_OFF_LISTENER_BUILDS_PULLS_SCANS=NONE
+OLDX_H2U_H2_PRODUCTION=NO_GO
+~~~
+
+Real Node HTTP loopback was started under cached isolated Docker Node24 image and returned expected statuses, with no Docker port publication. This is a **local OFF-only runtime PASS**, not a new OCI image, effective private Cloud Run Invoker IAM, real Gateway deployment, Firestore permissions, KMS signing or production readiness. Log SHA256 is screenshot-derived, not independently rehashed. **Consumed one-shot marker:** `/root/.oldx-step05-h2u-off-listener-smoke-once-20261127`. NO REPEAT or marker deletion, including older H2U/H2S/H2T/H2R/H2N checks. Next: exact owner-local manifest-driven minimal OCI context **source-only**, no build/push/deploy.

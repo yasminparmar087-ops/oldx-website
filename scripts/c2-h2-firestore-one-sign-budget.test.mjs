@@ -69,7 +69,7 @@ test('NEW H2S one-sign Firestore transaction allows one across independent insta
   assert.equal(record.keyVersion,S.keyVersion);
   assert.equal(record.maxSigns,undefined);
   assert.ok(!Object.hasOwn(record,'expiresAtMs'));
-  assert.equal(Object.values(f.snapshot()).length,1);
+  assert.equal(f.snapshot().size,1);
 });
 
 test('NEW H2S one-sign budget fails closed on transaction failure, window and expired tombstone',async()=>{

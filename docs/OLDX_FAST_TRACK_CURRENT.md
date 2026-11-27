@@ -30,6 +30,9 @@ Exactly three distinct runtime principals, trusted server host and audience/Invo
 
 Owner working public name **BAJUTO** (બાજુટો / बाजुटो), internal technical IDs remain OLDX. Domain `bajuto.in` **not confirmed purchased**; previous owner intent was purchase in 1–2 days. [Brand decision](OLDX_BAJUTO_REBRAND_PLAN.md). No DNS, trademark, rebrand deployment or product route change based on that intent.
 
+## BAJUTO business and legal compliance (independent lane; 27 Nov 2026)
+Owner approved saving [business registration and launch compliance plan](OLDX_BAJUTO_BUSINESS_COMPLIANCE_PLAN.md). Intended sole proprietorship, free classifieds/store/service directory and direct buyer-seller transactions; no platform-held customer payments or paid launch features. Existing Udyam OLDX name update after confirmation; Ranpur Form D commencement/deadline, PEC/local licence and GST applicability to verify; legal policies and real grievance/privacy/moderation workflows integrated into original launch gates. Trademark preferred before public launch, Android follows Step 15, monetization only after applicable compliance review. No new registration, domain purchase, filing, coding, cloud or launch authority from this documentation save. Continue latest technical critical path above; do not replay prior evidence.
+
 ## Strict no-repeat and two lanes
 
 - Never repeat consumed H1A build/scan, G1/G2A/G2B, W0/W1/W3V/W3–W6/W6SA, C2 Origin test, old C1A deletion, old source suites, Cloud billing checks or IAM testing without distinct new evidence and consent. Never reset markers. Preserve private local receipts/credentials in Owner WSL; GitHub only sanitized status/hashes.

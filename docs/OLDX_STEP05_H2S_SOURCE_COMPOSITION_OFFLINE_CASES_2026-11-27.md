@@ -35,7 +35,7 @@ This is a **new narrowly scoped test**, not a repeat of the previous 11 G2–G6 
 
 ## 27 Nov 2026 — exact local Node24 focused test runner SOURCE READY, NOT RUN
 
-New script: `scripts/step05_h2s_focused_local_docker_tests_once_20261127.sh`, immutable source commit `9f1c002a12c381f891a811ec8e096977ec5125ff`, Git blob `45b6ede2d0903f0f298a7f1e3986efc86aa22123`.
+New script: `scripts/step05_h2s_focused_local_docker_tests_once_20261127.sh`, immutable source commit `7d52daab24af8742866d00b7534fd19284319ce9`, Git blob `3356c65226ca1307be607715f087a329931e0d51`.
 
 **Source snapshot:** Verified exact H2S `security-hardening-review` branch commit `bb3ea2fe1a581f00683c08f01a2a3c52d9637764`. All five H2S/core files were individually Git-blob verified at this commit. The global repo's "latest" commit `66114ebf...` was from `main`, *not* this branch, and must NOT be used to test H2S.
 
@@ -48,10 +48,12 @@ In the owner's existing Ubuntu root WSL, the runner uses ONLY a previously cache
 ~~~bash
 umask 077
 d=$(mktemp -d /root/oldx-h2s-test-launch.XXXXXXXX) &&
-curl --fail --silent --show-error --retry 0 --max-redirs 0 --max-time 40 --proto '=https' --output "$d/test.sh" 'https://raw.githubusercontent.com/yasminparmar087-ops/oldx-website/9f1c002a12c381f891a811ec8e096977ec5125ff/scripts/step05_h2s_focused_local_docker_tests_once_20261127.sh' &&
-test "$(git hash-object "$d/test.sh")" = '45b6ede2d0903f0f298a7f1e3986efc86aa22123' &&
+curl --fail --silent --show-error --retry 0 --max-redirs 0 --max-time 40 --proto '=https' --output "$d/test.sh" 'https://raw.githubusercontent.com/yasminparmar087-ops/oldx-website/7d52daab24af8742866d00b7534fd19284319ce9/scripts/step05_h2s_focused_local_docker_tests_once_20261127.sh' &&
+test "$(git hash-object "$d/test.sh")" = '3356c65226ca1307be607715f087a329931e0d51' &&
 bash -n "$d/test.sh" &&
 bash "$d/test.sh"
 ~~~
 
 Success only if the runner actually reports `OLDX_H2S_NEW_FOCUSED_TESTS=PASS_3_GROUPS`, `OLDX_H2S_CLOUD_WRITES=NONE`, `OLDX_H2S_H2_PRODUCTION=NO_GO`. This is OFFLINE mocking, not actual trusted Gateway KMS signing or hosted Product acceptance.
+
+**Runner pre-execution correction:** initial local runner had a malformed TAP check in a preliminary GitHub source revision. It was **NEVER executed**. Corrected literal checks for `# tests 3`, `# pass 3`, `# fail 0`, `# skipped 0`, `# todo 0` on source commit `7d52daab24af8742866d00b7534fd19284319ce9`, blob `3356c65226ca1307be607715f087a329931e0d51`. Only use the updated hash-pinned WSL paste above; no older runner revision.

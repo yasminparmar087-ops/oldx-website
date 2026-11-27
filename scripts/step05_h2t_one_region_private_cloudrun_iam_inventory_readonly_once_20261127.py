@@ -245,7 +245,8 @@ def main():
                 need(SCOPED.fullmatch(suffix) is not None,
                      "SERVICE_NAME_UNSAFE")
             services.extend(batch)
-            page_token = data.get("nextPageToken")
+            need(not data.get("unreachable"), "REGIONAL_LIST_UNREACHABLE")
+            page_token = data.get("nextPageToken") or None
             need(page_token is None or
                  (isinstance(page_token, str) and 0 < len(page_token) <= 2048),
                  "LIST_TOKEN_MALFORMED")

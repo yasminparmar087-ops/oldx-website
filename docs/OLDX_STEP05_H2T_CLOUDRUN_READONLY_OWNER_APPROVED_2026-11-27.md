@@ -37,3 +37,32 @@ python3 -B "$d/h2t.py" --owner-approved-exact-h2t-cloudrun-service-iam-inventory
 **On success only:** `OLDX_H2T_RESULT=READ_ONLY_CLOUDRUN_REGION_LIST_AND_MATCHED_IAM_VERIFIED_WITH_LIMITS`, `OLDX_H2T_LIST_COMPLETE=TRUE`, `CLOUD_WRITES_KMS_SIGN=NONE`, `H2_PRODUCTION=NO_GO`, `DO_NOT_REPEAT=TRUE`. If zero H2 candidates with complete list, that only establishes no candidates under tested name/attached-SA rules in this ONE region as of the read—not global absence. On `STOP`, partial/denied/timeout, keep marker and local evidence. **Do not retry** this one-shot without distinct recovery review.
 
 **Current:** H2T OWNER_APPROVED_SOURCE_READY_NOT_EXECUTED. Step05 ACTIVE; H2/PRODUCTION NO-GO. Wait for actual Owner WSL receipt to mark H2T PASS/STOP; no success is assumed before receipt.
+
+## 27 Nov 2026 ~21:21 IST — OWNER ACTUAL H2T READ-ONLY PASS WITH LIMITS (CONSUMED)
+
+Owner's Ubuntu root WSL screenshot after running the exact previously authorized, Git-blob-verified immutable script at commit `4e3c52b9b176644c8ff5dd936aaec7390acb87cf`:
+
+~~~text
+OLDX_H2T_RESULT=READ_ONLY_CLOUDRUN_REGION_LIST_AND_MATCHED_IAM_VERIFIED_WITH_LIMITS
+OLDX_H2T_REASON=SERVICE_DIRECT_POLICY_NOT_EFFECTIVE_INHERITED_IAM
+OLDX_H2T_PROJECT=oldx-staging
+OLDX_H2T_REGION=asia-south1
+OLDX_H2T_LIST_COMPLETE=TRUE
+OLDX_H2T_SERVICES_COUNT=1
+OLDX_H2T_H2_MATCHED_SERVICES=0
+OLDX_H2T_GATEWAY_SA_TEMPLATE_SERVICE_COUNT=0
+OLDX_H2T_EFFECTIVE_IAM=NOT_VERIFIED
+OLDX_H2T_FIRESTORE_KMS=NOT_CHECKED
+OLDX_H2T_EVIDENCE=/root/oldx-h2t-cloudrun-inventory-20261127T155120Z
+OLDX_H2T_CLOUD_WRITES_KMS_SIGN=NONE
+OLDX_H2T_H2_PRODUCTION=NO_GO
+OLDX_H2T_DO_NOT_REPEAT=TRUE
+~~~
+
+**Exact interpretation and bounded claim:** v2 Cloud Run regional services list is **complete** for `oldx-staging/asia-south1` at that read. Exactly **one Cloud Run service** was listed; **zero** services matched the H2 `oldx-c2-*` name / verified Mediator, Gateway or Backend service-account attachment criteria, and **zero** services' template attached the H2 Gateway SA. The existing one unrelated service was **not inspected individually for IAM or revisions**, since H2T intentionally limited matching to H2 candidates. Thus the return string `...MATCHED_IAM_VERIFIED_WITH_LIMITS` means the conditional algorithm completed—not that any H2 service IAM was actually read. **No H2 Cloud Run Gateway deployment/ready revision is established in this region**, and it is not evidence about other projects/regions, unrelated IAM or an effective inherited permissions analysis. One previous H1B service had already been deleted/verified 404; never rebuild/replay it merely for this inventory.
+
+**One-shot permanently consumed:** `/root/.oldx-step05-h2t-run-inventory-readonly-once-20261127` and the above root-local evidence must be preserved. DO NOT rerun H2T, reset marker, repeat prior H2N/H2R/IAM/SA probes or older Node tests. No cloud mutations/signing happened.
+
+**Next rational critical path: H2U source-only private Gateway deployment packet and runtime blocker resolution.** Since H2T shows zero current H2 runtime candidates, a future fresh *new* private Cloud Run Gateway service/revision (NOT the one unrelated service) is required for actual runtime signing. Its image must actually compile/include the H2 Gateway host and trusted provider bindings, not simply re-label the old H1B OFF-only image. Do not deploy unconnected stub as if H2 is ready. Before approval to deploy: verified reproducible new immutable image, exact runtime Gateway SA `oldx-c2-private-gateway@oldx-staging.iam.gserviceaccount.com` UID `107238619872767759560`, private ingress and narrowly scoped Invoker policy, nonpublic default-OFF behavior, independent authorized KeyVersion `/1` status/PEM reader (no broadened signer role), real allowed `(default)` Firestore document transaction/retention for permanent one-sign budget, tight synthetic approval window, test/readback, rollback/cleanup. None of those newly hosted permissions or deploys were authorized by this read-only approval.
+
+**Status:** `H2T=ACTUAL_PASS_WITH_LIMITS_CONSUMED`; `H2_RUNTIME_SERVICE_IN_REGION=NO_H2_MATCH`; `H2_HOSTED_KMS_SIGNING=NOT_ATTEMPTED`; `STEP05=ACTIVE`; `H2/PRODUCTION=NO_GO`.

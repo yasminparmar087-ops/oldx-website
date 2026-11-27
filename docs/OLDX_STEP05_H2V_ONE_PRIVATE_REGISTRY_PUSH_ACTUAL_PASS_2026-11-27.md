@@ -9,7 +9,7 @@ H2V_STAGE=ONE_AUTHORIZED_H2U_PUSH_ATTEMPT
 H2V_REMOTE_DIGEST=sha256:4b1bd8a5cba33e96969f8f92ebd73b73f281b6ca5279fd2b14d3be8e9a5391f2
 H2V_REMOTE_AMD64_CHILD=sha256:c165e671e2b231b5b6210f867dacc085d4a53b69fae2998a712019d9b6575243
 H2V_REMOTE_CONFIG=sha256:56b7a9601702e80286c80089e33fe13049b6fa7d3fbbcb98e4f775c9d31ace25
-H2V_TAG=h2v-off-20261127-793639b68d15e55ea4a
+H2V_TAG=h2v-off-20261127-793639b6b8d15e55ea4a
 H2V_PUSH_ATTEMPTED=TRUE
 H2V_RESULT=PASS_REMOTE_FROZEN_DIGEST_VERIFIED
 H2V_REASON=ONE_PUSH_VERIFIED
@@ -24,7 +24,7 @@ H2V_DO_NOT_REPEAT=TRUE
 
 `asia-south1-docker.pkg.dev/oldx-staging/oldx-staging-images/oldx-c2-h2-gateway-off@sha256:4b1bd8a5cba33e96969f8f92ebd73b73f281b6ca5279fd2b14d3be8e9a5391f2`
 
-The unique mutable tag is `asia-south1-docker.pkg.dev/oldx-staging/oldx-staging-images/oldx-c2-h2-gateway-off:h2v-off-20261127-793639b68d15e55ea4a`. **Future deploys must use the immutable digest, not the tag.**
+The unique mutable tag is `asia-south1-docker.pkg.dev/oldx-staging/oldx-staging-images/oldx-c2-h2-gateway-off:h2v-off-20261127-793639b6b8d15e55ea4a`. **Future deploys must use the immutable digest, not the tag.**
 
 ### What was actually done and what remains unknown
 

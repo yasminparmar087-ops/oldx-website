@@ -23,6 +23,8 @@ export function createC2H2MetadataBoundPrivateGatewayHostSource({
 }={}){
   if(enabled!==true||!hostOptions||
      Object.getPrototypeOf(hostOptions)!==Object.prototype||
+     Reflect.ownKeys(hostOptions).some(k=>typeof k!=='string'||
+       !Object.hasOwn(Object.getOwnPropertyDescriptor(hostOptions,k),'value'))||
      Reflect.ownKeys(hostOptions).includes('getTrustedWorkloadCredential')||
      hostOptions.runtimeServiceAccount!==C2_H2_GATEWAY_IDENTITY||
      hostOptions.runtimeServiceAccountUid!==C2_H2_GATEWAY_UID||

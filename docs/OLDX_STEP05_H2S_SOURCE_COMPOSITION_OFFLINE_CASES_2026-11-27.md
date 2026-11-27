@@ -78,3 +78,37 @@ bash "$d/fix.sh"
 ~~~
 
 If STOP appears preserve output/evidence, no blind rerun. H2/production NO-GO.
+
+## 27 Nov 2026 ~20:44 IST — owner actual Node24 H2S 3 focused tests PASS; wrapper-only STOP
+
+Owner's subsequent WSL screenshot of exact cached-source recovery script `cbe3a995067688b466a7c09947a517388caa42c5` / Git blob `6f7c79b54a5f8242ed1598ddf371027be717cb94` confirms **Node test execution completed successfully**:
+
+~~~text
+OLDX_H2S_NODE_ENTRYPOINT=/nodejs/bin/node
+OLDX_H2S_NODE_VERSION=24.22.3
+OLDX_H2S_ONLY_TEST=scripts/c2-h2-gateway-signing-source.test.mjs
+ℹ tests 3
+ℹ suites 0
+ℹ pass 3
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+STOP_TAP_SUMMARY_MISMATCH # tests 3
+OLDX_H2S_NEW_FOCUSED_TESTS=STOP
+OLDX_H2S_TEST_STARTED=TRUE
+OLDX_H2S_SOURCE_COMMIT=bb3ea2fe1a581f00683c08f01a2a3c52d9637764
+OLDX_H2S_LOCAL_EVIDENCE=/root/oldx-h2s-focused-offline.0Mh9HZuX
+OLDX_H2S_CLOUD_WRITES=NONE
+OLDX_H2S_BUILDS_PULLS_SCANS=NONE
+OLDX_H2S_H2_PRODUCTION=NO_GO
+~~~
+
+The three actual test cases shown as successful in screenshot:
+1. `H2S: default OFF and composition rejects missing real trust providers`
+2. `H2S: valid synthetic digest and CRC reaches one mocked KMS transport only`
+3. `H2S: reject bad checksum, denied durable budget and mutated KMS signature`
+
+**Precise interpretation:** Real Node v24.22.3 execution (engine >=24.12) **PASS 3 / FAIL 0**, source snapshot `bb3ea2...` verified, no Cloud calls. The wrapper's final `STOP` is caused by **strict shell checking `# tests 3`** while Node 24 selected the *spec* reporter that prints `ℹ tests 3`. Because shell `pipefail` passed through the test command to the summary check, the Node runner finished with zero failures; the shell wrapper's own final status is **STOP / summary-format mismatch**. **Do not mislabel the tests as failed, but do not label the wrapper as PASS.** No SHA256 evidence hash was produced by wrapper because it exited at the format check; local log `/root/oldx-h2s-focused-offline.0Mh9HZuX/new-h2s-focused-recovered-node24.log` is retained (not uploaded or independently read here).
+
+**NO REPEAT:** `h2s-node24-new-focused-test-attempt.marker` is consumed. Do NOT re-run H2S tests, re-run Docker, remove markers, redownload source, repeat historical G1/H2/H1B checks, or use Owner OAuth to sign KMS. The new 3-group offline source gate has actual Node PASS evidence; private Gateway Cloud Run identity, independent key version status provider, durable atomic budget, strict Invoker, deployment and actual KMS `:asymmetricSign` remain **NOT VERIFIED/NOT AUTHORIZED**. `H2S_OFFLINE_TESTS=ACTUAL_PASS_3_0_WITH_WRAPPER_REPORTER_STOP`; `STEP05=ACTIVE`; `H2/PRODUCTION=NO_GO`.

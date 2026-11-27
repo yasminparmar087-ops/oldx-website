@@ -21,6 +21,18 @@ New **source-only** `release/H2U_Containerfile_OFF_ONLY_UNVERIFIED.template` com
 
 Official public sources: [Distroless supported tags and architectures](https://github.com/GoogleContainerTools/distroless), [Distroless Node.js image ENTRYPOINT and CMD](https://github.com/GoogleContainerTools/distroless/blob/main/nodejs/README.md). Availability of the named tag is **not** proof of the exact current immutable digest, signature, security fitness or suitability for H2; no digest or actual base-image choice has been verified here.
 
+
+### One NEW public-registry READ-ONLY metadata command (no image pull)
+
+Execute in the Owner's existing root WSL (Docker Desktop is running). This is a **fresh public OCI manifest lookup** for the Node24 candidate, not a repetition of any previous source/tests and no Google Cloud resource write:
+
+~~~bash
+docker buildx version &&
+docker buildx imagetools inspect gcr.io/distroless/nodejs24-debian13:nonroot
+~~~
+
+Record the printed **index Digest**, and separately the child **Platform: linux/amd64** and matching **Name** digest. A multi-architecture index digest is not the same object as the amd64 child digest. `imagetools inspect` reads public registry metadata; it does **not** build, pull image layers, push or deploy. If `buildx` is absent or the registry fails, report that result rather than installing tooling, rerunning old checks or inventing a digest. This lookup **does not** verify cosign signatures, image provenance or image policy/security; those remain distinct gates before a trusted base may be selected. Do not treat a tag or this metadata read alone as final release approval.
+
 ### Owner next local-only action (not yet executed or approved as a build)
 
 Verify the exact image reference via **public registry metadata read-only**, preferably using a trusted registry client that exposes OCI index/child manifests without pulling the layers. Record actual `linux/amd64` digest, index digest, keyless signature/provenance and Node24 runtime/UID. Then replace the template sentinel in a **new reviewed, buildable release file** using those verified values. The new release file must fail closed if any mismatch. Protect the staged `SOURCE_SHA256SUMS` SHA and keep the source context immutable.

@@ -33,3 +33,28 @@ Successful run output will include `OLDX_H2U_IMPORT_CLOSURE=STATIC_AUDIT_PASS_WI
 Only after complete dependency inventory and one strictly scoped build plan: separate Owner approval for a new immutable Gateway image build/push, private Cloud Run service with correct verified Gateway UID `107238619872767759560`, ingress and IAM Invoker; and distinct independent real KeyVersion status reader, permanent one-sign Firestore transaction permissions/no TTL, authenticated mediator/backend and separate one-time KMS signing authorization. The H2U OFF app has not bound those real providers, and image provenance/hosted behavior are unknown.
 
 **Checkpoint:** H2U OFF source tests ACTUAL PASS 3/3 CONSUMED; H2U static import closure SOURCE-READY, NOT EXECUTED; Step05 ACTIVE; H2/Production NO-GO.
+
+## 27 Nov 2026 ~21:39 IST — OWNER ACTUAL H2U IMPORT CLOSURE STATIC AUDIT PASS_WITH_LIMITS
+
+Owner's root WSL screenshot showed one execution of the previously pinned runner `scripts/step05_h2u_source_closure_one_offline_audit_20261127.sh` (commit `60b377583d9a1076a9be41e8ed8846958a3da1d9`, blob `85d5071c77f4beb806209a26e9cc1634d979f2a7`) over immutable GitHub source snapshot `176a8e39e5fa8a1b3e2016f5938b3a569152f34d`:
+
+~~~text
+OLDX_H2U_CLOSURE_NODE=24.22.3
+OLDX_H2U_CLOSURE_SOURCE_COMMIT=176a8e39e5fa8a1b3e2016f5938b3a569152f34d
+OLDX_H2U_CLOSURE_FILES=65
+OLDX_H2U_CLOSURE_SOURCE_BYTES=349667
+OLDX_H2U_CLOSURE_EXTERNAL_IMPORTS=0
+OLDX_H2U_CLOSURE_CONCLUSION=STATIC_IMPORT_SCAN_ONLY_NOT_LINKER_OR_RUNTIME_VERIFIED
+OLDX_H2U_CLOSURE_MANIFEST_SHA256=12a52acef6548e2e356a3b28aa045ed15924bca31fa09df2c32c375686d87acc
+OLDX_H2U_IMPORT_CLOSURE=STATIC_AUDIT_PASS_WITH_LIMITS
+OLDX_H2U_IMPORT_CLOSURE_EVIDENCE=/root/oldx-h2u-import-closure.2oCNZVHV
+OLDX_H2U_CLOUD_WRITES=NONE
+OLDX_H2U_BUILDS_PULLS_SCANS=NONE
+OLDX_H2U_H2_PRODUCTION=NO_GO
+~~~
+
+**Precise interpretation:** Source-only static import scan reported 65 distinct source files, 349,667 aggregate source bytes and **zero bare external package import specifiers encountered by that scanner**. This is NOT a dynamic ESM linker/actual Node import acceptance, complete OCI image, artifact provenance, or Cloud Run readiness. The actual 65-entry manifest is **Owner-local** and has not been uploaded/read in ChatGPT; its file names and SHA256s are not available here. Reported manifest SHA256 is screenshot-derived, not independently recomputed here. Do NOT invent the exact COPY list or silently replace the manifest with a guessed set.
+
+**NO REPEAT:** the previous static audit's one-shot marker `/root/.oldx-step05-h2u-import-closure-audit-once-20261127` is CONSUMED. Never rerun that audit, clear its marker, redownload its source archive, rerun the HTTP 3/3 tests, H2S/H2T work, or re-build/re-scan earlier images. Preserve `/root/oldx-h2u-import-closure.2oCNZVHV/source-closure.json` and sibling `source/` files.
+
+**Next permitted source-only action:** verify the existing manifest against exact source files and test Node's ESM **linking without evaluation** using the cached Node24 image. That is a distinct new static-link audit, not a repeat of previous tests. It must fail closed if the 65/349667 or manifest SHA pins differ, a path escapes source root, unlisted module appears, an external bare import exists, or a named ESM export/link fails. No imported module evaluation, HTTP listener, Cloud API, image build/deploy, or KMS signing. Once linker and manifest are verified, prepare a precise new minimal container COPY/OCI package plan; do not claim it is already ready.

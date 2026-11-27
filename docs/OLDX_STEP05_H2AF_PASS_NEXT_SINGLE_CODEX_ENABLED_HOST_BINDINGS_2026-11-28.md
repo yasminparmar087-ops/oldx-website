@@ -1,0 +1,43 @@
+# BAJUTO / OLDX Step05 — H2AF actual cleanup PASS; next consolidated G2–G6 source-binding Codex job
+
+## 28 November 2026 ~01:11 IST — OWNER ACTUAL COMPLETE TEMPORARY CLEANUP
+
+Canonical evidence: [H2AF OWNER ACTUAL CLEANUP PASS](OLDX_STEP05_H2AF_OWNER_ACTUAL_CLEANUP_PASS_AND_HOSTED_HTTP_NOT_FOUND_2026-11-28.md), source commit `9a40a36ab0815758de4e3c051720f8582d6b1191`, Git blob `3f82e4c9bbbaad08aa9970657fba11784a80097b`. Exact Owner screenshot confirmed:
+
+- `H2AF_RESULT=EXACT_TEMP_JOB_PROBE_INVOKER_SA_CLEANUP_PASS`.
+- Job `oldx-h2ad-off-healthz-20261128` deleted, GET 404.
+- Gateway `oldx-c2-h2-private-gateway` `roles/run.invoker` restored to **Owner only**; original ingress/image unchanged.
+- Temporary probe SA email `oldx-h2ad-probe-20261128@oldx-staging.iam.gserviceaccount.com`, uniqueId `110217058111344002447`, disabled and deleted with GET 404.
+- `disabled` was OMITTED when its value was false; corrected H2AF guard confirmed `SA_DISABLED_FIELD_PRESENT=FALSE` and exact email+UID.
+- Previous single hosted health attempt H2AD8 was accepted by Cloud Scheduler but H2AD9 found exactly one AttemptFinished `NOT_FOUND`, 0 exact Cloud Run /healthz request logs. **No successful hosted HTTP200 or response body verified.** Cleanup PASS does not clear G2–G6 or H2/production NO-GO.
+- **DO NOT RERUN** H2AF, H2AE, any H2AD0–H2AD9, old image build/scan/push, old KMS/IAM/Firestore mock tests or Cloud probe commands. Preserve local markers. No more temporary Scheduler SA or Invoker experiments without a new explicit scope.
+
+## Current high-value G2–G6 facts from actual source reviewed on GitHub
+
+- Main Step05 goal remains genuine hosted owner+buyer **synthetic** minimum Product save→publish→buyer read→edit→withdraw including negative ownership, quota, retry, one bounded photo, independent rollback/cleanup. Offline source and fake-firestore cases do NOT prove hosted acceptance.
+- `functions/staging-marketplace/c2-h2u-private-off-http.mjs` (Git blob `704ba162a1fa60c5379d4fee6126ddeb86ae02c8`) is **intentionally OFF-ONLY**. Its `GET /healthz` source is HTTP200 JSON `{ok:true,service:"oldx-c2-private-gateway",mode:"OFF"}`, but live hosted call has NOT been verified. It cannot be made enabled by a config flag; do **NOT** repurpose or replace the immutable H2U image/Cloud Run service as enabled.
+- `scripts/c2-h2-gateway-kms-synthetic-transport.mjs` (Git blob `b00d0af565775f4b26084e85b148eb99c5d2f89c`) injects trusted Cloud Run workload OAuth + KMS fetch and permanently durable consume-once signing budget; source only.
+- `scripts/c2-h2-firestore-one-sign-budget.mjs` (Git blob `e7cd8fa7082da9dd2e097e8f03b3e82fff2fbabb`) fixes global one-sign record across runtime instances, within existing `marketplaceRateLimits_v1`; three focused mock transaction tests **OWNER ACTUAL PASS**, do NOT repeat.
+- `scripts/c2-cloud-run-metadata-identity.mjs` and `scripts/c2-h2-cloud-run-gateway-access-token.mjs` already define injected metadata identity ports; latter three new offline OAuth cases **OWNER ACTUAL PASS**.
+- `scripts/c2-kms-request-signing.mjs` enforces trusted independent KeyVersion state and signature/public SPKI hash. KMS `projects/oldx-staging/locations/asia-south1/keyRings/oldx-c2-h2-signing/cryptoKeys/oldx-c2-attestation-rs256/cryptoKeyVersions/1` was created H2M actual PASS, H2N pinned SPKI SHA256 `69a50043b9979b8b695ca4dc426bcb58d14666b0dc2da27ce823f57f53d46aba`, H2R exact Gateway SA key-level `roles/cloudkms.signer` binding actual PASS. But **no real Cloud Run-hosted asymmetricSign**, and signer-only IAM does NOT authorize falsely asserting verified KeyVersion `ENABLED`/public-key-read permission.
+- `scripts/c2-enabled-release-control.mjs` is default-OFF and requires distinct mediator/Gateway/backend SAs and new enabled image digests, 6 evidence hashes, independent approval, atomic run budget, 2 synthetic actors, 1 Product+1 photo, 20 req/20min.
+- `functions/staging-marketplace/c2-website-mediation.mjs` source-only C2 mediation and `functions/staging-marketplace/secure-product-pipeline.mjs` source-only activated backend already exist; prior focused tests and G2–G6 source suites verified, **NO REPEAT**.
+- Live gates unresolved: trusted KeyVersion status provider, host-only metadata token binding, exact deployed image/runtime principal/Invoker and audience, Firestore runtime SA permission to `(default)`, effective Firebase Auth ownership/transaction/nonce, approved media and synthetic cleanup version checks, enabled-image provenance/security, independent rollback/owner release. Source alone cannot mark any live gate PASS.
+
+## Next one concentrated Codex task — SOURCE ONLY, no cloud mutation
+
+Paste this entire task to Codex in repo `yasminparmar087-ops/oldx-website`, branch **`security-hardening-review`**. Codex should act without asking repetitive small questions, but new live grants/deploys/keys/signing still require explicit Owner approval.
+
+> Continue Step05 from the **H2AF OWNER ACTUAL CLEANUP PASS** checkpoint documented here. Do not repeat any completed H2/H1/Step04 CI/test/build/image pushes/Cloud metadata/GitHub receipt work or reset consumed markers. Keep public brand BAJUTO and OLDX internal technical identifiers. First read AGENTS.md, canonical latest Step05 H2AF receipt and relevant H2S G2–G6 source files. Work exclusively on `security-hardening-review`, NEVER `main`; leave production and real users untouched. Source-only/new isolated tests: **NO** Google Cloud API calls, no live KMS signing, Firebase writes, Cloud Run deployment, IAM/rules/API/billing changes, image build/push/scan, secret creation, new project resource, domain change, or broad test reruns.
+>
+> Implement the **next missing enabled-host assembly boundary**, distinct from the immutable H2U OFF-only handler, that composes/reuses the existing C2 website mediation, Gateway metadata workload credential, KMS transport/signature verifier, permanent one-sign Firestore transaction port and release-control/secure Product pipeline. Avoid reimplementing passing modules. If the full host cannot be assembled safely because real trusted KeyVersion status, release approval/Firestore authority or durable identity is absent, make the host **explicitly default-OFF and fail closed** with named interfaces and precise missing-host-provider diagnostics — never substitute mock or inferred success in deployable code. Treat the 28 Nov Scheduler `NOT_FOUND` hosted HTTP as unresolved, not as success and not as authorization to relax ingress. Reuse exact KMS KeyVersion and SPKI pin. Do not consume durable one-sign budget during import/health/readiness/source testing, do not expose OAuth or API credentials in responses or logs, do not permit real Product writes unless independent verified approval + exact synthetic scope and ownership are bound.
+>
+> Implement only the minimal **NEW focused tests** for this new host integration and its OFF/no-side-effect behavior: default OFF never calls tokens/KMS/Firestore, missing status/approval/permissions refuses, exact UID/target/nonce and replay boundaries fail closed, no budget reset on KMS ambiguity, and a local simulated successful isolated seller→buyer vertical flow only if it truly uses existing real adapters (label fixtures as simulated). Never rerun prior H2S ledger/OAuth tests or old C2 groups. Run relevant NEW cases once; if a new case fails, fix and rerun only that changed case. Avoid installing, building Docker or scanning.
+>
+> Write a concise source-only receipt documenting exact files changed, NEW test names/results, Git blob hashes, **what remains unproven in Google Cloud**, and one minimum approved hosted staging-only next plan (exact principals/roles/images/target, independent rollback and narrowly bounded synthetic cleanup); do not activate it. Preserve existing commits/results. Commit and push only `security-hardening-review`, verify remote HEAD, and put the checkpoint in a NEW `docs/OLDX_STEP05_...` file plus a reference in current handoff if practical. Do not declare Step05 DONE or production GO.
+
+## Owner next action
+
+This is **an actionable Codex source-only task**, not a new WSL one-shot cloud command. Codex is appropriate because integration code spans several existing modules; keep laptop/Cloud resource usage focused. After Codex final SHA, independently review new code and NEW test receipt, then decide one explicitly scoped live staging gate with Owner.
+
+**Checkpoint:** `H2AF=OWNER_ACTUAL_CLEANUP_PASS`; `H2_HOSTED_HEALTH=NOT_FOUND/NOT_VERIFIED`; `H2S_KMS_IAM_AND_OFFLINE_CONTRACTS=PARTIAL_PASS`; `G2–G6_REAL_HOSTED_PRODUCT=OPEN`; `STEP05=ACTIVE`; `PRODUCTION=NO_GO`.

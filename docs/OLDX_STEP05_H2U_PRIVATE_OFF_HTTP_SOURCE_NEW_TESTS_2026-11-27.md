@@ -42,3 +42,15 @@ bash "$d/h2u.sh"
 Success requires actual `OLDX_H2U_OFF_HTTP_NEW_TESTS=PASS_3_GROUPS`, Node >=24.12 and TAP exactly 3 tests / pass 3 / fail 0. If STOP, do not rerun, delete the attempt marker or repeat prior suites; preserve local log/evidence and fix only the new H2U cause in source.
 
 **Checkpoint:** `H2T=ACTUAL_PASS_WITH_LIMITS_CONSUMED`; `H2U=SOURCE_OFF_ENTRYPOINT_PREPARED_NEW_3_TESTS_UNRUN`; `STEP05=ACTIVE`; `H2/PRODUCTION=NO_GO`.
+
+## Owner actual result, 27 Nov 2026 ~21:30 IST
+
+**H2U new OFF HTTP Node24 tests ACTUAL PASS 3/3, wrapper PASS.** Owner WSL screenshot of immutable new runner `37e850c81f57ccb298cf8f7457a49389ddec1b6e` (blob `ca7fe55e85c89d19a0891ecffb6889d58386135e`):
+- `OLDX_H2U_NODE_VERSION=24.22.3`; source commit `b0b3d04fb6726bad138e02bb8a38c217c0ad3124`; only test `scripts/c2-h2u-private-off-http.test.mjs`.
+- TAP13: **3 tests / 3 pass / 0 fail / 0 cancelled / 0 skipped / 0 todo** (OFF health and API, fake enable bypass denial, strict PORT and no import-time listener).
+- `OLDX_H2U_OFF_HTTP_NEW_TESTS=PASS_3_GROUPS`.
+- `OLDX_H2U_OFF_HTTP_LOG_SHA256=0d8e788ee26281cb176671b7e5041439468f35c6c55e3c1c437e2a88ccf1f6c3`.
+- `OLDX_H2U_OFF_HTTP_EVIDENCE=/root/oldx-h2u-off-http-new.1pr8M7N3`.
+- `OLDX_H2U_OFF_HTTP_CLOUD_WRITES=NONE`; `OLDX_H2U_OFF_HTTP_BUILDS_PULLS_SCANS=NONE`; `OLDX_H2U_H2_PRODUCTION=NO_GO`.
+
+SHA256 is transcribed from screenshot, not independently recomputed from the Owner-local log. These are simulated-request source/unit tests, **not** a real listening server/network test, OCI image, Cloud Run IAM or live signing. The single-attempt marker `/root/.oldx-step05-h2u-off-http-three-focused-once-20261127` is **CONSUMED; DO NOT RERUN** or clear markers. Previous H2S/H2T/Cloud tests also not repeated. Next is only source-only packaging/dependency review; no cloud deployment or image build approved.

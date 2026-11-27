@@ -71,10 +71,28 @@ export function createC2H2GatewayKmsSyntheticTransport({enabled=false,
                                digestCrc32c:payload.digestCrc32c}),
           signal,
         });
-        if(signal?.aborted||response?.status!==200||
-           !/^application\/json(?:\s*;|$)/i.test(response.headers?.get?.('content-type')??''))fail();
-        const raw=await response.text();
-        if(signal?.aborted||typeof raw!=='string'||raw.length>4096)fail();
+        if(signal?.aborted||!(response instanceof Response)||
+           response.status!==200||response.redirected||
+           response.url&&response.url!==ENDPOINT||
+           !/^application\/json(?:\s*;|$)/i.test(response.headers.get('content-type')??''))fail();
+        const contentLength=response.headers.get('content-length');
+        if(contentLength!==null&&(!/^[0-9]+$/.test(contentLength)||
+           Number(contentLength)>4096))fail();
+        const reader=response.body?.getReader();
+        if(!reader)fail();
+        const chunks=[];let size=0;
+        try{
+          for(;;){
+            if(signal?.aborted)fail();
+            const {done,value}=await reader.read();
+            if(done)break;
+            size+=value.byteLength;
+            if(size>4096)fail();
+            chunks.push(Buffer.from(value));
+          }
+        }finally{void reader.cancel().catch(()=>{});}
+        if(signal?.aborted)fail();
+        const raw=new TextDecoder('utf-8',{fatal:true}).decode(Buffer.concat(chunks,size));
         const v=JSON.parse(raw);
         if(v?.name!==KEY_VERSION||v?.protectionLevel!=='SOFTWARE'||
            v?.verifiedDigestCrc32c!==true||!canonical(v?.signature,256)||

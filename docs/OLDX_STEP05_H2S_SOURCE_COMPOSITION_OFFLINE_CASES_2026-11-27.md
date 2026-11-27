@@ -57,3 +57,24 @@ bash "$d/test.sh"
 Success only if the runner actually reports `OLDX_H2S_NEW_FOCUSED_TESTS=PASS_3_GROUPS`, `OLDX_H2S_CLOUD_WRITES=NONE`, `OLDX_H2S_H2_PRODUCTION=NO_GO`. This is OFFLINE mocking, not actual trusted Gateway KMS signing or hosted Product acceptance.
 
 **Runner pre-execution correction:** initial local runner had a malformed TAP check in a preliminary GitHub source revision. It was **NEVER executed**. Corrected literal checks for `# tests 3`, `# pass 3`, `# fail 0`, `# skipped 0`, `# todo 0` on source commit `7d52daab24af8742866d00b7534fd19284319ce9`, blob `3356c65226ca1307be607715f087a329931e0d51`. Only use the updated hash-pinned WSL paste above; no older runner revision.
+
+## 27 Nov 2026 ~20:40 IST — actual H2S STOP before tests; safe local recovery
+
+Owner WSL screenshot: old runner reported `OLDX_H2S_NEW_FOCUSED_TESTS=STOP`, `OLDX_H2S_TEST_STARTED=FALSE`, `OLDX_H2S_CLOUD_WRITES=NONE`, `OLDX_H2S_BUILDS_PULLS_SCANS=NONE`. Docker error: `exec: "node": executable file not found in $PATH`. The runner's `STOP_NODE_VERSION_BELOW_REPO_ENGINE` is a misleading label: Node was **never invoked**, so its version is unknown. Zero new test groups were run. WSL root worked; the missing /var/run/motd.new at login is nonblocking cosmetic output.
+
+Local existing source evidence: `/root/oldx-h2s-focused-offline.0Mh9HZuX` (archive downloaded, source blobs verified), do not redownload or repeat old runner.
+
+**New source-only recovery**: `scripts/step05_h2s_recover_cached_node_absolute_entrypoint_20261127.sh`, commit `cbe3a995067688b466a7c09947a517388caa42c5`, Git blob `6f7c79b54a5f8242ed1598ddf371027be717cb94`. It reuses the exact local source and existing cached Docker image; inspects the image's configured absolute Node entrypoint instead of assuming the unqualified `node` is in PATH. If the configured entrypoint is not a confirmed absolute Node binary, it stops with diagnostic metadata rather than guessing. No pull, build, scan, source archive download, Google API, IAM, signing or production action. It requires precisely three new PASS tests, and creates a new local one-shot test marker only immediately before executing them. **New script not yet run; no PASS claimed.**
+
+One Ubuntu WSL root paste:
+
+~~~bash
+umask 077
+d=$(mktemp -d /root/oldx-h2s-entrypoint-fix.XXXXXXXX) &&
+curl --fail --silent --show-error --retry 0 --max-redirs 0 --max-time 40 --proto '=https' --output "$d/fix.sh" 'https://raw.githubusercontent.com/yasminparmar087-ops/oldx-website/cbe3a995067688b466a7c09947a517388caa42c5/scripts/step05_h2s_recover_cached_node_absolute_entrypoint_20261127.sh' &&
+test "$(git hash-object "$d/fix.sh")" = '6f7c79b54a5f8242ed1598ddf371027be717cb94' &&
+bash -n "$d/fix.sh" &&
+bash "$d/fix.sh"
+~~~
+
+If STOP appears preserve output/evidence, no blind rerun. H2/production NO-GO.

@@ -31,7 +31,7 @@ function imports(source,rel){
   // Positive output still needs build-time Node ESM linker verification.
   if(/\bimport\s*\(|\brequire\s*\(|\bcreateRequire\s*\(|\bmodule\.register/.test(source))
     stop('DYNAMIC_MODULE_LOADING',rel);
-  const stmt=/(?:^|\n)\s*(?:import|export)\s+(?:[\s\S]{0,400}?)\bfrom\s*(['"])([^'"\r\n]+)\1/g;
+  const stmt=/(?:^|\n)\s*(?:import\s+(?!\()|export\s+(?:\*|\{))(?:[\s\S]{0,400}?)\bfrom\s*(['"])([^'"\r\n]+)\1/g;
   for(const match of source.matchAll(stmt))out.push(match[2]);
   const side=/(?:^|\n)\s*import\s*(['"])([^'"\r\n]+)\1\s*;?/g;
   for(const match of source.matchAll(side))out.push(match[2]);

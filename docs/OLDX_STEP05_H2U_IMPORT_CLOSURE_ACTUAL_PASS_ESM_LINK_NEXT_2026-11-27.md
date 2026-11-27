@@ -44,3 +44,9 @@ Success only if `OLDX_H2U_ESM_LINK_AUDIT=PASS_SOURCE_LINK_ONLY_WITH_LIMITS`, `OL
 ## What this does NOT authorize or prove
 
 Even a successful link-only audit does **not** imply runtime evaluation, listening HTTP server, correct library behavior, dynamic import behavior, security of the artifact, complete OCI provenance, KMS signature, or Cloud Run IAM-private deployment. A separate **new source-only** exact 65-file manifest-driven COPY plan and standalone offline image test may be prepared after this outcome, but no image build/push, Cloud Run service creation, IAM changes, Firebase/Firestore writes, KMS GET/sign or production activation has been authorized. Maintain `STEP05=ACTIVE`, `H2/PRODUCTION=NO_GO`.
+
+## 27 Nov 2026 ~21:44 IST — OWNER ACTUAL NEW ESM LINK PASS
+
+Screenshot: `OLDX_H2U_ESM_LINK_AUDIT=PASS_SOURCE_LINK_ONLY_WITH_LIMITS`; source manifest pinned SHA256 `12a52acef6548e2e356a3b28aa045ed15924bca31fa09df2c32c375686d87acc`; **65** source files, **174** ESM static links, **3** built-in modules, **0** external imports, `OLDX_H2U_ESM_SOURCE_EVALUATED=FALSE`. One-shot log SHA256 `45442053d1b27788ef2ffddbe58c7d92fb9deaa863f1aeb9dc7f304a163661e1` (transcribed from screenshot, not independently rehashed). Evidence `/root/oldx-h2u-esm-link-only.Rd7En4st`; no Cloud writes, Docker builds/pulls/scans or production activation. Node VM experimental warning did not affect PASS.
+
+**Do not repeat.** One-shot marker `/root/.oldx-step05-h2u-esm-link-only-once-20261127` consumed; the previous 65-file scan and previous H2S/H2T/H2U tests/probes remain consumed. This is a source-only ESM linker acceptance, NOT module evaluation, actual HTTP server startup, container build, image provenance or hosted Gateway verification. Next: source-only exact-manifest OCI staging/packaging plan; do not invent 65 file paths or rebuild old H1B image. New approval required for Cloud build/deploy/IAM/Firestore/KMS. `STEP05=ACTIVE`, `H2/PRODUCTION=NO_GO`.

@@ -40,3 +40,35 @@ Only when Owner's actual output explicitly says `OLDX_H2S_ONE_SIGN_LEDGER_TESTS=
 - **No live action authorized here:** no IAM/RBAC changes, Firestore/TTL/Rules writes, cloud deployment, `:asymmetricSign`, enabled Product publication or production GO.
 
 **Checkpoint:** `H2R=ACTUAL_PASS`; `H2S_METADATA_TESTS=ACTUAL_PASS_3_0_CONSUMED`; `H2S_ONE_SIGN_LEDGER=SOURCE_READY_STATIC_READBACK_PASS_TESTS_NOT_RUN`; `STEP05=ACTIVE`; `H2/PRODUCTION=NO_GO`. Public brand BAJUTO; OLDX technical names remain unchanged.
+
+## 27 Nov 2026 ~21:03 IST — OWNER ACTUAL ONE-SIGN LEDGER OFFLINE 3/3 PASS
+
+Owner supplied Ubuntu WSL screenshot of the *new* pinned `scripts/step05_h2s_one_sign_new_three_focused_offline_once_20261127.sh` (script source commit `7e112c44eadf0c3806919745acf50107fc4877c4`, Git blob `aade1023b8467f280edbcb999fe90c6d65a01271`). Actual stdout shows:
+
+~~~text
+OLDX_H2S_ONE_SIGN_NODE=24.22.3
+OLDX_H2S_ONE_SIGN_SOURCE_COMMIT=729722568a8af33a43c33e69935c690c51c3f803
+OLDX_H2S_ONE_SIGN_ONLY_TEST=scripts/c2-h2-firestore-one-sign-budget.test.mjs
+TAP version 13
+ok 1 - NEW H2S one-sign budget default OFF, invalid approval and input never write
+ok 2 - NEW H2S one-sign Firestore transaction allows one across independent instances
+ok 3 - NEW H2S one-sign budget fails closed on transaction failure, window and expired tombstone
+# tests 3
+# pass 3
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+OLDX_H2S_ONE_SIGN_LOG_SHA256=bfa15cef660b8ebf109fda99e18696d361d56258ca31ca822598fb42fcfe90f8
+OLDX_H2S_ONE_SIGN_LEDGER_TESTS=PASS_3_GROUPS
+OLDX_H2S_ONE_SIGN_LOCAL_EVIDENCE=/root/oldx-h2s-one-sign-ledger.uKAmJcKp
+OLDX_H2S_ONE_SIGN_CLOUD_WRITES=NONE
+OLDX_H2S_ONE_SIGN_BUILDS_PULLS_SCANS=NONE
+OLDX_H2S_H2_PRODUCTION=NO_GO
+~~~
+
+**Actual scope:** ALL THREE new mock-based Firestore transaction tests PASS and runner PASS on cached Node 24.22.3, 0 failures. SHA256 is copied from the Owner screenshot; underlying WSL log is private and was not independently rehashed from this chat. This is NOT a live Firestore write, Cloud Run invocation or real KMS signing. Earlier metadata token 3/3 and synthetic KMS transport 3/3 remain separately completed, NOT rerun.
+
+**Consumed one-shot:** `/root/oldx-h2s-one-sign-ledger.uKAmJcKp/one-sign-focused-attempt.marker`; **NEVER rerun** the ledger test runner, earlier accepted tests or H2R/H2Q/H2P2 etc. Never clear markers, reset the global signer tombstone, rebuild or scan previous images for this check. The offline test only establishes code behavior with a fake Firestore transaction double. **No Cloud IAM, Firestore, Cloud Run, KMS or production changes.**
+
+**Next:** independently trusted KMS KeyVersion /1 status and public SPKI source; actual private Gateway runtime image/attached UID/Invoker; Firestore least-privilege authorization and tombstone no-TTL proof; separate owner-scoped approval for any real Cloud calls. `STEP05=ACTIVE; H2/PRODUCTION=NO_GO`.

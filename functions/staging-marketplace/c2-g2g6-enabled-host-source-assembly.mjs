@@ -1,0 +1,110 @@
+import {requireC2EnabledReleaseControl} from '../../scripts/c2-enabled-release-control.mjs';
+import {createC2EnabledProductBackend} from './secure-product-pipeline.mjs';
+import {createC2WebsiteMediator} from './c2-website-mediation.mjs';
+import {createC2WebsiteNodeHandler} from './c2-website-node-http.mjs';
+import {createC2H2MetadataBoundPrivateGatewayHostSource} from './c2-h2-gateway-runtime-credential-source.mjs';
+
+// SOURCE-ONLY integration of EXISTING trusted factories. No listener or
+// deployment, no ambient credentials/SDK, no KMS/Firestore on import/create.
+// A 'sourceComposed' value is NOT proof of runtime IAM, deployed image,
+// approval, trusted KeyVersion reader, durable quota or a hosted HTTP result.
+// Unlike the previously deployed immutable H2U OFF handler, this is a NEW
+// separate potential future revision, never a mutation of H2U's container.
+const PROJ='oldx-staging';
+const MED='oldx-c2-web-mediator@oldx-staging.iam.gserviceaccount.com';
+const MED_UID='100779414920484819274';
+const GATE='oldx-c2-private-gateway@oldx-staging.iam.gserviceaccount.com';
+const GATE_UID='107238619872767759560';
+const BACK='oldx-c2-product-backend@oldx-staging.iam.gserviceaccount.com';
+const BACK_UID='106984791114720194680';
+const oldOffDigests=new Set([
+ '576a1faa599459ed9b1cdeccc01a3adc2076dffff617bec42f38df7d3a75663e',
+ '612f3c02806a93d991127f87e34391646edf9bad251bb22b8aace90a434bc30a',
+ '4b1bd8a5cba33e96969f8f92ebd73b73f281b6ca5279fd2b14d3be8e9a5391f2',
+]);
+const plain=v=>v!==null&&typeof v==='object'&&
+  !Array.isArray(v)&&Object.getPrototypeOf(v)===Object.prototype;
+const image=v=>typeof v==='string'&&
+  /^asia-south1-docker\.pkg\.dev\/oldx-staging\/oldx-staging-images\/[a-z0-9][a-z0-9_-]{0,80}@sha256:[a-f0-9]{64}$/.test(v)&&
+  !oldOffDigests.has(v.slice(-64));
+const role=(x,email,uid)=>plain(x)&&x.principal===email&&x.uid===uid&&image(x.image);
+const offFetch=async()=>Response.json({ok:false,error:{code:'C2_G2_G6_NOT_AUTHORIZED'}},{
+  status:503,headers:{'cache-control':'private, no-store','x-content-type-options':'nosniff'}});
+const off=()=>Object.freeze({
+  sourceComposed:false,
+  reason:'MISSING_TRUSTED_HOST_OR_RELEASE_BOUNDARY',
+  websiteHandler:createC2WebsiteNodeHandler(),
+  gateway:Object.freeze({ready:false,fetch:offFetch}),
+  backend:Object.freeze({fetch:offFetch}),
+});
+
+// Bind three *distinct* host processes' existing factories behind the same
+// APPROVED synthetic release control. A caller MUST provide real, separately
+// validated runtime metadata and restricted privileged callback ports;
+// injected strings are not a substitute for such live validation.
+// A successful source composition never turns on existing Cloud Run services.
+export function createC2G2G6EnabledHostSourceAssembly({
+  enabled=false,releaseControl,hostFacts,
+  websiteOptions,gatewayHostOptions,backendOptions,
+  fetchGatewayMetadata,now=Date.now,
+}={}){
+  if(enabled!==true||!plain(hostFacts)||!plain(websiteOptions)||
+      !plain(gatewayHostOptions)||!plain(backendOptions)||
+      !role(hostFacts.mediator,MED,MED_UID)||
+      !role(hostFacts.gateway,GATE,GATE_UID)||
+      !role(hostFacts.backend,BACK,BACK_UID)||
+      new Set(Object.values(hostFacts).map(x=>x?.image)).size!==3||
+      typeof fetchGatewayMetadata!=='function'||typeof now!=='function'||
+      backendOptions.runtimeServiceAccount!==undefined||
+      backendOptions.runtimeImage!==undefined||
+      backendOptions.releaseControl!==undefined||
+      gatewayHostOptions.enabled!==undefined||
+      websiteOptions.enabled!==undefined)return off();
+  let control;
+  try{control=requireC2EnabledReleaseControl(releaseControl);}
+  catch{return off();}
+  if(control.runtimePrincipal!==BACK||control.runtimeImage!==hostFacts.backend.image||
+      gatewayHostOptions.runtimeServiceAccount!==GATE||
+      gatewayHostOptions.runtimeServiceAccountUid!==GATE_UID||
+      gatewayHostOptions.runtimeImage!==hostFacts.gateway.image||
+      gatewayHostOptions.gatewayOptions?.gatewayServiceAccount!==GATE||
+      gatewayHostOptions.mediatorPrincipal!==MED||
+      websiteOptions.mediatorPrincipal!==MED||
+      websiteOptions.privateGatewayOrigin!==gatewayHostOptions.privateGatewayOrigin||
+      !Array.isArray(websiteOptions.allowedOrigins)||
+      JSON.stringify(websiteOptions.allowedOrigins)!==
+        JSON.stringify(gatewayHostOptions.allowedOrigins)||
+      websiteOptions.websiteOrigin===websiteOptions.privateGatewayOrigin||
+      websiteOptions.mediationAudience===gatewayHostOptions.gatewayOptions?.attestationAudience||
+      typeof backendOptions.runtimeOptions?.createMediaBindings!=='function')
+    return off();
+
+  // The real release control still verifies independent approval and consumes
+  // a durable run budget per backend operation. Neither is evaluated here.
+  const backend=createC2EnabledProductBackend({
+    ...backendOptions,enabled:true,releaseControl:control,
+    runtimeServiceAccount:BACK,runtimeImage:hostFacts.backend.image,
+  });
+  const gateway=createC2H2MetadataBoundPrivateGatewayHostSource({
+    enabled:true,hostOptions:gatewayHostOptions,
+    fetchMetadata:fetchGatewayMetadata,now,
+  });
+  if(gateway.ready!==true)return off();
+  // Keep the actual IAM hop via host-provided fetchPrivateGateway; NEVER
+  // replace it with an in-process gateway.fetch shortcut in deployed code.
+  if(typeof websiteOptions.fetchPrivateGateway!=='function'||
+      typeof websiteOptions.consumeGuestAdmission!=='function')return off();
+  const mediator=createC2WebsiteMediator({
+    ...websiteOptions,enabled:true,now,
+  });
+  const websiteHandler=createC2WebsiteNodeHandler({
+    enabled:true,websiteOrigin:websiteOptions.websiteOrigin,
+    allowedOrigins:websiteOptions.allowedOrigins,
+    mediator,timeoutMs:5000,
+  });
+  return Object.freeze({
+    sourceComposed:true,
+    reason:'SOURCE_ONLY_AWAITING_INDEPENDENT_HOSTED_GATES',
+    websiteHandler,gateway,backend,
+  });
+}

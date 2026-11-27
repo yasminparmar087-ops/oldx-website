@@ -98,6 +98,12 @@ test('H2S: default OFF and composition rejects missing real trust providers',asy
   assert.equal(host.ready,false);
   const response=await host.fetch(new Request('https://gateway.example.test/api/staging/marketplace/list',{method:'POST'}));
   assert.equal(response.status,503);
+  const nullOptions=createC2H2GatewayHostSource({
+    enabled:true,runtimeServiceAccount:C2_H2_GATEWAY_IDENTITY,
+    runtimeServiceAccountUid:C2_H2_GATEWAY_UID,
+    gatewayOptions:null,
+  });
+  assert.equal(nullOptions.ready,false);
 });
 
 test('H2S: valid synthetic digest and CRC reaches one mocked KMS transport only',async()=>{

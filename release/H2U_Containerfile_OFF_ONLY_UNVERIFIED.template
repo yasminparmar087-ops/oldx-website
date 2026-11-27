@@ -1,0 +1,23 @@
+# BAJUTO / OLDX Step05 H2U — DESIGN TEMPLATE ONLY (NOT A BUILDABLE Dockerfile)
+# OWNER APPROVAL BOUNDARY: No image build/pull/push, registry, Cloud Run or IAM changes.
+# IMPORTANT: Replace the *entire* FROM digest with the independently verified
+# linux/amd64 immutable child digest and verify distroless Node24 signature/provenance,
+# architecture, Node version and runtime entrypoint before this is executable.
+# The sentinel intentionally invalidates the FROM reference to fail closed.
+FROM --platform=linux/amd64 gcr.io/distroless/nodejs24-debian13:nonroot@sha256:UNVERIFIED_DIGEST_DO_NOT_BUILD
+
+WORKDIR /app
+# Source-only context contains the SHA-verified 65-file app tree from the
+# existing immutable Owner-local H2U manifest. No secrets/config/old image copied.
+COPY --chown=65532:65532 app/ /app/
+COPY --chown=65532:65532 package.json /app/package.json
+
+USER 65532:65532
+ENV NODE_ENV=production
+ENV OLDX_H2U_MODE=OFF
+ENV PORT=8080
+EXPOSE 8080
+# Distroless Node24 image supplies the Node executable as ENTRYPOINT.
+# Never override with a shell or npm. The entrypoint itself fails if OFF is unset
+# incorrectly, providers are unexpectedly ready, or PORT is invalid.
+CMD ["scripts/c2-h2u-cloud-run-private-off-main.mjs"]

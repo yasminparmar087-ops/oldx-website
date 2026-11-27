@@ -80,28 +80,12 @@ TEST_STARTED=TRUE
 container --test scripts/c2-h2-gateway-signing-source.test.mjs \
   2>&1 | tee "$RUN_DIR/new-h2s-focused-tests.log"
 
-# Require exactly THREE new passing test groups, zero failures/skip/todo.
-# Exit fails closed if Node's summary changes or tests silently do not run.
-grep -Eq '^# tests 3 "$RUN_DIR/new-h2s-focused-tests.log" |
-  awk '{print "OLDX_H2S_FOCUSED_TEST_LOG_SHA256="$1}'
-DONE=TRUE
- "$RUN_DIR/new-h2s-focused-tests.log"
-grep -Eq '^# pass 3 "$RUN_DIR/new-h2s-focused-tests.log" |
-  awk '{print "OLDX_H2S_FOCUSED_TEST_LOG_SHA256="$1}'
-DONE=TRUE
- "$RUN_DIR/new-h2s-focused-tests.log"
-grep -Eq '^# fail 0 "$RUN_DIR/new-h2s-focused-tests.log" |
-  awk '{print "OLDX_H2S_FOCUSED_TEST_LOG_SHA256="$1}'
-DONE=TRUE
- "$RUN_DIR/new-h2s-focused-tests.log"
-grep -Eq '^# skipped 0 "$RUN_DIR/new-h2s-focused-tests.log" |
-  awk '{print "OLDX_H2S_FOCUSED_TEST_LOG_SHA256="$1}'
-DONE=TRUE
- "$RUN_DIR/new-h2s-focused-tests.log"
-grep -Eq '^# todo 0 "$RUN_DIR/new-h2s-focused-tests.log" |
-  awk '{print "OLDX_H2S_FOCUSED_TEST_LOG_SHA256="$1}'
-DONE=TRUE
- "$RUN_DIR/new-h2s-focused-tests.log"
+# Require exactly THREE new passing tests and zero fails/skips/todos.
+grep -Fx '# tests 3' "$RUN_DIR/new-h2s-focused-tests.log"
+grep -Fx '# pass 3' "$RUN_DIR/new-h2s-focused-tests.log"
+grep -Fx '# fail 0' "$RUN_DIR/new-h2s-focused-tests.log"
+grep -Fx '# skipped 0' "$RUN_DIR/new-h2s-focused-tests.log"
+grep -Fx '# todo 0' "$RUN_DIR/new-h2s-focused-tests.log"
 sha256sum "$RUN_DIR/new-h2s-focused-tests.log" |
   awk '{print "OLDX_H2S_FOCUSED_TEST_LOG_SHA256="$1}'
 DONE=TRUE

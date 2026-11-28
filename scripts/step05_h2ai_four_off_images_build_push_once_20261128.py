@@ -243,6 +243,10 @@ def main():
         access_token=None
         print("H2AI_SOURCE_BUNDLES=FOUR_READY_EXACT_APPROVED_SOURCE",flush=True)
     except (Stop,OSError,ValueError,TypeError,KeyError,UnicodeError) as e:
+        # A pre-write STOP may occur after Docker's short-lived login; remove
+        # the private config even when no one-shot cloud marker was consumed.
+        if "docker_config" in locals():
+            shutil.rmtree(docker_config,ignore_errors=True)
         print("H2AI_RESULT=STOP_BEFORE_ANY_BUILD_OR_PUSH")
         print("H2AI_REASON="+(str(e) if isinstance(e,Stop) else type(e).__name__))
         print("H2AI_NO_REGISTRY_BUILD_OR_PUSH=TRUE")

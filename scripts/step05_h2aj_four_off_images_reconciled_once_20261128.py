@@ -232,6 +232,7 @@ def prepare_source(evidence,env):
         need(pre.get("role")==role and pre.get("dockerfileAbsolutePath")==absolute
              and pre.get("sourceRevision")==revision
              and pre.get("copies")==87 and pre.get("sourceClosure")==84
+             and pre.get("provenanceSha256")==obj["provenanceSha256"]
              and pre.get("privateDefaultOff") is True,
              "H2AJ_FULL_DOCKER_CONTEXT_PREFLIGHT_FAILED")
         bundles[role]={"context":str(context),"dockerfileAbsolutePath":absolute,

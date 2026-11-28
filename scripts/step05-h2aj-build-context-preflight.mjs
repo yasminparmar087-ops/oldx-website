@@ -57,8 +57,13 @@ export async function validateH2AJFourRoleBundle({role,context,sourceRevision}={
     !instructions.includes('WORKDIR /app')||
     instructions.some(x=>x.startsWith('ADD ')||x.includes('USER root')||x.startsWith('RUN curl ')))fail('UNEXPECTED_DOCKER_DIRECTIVE');
  const srcs=[];
- let otherCopies=0;
+ let otherCopies=0, builderCopy=0;
  for(const line of instructions.filter(x=>x.startsWith('COPY '))){
+   if(line.startsWith('COPY deployment/four-role/')){
+      const expected='COPY deployment/four-role/'+role+'/package.json deployment/four-role/'+role+'/package-lock.json ./';
+      if((role!=='mediator'&&role!=='backend')||line!==expected)fail('BUILDER_PACKAGE_COPY_DRIFT');
+      builderCopy++;continue;
+   }
    if(line.startsWith('COPY --from=dependencies ')){
       otherCopies++;
       if(role==='gateway'||role==='reader'||!line.includes('/deps/node_modules /app/node_modules'))
@@ -74,7 +79,8 @@ export async function validateH2AJFourRoleBundle({role,context,sourceRevision}={
       !line.includes('--chmod=0444'))fail('COPY_POLICY');
    srcs.push(args[0]);
  }
- if(otherCopies!==((role==='mediator'||role==='backend')?1:0))fail('STAGE_COPY_COUNT');
+ if(otherCopies!==((role==='mediator'||role==='backend')?1:0)||
+    builderCopy!==((role==='mediator'||role==='backend')?1:0))fail('STAGE_COPY_COUNT');
  const expectedCount=87;
  if(srcs.length!==expectedCount||new Set(srcs).size!==srcs.length)fail('COPY_INPUT_COUNT');
  const roleDir='deployment/four-role/'+role+'/';

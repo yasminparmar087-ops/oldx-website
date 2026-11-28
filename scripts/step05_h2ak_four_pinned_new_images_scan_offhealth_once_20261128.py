@@ -39,7 +39,7 @@ CONFIG=ROOT/"oldx-tools/oldx-h1b-g2-20261126-cloudsdk-config"
 H2AJ_MARKER=ROOT/".oldx-step05-h2aj-four-off-builds-corrected-context-once-20261128"
 MARK=ROOT/".oldx-step05-h2ak-four-pinned-image-acceptance-once-20261128"
 FLAG="--h2ak-four-h2aj-images-scan-offhealth-local-only-once"
-EXPECTED_BLOB="H2AJ_RESULT=PASS_FOUR_NEW_PRIVATE_OFF_IMAGES"
+EXPECTED_BLOB="RESULT=PASS_FOUR_NEW_PRIVATE_OFF_IMAGES"
 class Stop(Exception):pass
 def need(ok,code):
  if not ok:raise Stop(code)
@@ -58,12 +58,17 @@ def preflight():
  need(not MARK.exists() and not MARK.is_symlink(),"H2AK_ALREADY_CONSUMED")
  need(H2AJ_MARKER.is_file() and not H2AJ_MARKER.is_symlink()
       and H2AJ_MARKER.stat().st_uid==0,"H2AJ_SUCCESS_MARKER_NOT_FOUND")
- marker=H2AJ_MARKER.read_text()
+ # H2AJ runner writes RESULT=... into the consumed marker; its
+ # console output adds H2AJ_ only for printing. Require an EXACT marker line.
+ marker=H2AJ_MARKER.read_text(encoding="utf-8").splitlines()
  need(EXPECTED_BLOB in marker,"H2AJ_SUCCESS_NOT_RECORDED")
- need(all("ROLE="+role+" REGISTRY_INDEX=" in marker for role in IMAGES),
-      "H2AJ_FOUR_ROLE_EVIDENCE_MISSING")
- for role,(_,d) in IMAGES.items():
-  need((" AMD64_CHILD=sha256:"+d) in marker,"H2AJ_DIGEST_NOT_MATCHING")
+ for role,(_,digest) in IMAGES.items():
+  prefix="ROLE="+role+" REGISTRY_INDEX=sha256:"
+  expected_suffix=" AMD64_CHILD=sha256:"+digest
+  found=[line for line in marker if line.startswith(prefix)]
+  need(len(found)==1 and found[0].endswith(expected_suffix)
+       and re.fullmatch(r"ROLE="+role+r" REGISTRY_INDEX=sha256:[a-f0-9]{64} AMD64_CHILD=sha256:[a-f0-9]{64}",found[0]) is not None,
+       "H2AJ_FOUR_ROLE_EVIDENCE_OR_DIGEST_MISMATCH")
  for program in ("docker","grype","git"):
   need(shutil.which(program) is not None,"MISSING_LINUX_"+program.upper())
  need(SDK.is_dir() and GCLOUD.is_file() and PY.resolve().is_file()

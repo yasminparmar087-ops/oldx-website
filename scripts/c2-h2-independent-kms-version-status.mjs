@@ -108,3 +108,7 @@ export function createC2H2IndependentKmsVersionStatus({
 export function c2H2VersionMetadataMatches(value){
   return validVersion(value);
 }
+
+// Reuse the SAME immutable PEM/CRC/SPKI validation in the separate future
+// lifecycle reader. This predicate never reads/caches/authorizes anything.
+export const c2H2PublicKeyMatches=value=>validPublic(value);

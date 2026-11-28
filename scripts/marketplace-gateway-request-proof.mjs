@@ -73,7 +73,7 @@ export function createMarketplaceRequestProofVerifier({enabled=false,resolvePubl
    if(!fresh())return false;
    // Optional trusted authentication gate AFTER signature, BEFORE nonce writes.
    // Pass immutable strings only, not mutable body/proof objects.
-   if(authorizeBeforeNonce!==undefined&&await bounded(sig=>authorizeBeforeNonce({method,path,authorization:auth},{signal:sig}),signal,timeoutMs)!==true)return false;
+   if(authorizeBeforeNonce!==undefined&&await bounded(sig=>authorizeBeforeNonce({method,path,authorization:auth,bodyHash:payload.bodyHash,authHash:payload.authHash,proofSha256:hex(payloadBytes)},{signal:sig}),signal,timeoutMs)!==true)return false;
    if(!fresh()||stopped(signal))return false;
    // Never persist the raw nonce, signed header, Firebase bearer, body or ID JWT.
    const nonceHash=hex(JSON.stringify([purpose,payload.kid,payload.nonce]));
@@ -81,4 +81,15 @@ export function createMarketplaceRequestProofVerifier({enabled=false,resolvePubl
    return decision?.allowed===true&&!stopped(signal)&&fresh();
   }catch{return false;}
  };
+}
+
+// Pure canonical payload parser shared by the FUTURE durable signing gate.
+// Parsing is never identity/authentication; the existing verifier still checks
+// the actual RSA signature, request bindings and transactional nonce.
+export function parseMarketplaceCanonicalProofPayload(bytes) {
+  try {
+    if(!(bytes instanceof Uint8Array)||bytes.byteLength<1||bytes.byteLength>768)return null;
+    const text=new TextDecoder('utf-8',{fatal:true}).decode(bytes),p=JSON.parse(text);
+    return validatePayload(p)&&JSON.stringify(p)===text?Object.freeze(p):null;
+  }catch{return null;}
 }

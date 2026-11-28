@@ -1,3 +1,5 @@
+import {requireC2H2MultiSignLifecyclePolicy} from '../../scripts/c2-h2-lifecycle-signing-status-contract.mjs';
+import {requireC2H2LifecycleStageLedger} from '../../scripts/c2-h2-lifecycle-stage-ledger.mjs';
 import {requireC2EnabledReleaseControl} from '../../scripts/c2-enabled-release-control.mjs';
 import {createAttestedMarketplaceGateway,createTrustedMarketplaceBackend} from './trusted-host.mjs';
 import {createStagingMarketplaceRuntime} from './runtime.mjs';
@@ -42,10 +44,22 @@ function composeStep05Backend({enabled=false,audience,gatewayServiceAccount,goog
   if(typeof verifyIdentity!=='function')return off();
   const consumeNonce=createStagingMarketplaceReplayNonce({enabled:true,binding,retentionMs:nonceRetentionMs,now});
   const auth=createStagingMarketplaceEnforcement({enabled:true,adminAuth:options.adminAuth,now});
-  const authorizeBeforeNonce=async({path,authorization},{signal})=>{
-   if(path.endsWith('/list')||path.endsWith('/detail'))return authorization===null;
-   if(typeof authorization!=='string'||!authorization.startsWith('Bearer '))return false;
-   try{return !!await auth.verifyFirebaseToken(authorization.slice(7),{checkRevoked:true,signal});}catch{return false;}
+  let lifecycleLedger=null;
+  if(requestVerification.lifecycleLedger!==undefined||requestVerification.lifecyclePolicy!==undefined){
+    const policy=requireC2H2MultiSignLifecyclePolicy(requestVerification.lifecyclePolicy);
+    lifecycleLedger=requireC2H2LifecycleStageLedger(requestVerification.lifecycleLedger,policy);
+  }
+  const authorizeBeforeNonce=async({path,authorization,bodyHash,authHash,proofSha256},{signal})=>{
+   const guest=path.endsWith('/list')||path.endsWith('/detail');
+   if(guest&&authorization!==null)return false;
+   if(!guest){
+     if(typeof authorization!=='string'||!authorization.startsWith('Bearer '))return false;
+     try{if(!await auth.verifyFirebaseToken(authorization.slice(7),{checkRevoked:true,signal}))return false;}catch{return false;}
+   }
+   // AFTER independently verified identity, canonical RSA proof and Firebase
+   // auth; BEFORE nonce or Product writes. Never accepts a browser grant.
+   if(lifecycleLedger)return (await lifecycleLedger.claimBackend({path,bodyHash,authHash,proofSha256},{signal}))?.allowed===true;
+   return true;
   };
   const proof=createMarketplaceRequestProofVerifier({...requestVerification,enabled:true,consumeNonce,authorizeBeforeNonce,now});
   if(typeof proof!=='function')return off();
@@ -68,6 +82,12 @@ export function createC2EnabledProductBackend({enabled=false,releaseControl,runt
  try{
   const control=requireC2EnabledReleaseControl(releaseControl);
   if(runtimeServiceAccount!==control.runtimePrincipal||runtimeImage!==control.runtimeImage||typeof options.runtimeOptions?.createMediaBindings!=='function')return off();
+  if(options.requestVerification?.lifecyclePolicy!==undefined){
+    const policy=requireC2H2MultiSignLifecyclePolicy(options.requestVerification.lifecyclePolicy);
+    requireC2H2LifecycleStageLedger(options.requestVerification.lifecycleLedger,policy);
+    if(control.productId!=='c2_'+policy.runId+'_product'||
+       !policy.phases.every(stage=>control.isActorAllowed(stage.actor)))return off();
+  }
   const original=options.runtimeOptions.adminAuth;
   if(typeof original?.verifyIdToken!=='function')return off();
   const adminAuth={app:original.app,async verifyIdToken(...args){

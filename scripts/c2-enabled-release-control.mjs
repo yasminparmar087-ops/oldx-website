@@ -32,6 +32,7 @@ export function createC2EnabledReleaseControl({enabled=false,contract,verifyAppr
  }catch{ready=false;}
  const fresh=()=>{const t=now();return integer(t)&&t>=snapshot?.startsAtMs&&t<snapshot?.expiresAtMs;};
  const control=Object.freeze({ready,contractDigest:ready?digest:null,
+  hostBindings:ready?Object.freeze({principals:snapshot.principals,images:snapshot.images}):null,
   runtimePrincipal:ready?snapshot.principals.backend:null,
   runtimeImage:ready?snapshot.images.backend:null,
   productId:ready?'c2_'+snapshot.runId+'_product':null,

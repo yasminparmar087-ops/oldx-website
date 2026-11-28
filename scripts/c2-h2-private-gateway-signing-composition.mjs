@@ -1,3 +1,8 @@
+import {requireC2H2LifecycleStageLedger} from './c2-h2-lifecycle-stage-ledger.mjs';
+import {createHash,createPublicKey} from 'node:crypto';
+import {requireC2H2MultiSignLifecyclePolicy} from './c2-h2-lifecycle-signing-status-contract.mjs';
+import {parseMarketplaceCanonicalProofPayload} from './marketplace-gateway-request-proof.mjs';
+import {c2LifecycleBoundary} from './c2-h2-lifecycle-boundary.mjs';
 import {createC2KmsRequestSigning} from './c2-kms-request-signing.mjs';
 import {createC2H2GatewayKmsSyntheticTransport} from './c2-h2-gateway-kms-synthetic-transport.mjs';
 
@@ -73,4 +78,73 @@ export function createC2H2PrivateGatewaySigning({
     runtimeServiceAccount:ready?C2_H2_GATEWAY_IDENTITY:null,
     keyVersion:ready?C2_H2_KMS_KEY_VERSION:null,
   });
+}
+
+const lifecycleSigners=new WeakSet();
+export function requireC2H2LifecycleRequestSigning(value){
+  if(!lifecycleSigners.has(value))throw Error('C2_LIFECYCLE_SIGNING_BLOCKED');return value;
+}
+// Separate FUTURE bounded multi-sign source provider. Never calls/recreates the
+// legacy one-sign transport. Missing actual pin/status/authority stays BLOCKED.
+// getStageContext is server request context, not a browser capability/header.
+export function createC2H2LifecycleRequestSigning({enabled=false,policy,ledger,
+  getStageContext,publicKeyPem,getTrustedKeyVersionStatus,asymmetricSign,
+  now=Date.now}={}) {
+  const off=Object.freeze({ready:false});
+  if(enabled!==true)return off;
+  let p;try{p=requireC2H2MultiSignLifecyclePolicy(policy);requireC2H2LifecycleStageLedger(ledger,p);}catch{return off;}
+  if(ledger?.ready!==true||typeof ledger.claimSign!=='function'||
+     [getStageContext,getTrustedKeyVersionStatus,asymmetricSign,now].some(x=>typeof x!=='function'))return off;
+  const signing=createC2KmsRequestSigning({enabled:true,kid:C2_H2_KMS_KID,
+    keyVersion:p.keyVersion,algorithm:'RSA_SIGN_PKCS1_2048_SHA256',publicKeyPem,
+    publicKeySha256:p.keyPublicSpkiSha256,validFromMs:p.startsAtMs,validUntilMs:p.expiresAtMs,
+    getKeyVersionStatus:getTrustedKeyVersionStatus,asymmetricSign,now});
+  if(!signing.ready)return off;
+  const result=Object.freeze({ready:true,kid:C2_H2_KMS_KID,
+    async signMessage(bytes,{kid,signal}={}) {
+      const snapshot=Buffer.from(bytes),proof=parseMarketplaceCanonicalProofPayload(snapshot);
+      if(!proof||proof.kid!==C2_H2_KMS_KID||kid!==C2_H2_KMS_KID)throw Error('C2_LIFECYCLE_SIGNING_BLOCKED');
+      return c2LifecycleBoundary(async sig=>{
+        const ctx=await getStageContext({signal:sig});
+        const claim=await ledger.claimSign({reservation:ctx?.reservation,
+          proofSha256:createHash('sha256').update(snapshot).digest('hex'),
+          bodyHash:proof.bodyHash,authHash:proof.authHash,path:proof.path},{signal:sig});
+        if(claim?.allowed!==true||sig.aborted)throw Error('C2_LIFECYCLE_SIGNING_BLOCKED');
+        // Durable attempt claimed BEFORE any status/sign call. Ambiguous result
+        // consumes it; no repeat on another process or with a new provider.
+        return signing.signMessage(snapshot,{kid,signal:sig});
+      },{signal,timeoutMs:1000});
+    }});
+  lifecycleSigners.add(result);return result;
+}
+
+const lifecycleProofKeys=new WeakMap();
+export function requireC2H2LifecycleProofKeyResolver(value,policy){
+  if(lifecycleProofKeys.get(value)!==policy)throw Error('C2_LIFECYCLE_PROOF_KEY_BLOCKED');return value;
+}
+// BACKEND-only verification key provider. NO KMS signing port/credential.
+// Separate independently authenticated status transport must use usage=verify.
+export function createC2H2LifecycleProofKeyResolver({enabled=false,policy,publicKeyPem,
+  getTrustedKeyVersionStatus,now=Date.now}={}) {
+  if(enabled!==true)return null;
+  let p,key;
+  try{
+    p=requireC2H2MultiSignLifecyclePolicy(policy);key=createPublicKey(publicKeyPem);
+    if(key.type!=='public'||key.asymmetricKeyType!=='rsa'||
+       key.asymmetricKeyDetails?.modulusLength!==2048||
+       key.asymmetricKeyDetails?.publicExponent!==65537n||
+       createHash('sha256').update(key.export({type:'spki',format:'der'})).digest('hex')!==p.keyPublicSpkiSha256||
+       typeof getTrustedKeyVersionStatus!=='function'||typeof now!=='function')return null;
+  }catch{return null;}
+  const result=async({kid,signal}={})=>c2LifecycleBoundary(async sig=>{
+    const fresh=()=>{const t=now();if(sig.aborted||!Number.isSafeInteger(t)||
+      t<p.startsAtMs||t>=p.expiresAtMs)throw Error('C2_LIFECYCLE_PROOF_KEY_BLOCKED');};
+    fresh();if(kid!==C2_H2_KMS_KID)throw Error('C2_LIFECYCLE_PROOF_KEY_BLOCKED');
+    const status=await getTrustedKeyVersionStatus({name:p.keyVersion,signal:sig});fresh();
+    if(status?.name!==p.keyVersion||status.state!=='ENABLED'||
+       status.algorithm!=='RSA_SIGN_PKCS1_2048_SHA256'||
+       status.publicKeySha256!==p.keyPublicSpkiSha256)throw Error('C2_LIFECYCLE_PROOF_KEY_BLOCKED');
+    return key;
+  },{signal,timeoutMs:600});
+  lifecycleProofKeys.set(result,p);return result;
 }

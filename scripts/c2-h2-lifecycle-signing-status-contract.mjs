@@ -94,3 +94,26 @@ export function createC2H2LifecycleSigningStatusContract({enabled=false,proposal
     ]),
   });
 }
+
+ 
+// A DIFFERENT future authority from the historical single-sign experiment.
+// One canonical request proof needs one signature. This object is SOURCE REVIEW
+// only; it cannot authorize KMS or reset/replace the legacy global tombstone.
+const multiPolicies=new WeakSet();
+export function createC2H2MultiSignLifecyclePolicy({enabled=false,proposal,
+  mode,maxSignAttempts}={}) {
+  const review=createC2H2LifecycleSigningStatusContract({enabled,proposal});
+  if(!review.reviewReady||mode!=='bounded-per-request-multisign-v1'||
+     maxSignAttempts!==6)return denied;
+  const policy=Object.freeze({
+    ...review.scope,purpose:'oldx.c2.bounded-per-request-multisign.v1',
+    mode,maxSignAttempts,activationAllowed:false,
+    legacyOneSignTombstoneMustRemain:true,
+  });
+  multiPolicies.add(policy);
+  return policy;
+}
+export function requireC2H2MultiSignLifecyclePolicy(policy) {
+  if(!multiPolicies.has(policy))throw Error('C2_LIFECYCLE_POLICY_UNVERIFIED');
+  return policy;
+}

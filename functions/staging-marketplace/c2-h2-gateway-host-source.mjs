@@ -1,6 +1,6 @@
 import {createC2PrivateGatewayHost} from './c2-website-mediation.mjs';
 import {createC2H2PrivateGatewaySigning,
-  C2_H2_GATEWAY_IDENTITY,C2_H2_GATEWAY_UID} from
+  C2_H2_GATEWAY_IDENTITY,C2_H2_GATEWAY_UID,requireC2H2LifecycleRequestSigning} from
   '../../scripts/c2-h2-private-gateway-signing-composition.mjs';
 
 // SOURCE-ONLY, DEFAULT OFF. This factory creates no Cloud Run deployment,
@@ -34,7 +34,7 @@ export function createC2H2GatewayHostSource({
   privateGatewayOrigin,mediatorPrincipal,websiteIdentity,allowedOrigins,
   gatewayOptions={},publicKeyPem,validFromMs,validUntilMs,
   getTrustedWorkloadCredential,fetchKms,consumeDurableSignBudget,
-  getTrustedKeyVersionStatus,now=Date.now,
+  getTrustedKeyVersionStatus,lifecycleRequestSigning,now=Date.now,
 }={}){
   if(enabled!==true||runtimeServiceAccount!==C2_H2_GATEWAY_IDENTITY||
      runtimeServiceAccountUid!==C2_H2_GATEWAY_UID||
@@ -57,7 +57,11 @@ export function createC2H2GatewayHostSource({
        gatewayOptions?.fetchBackend].some(v=>typeof v!=='function')||
      gatewayOptions?.gatewayServiceAccount!==C2_H2_GATEWAY_IDENTITY)
     return hostUnavailable();
-  const signer=createC2H2PrivateGatewaySigning({
+  let signer;
+  if(lifecycleRequestSigning!==undefined){
+    try{signer={ready:true,requestSigning:requireC2H2LifecycleRequestSigning(lifecycleRequestSigning)};}
+    catch{return hostUnavailable();}
+  }else signer=createC2H2PrivateGatewaySigning({
     enabled:true,runtimeServiceAccount,runtimeServiceAccountUid,
     publicKeyPem,validFromMs,validUntilMs,
     getTrustedWorkloadCredential,fetchKms,consumeDurableSignBudget,

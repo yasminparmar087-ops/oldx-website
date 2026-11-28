@@ -28,7 +28,7 @@ const plain=v=>v!==null&&typeof v==='object'&&
 const image=v=>typeof v==='string'&&
   /^asia-south1-docker\.pkg\.dev\/oldx-staging\/oldx-staging-images\/[a-z0-9][a-z0-9_-]{0,80}@sha256:[a-f0-9]{64}$/.test(v)&&
   !oldOffDigests.has(v.slice(-64));
-const role=(x,email,uid)=>plain(x)&&x.principal===email&&x.uid===uid&&image(x.image);
+const role=(x,email,uid)=>data(x)&&x.principal===email&&x.uid===uid&&image(x.image);
 // Prevent getter-backed browser/config objects or incomplete host ports from
 // making a source assembly appear ready. Callbacks remain host-owned and must
 // still be verified by independently approved runtime bindings.
@@ -65,15 +65,15 @@ export function createC2G2G6EnabledHostSourceAssembly({
   websiteOptions,gatewayHostOptions,backendOptions,
   fetchGatewayMetadata,now=Date.now,
 }={}){
-  if(enabled!==true||!plain(hostFacts)||!plain(websiteOptions)||
-      !plain(gatewayHostOptions)||!plain(backendOptions)||
+  if(enabled!==true||!data(hostFacts)||Object.keys(hostFacts).sort().join(',')!=='backend,gateway,mediator'||!data(websiteOptions)||
+      !data(gatewayHostOptions)||!data(backendOptions)||
       !role(hostFacts.mediator,MED,MED_UID)||
       !role(hostFacts.gateway,GATE,GATE_UID)||
       !role(hostFacts.backend,BACK,BACK_UID)||
       new Set(Object.values(hostFacts).map(x=>x?.image)).size!==3||
       typeof fetchGatewayMetadata!=='function'||typeof now!=='function'||
       !funcs(websiteOptions,webPorts)||
-      !funcs(gatewayHostOptions,gatewayPorts)||
+      !funcs(gatewayHostOptions,gatewayHostOptions.lifecycleRequestSigning===undefined?gatewayPorts:[])||
       !funcs(gatewayHostOptions.gatewayOptions,gatewayHopPorts)||
       !data(gatewayHostOptions.websiteIdentity)||
       typeof gatewayHostOptions.websiteIdentity.fetchRequest!=='function'||
@@ -94,7 +94,10 @@ export function createC2G2G6EnabledHostSourceAssembly({
   let control;
   try{control=requireC2EnabledReleaseControl(releaseControl);}
   catch{return off();}
-  if(control.runtimePrincipal!==BACK||control.runtimeImage!==hostFacts.backend.image||
+  if(!control.hostBindings||!['mediator','gateway','backend'].every(role=>
+      control.hostBindings.principals[role]===hostFacts[role].principal&&
+      control.hostBindings.images[role]===hostFacts[role].image)||
+      control.runtimePrincipal!==BACK||control.runtimeImage!==hostFacts.backend.image||
       gatewayHostOptions.runtimeServiceAccount!==GATE||
       gatewayHostOptions.runtimeServiceAccountUid!==GATE_UID||
       gatewayHostOptions.runtimeImage!==hostFacts.gateway.image||

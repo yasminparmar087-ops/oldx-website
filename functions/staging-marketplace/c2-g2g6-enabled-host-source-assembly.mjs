@@ -28,6 +28,22 @@ const image=v=>typeof v==='string'&&
   /^asia-south1-docker\.pkg\.dev\/oldx-staging\/oldx-staging-images\/[a-z0-9][a-z0-9_-]{0,80}@sha256:[a-f0-9]{64}$/.test(v)&&
   !oldOffDigests.has(v.slice(-64));
 const role=(x,email,uid)=>plain(x)&&x.principal===email&&x.uid===uid&&image(x.image);
+// Prevent getter-backed browser/config objects or incomplete host ports from
+// making a source assembly appear ready. Callbacks remain host-owned and must
+// still be verified by independently approved runtime bindings.
+const data=v=>plain(v)&&Reflect.ownKeys(v).every(k=>
+  typeof k==='string'&&Object.hasOwn(Object.getOwnPropertyDescriptor(v,k),'value'));
+const funcs=(obj,names)=>data(obj)&&names.every(k=>typeof obj[k]==='function');
+const gatewayPorts=[
+  'fetchKms','consumeDurableSignBudget','getTrustedKeyVersionStatus',
+];
+const webPorts=[
+  'getGatewayInvokerCredential','getWebsiteAttestation',
+  'consumeGuestAdmission','fetchPrivateGateway',
+];
+const gatewayHopPorts=[
+  'getInvokerCredential','getGatewayAttestation','fetchBackend',
+];
 const offFetch=async()=>Response.json({ok:false,error:{code:'C2_G2_G6_NOT_AUTHORIZED'}},{
   status:503,headers:{'cache-control':'private, no-store','x-content-type-options':'nosniff'}});
 const off=()=>Object.freeze({
@@ -55,6 +71,20 @@ export function createC2G2G6EnabledHostSourceAssembly({
       !role(hostFacts.backend,BACK,BACK_UID)||
       new Set(Object.values(hostFacts).map(x=>x?.image)).size!==3||
       typeof fetchGatewayMetadata!=='function'||typeof now!=='function'||
+      !funcs(websiteOptions,webPorts)||
+      !funcs(gatewayHostOptions,gatewayPorts)||
+      !funcs(gatewayHostOptions.gatewayOptions,gatewayHopPorts)||
+      !data(gatewayHostOptions.websiteIdentity)||
+      typeof gatewayHostOptions.websiteIdentity.fetchRequest!=='function'||
+      !data(backendOptions.runtimeOptions)||
+      !data(backendOptions.googleIdentity)||
+      typeof backendOptions.googleIdentity.fetchRequest!=='function'||
+      !data(backendOptions.requestVerification)||
+      typeof backendOptions.requestVerification.resolvePublicKey!=='function'||
+      typeof backendOptions.runtimeOptions?.adminAuth?.verifyIdToken!=='function'||
+      typeof backendOptions.runtimeOptions?.adminFirestore?.runTransaction!=='function'||
+      typeof backendOptions.runtimeOptions?.createMediaBindings!=='function'||
+      typeof backendOptions.verifyApproval==='function'||
       backendOptions.runtimeServiceAccount!==undefined||
       backendOptions.runtimeImage!==undefined||
       backendOptions.releaseControl!==undefined||
@@ -76,7 +106,11 @@ export function createC2G2G6EnabledHostSourceAssembly({
         JSON.stringify(gatewayHostOptions.allowedOrigins)||
       websiteOptions.websiteOrigin===websiteOptions.privateGatewayOrigin||
       websiteOptions.mediationAudience===gatewayHostOptions.gatewayOptions?.attestationAudience||
-      typeof backendOptions.runtimeOptions?.createMediaBindings!=='function')
+      gatewayHostOptions.gatewayOptions?.backendOrigin!==backendOptions.audience||
+      backendOptions.gatewayServiceAccount!==GATE||
+      backendOptions.googleIdentity?.expectedPrincipal!==undefined&&
+        backendOptions.googleIdentity.expectedPrincipal!==GATE||
+      backendOptions.runtimeOptions?.projectId!=='oldx-staging')
     return off();
 
   // The real release control still verifies independent approval and consumes

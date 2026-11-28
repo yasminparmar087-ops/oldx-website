@@ -113,8 +113,8 @@ def main():
     for cid in retained[:2]:
         print('H2AL_RETAINED_CONTAINER_LOG_BEGIN')
         for line in cmd(['docker','logs','--tail','25',cid]):
-            line=re.sub(r'(?i)(bearer\\s+)\\S+',r'\\1[REDACTED]',line)
-            line=re.sub(r'(?i)((?:token|password|secret|authorization)\\s*[:=]\\s*)\\S+',r'\\1[REDACTED]',line)
+            line=re.sub(r'(?i)bearer\s+\S+', '[REDACTED_BEARER]', line)
+            line=re.sub(r'(?i)(?:token|password|secret|authorization)\s*[:=]\s*\S+', '[REDACTED_SECRET]', line)
             print('H2AL_LOG='+line[:350])
         print('H2AL_RETAINED_CONTAINER_LOG_END')
     print('H2AL_DOCKER_EVENTS_BEGIN')

@@ -1,5 +1,16 @@
 # OLDX Agent Instructions
 
+## 28 Nov 2026 — H2AM selective runtime source repair implemented;19 NEW distinct offline cases PASS
+
+Source commit `040bdec66abdfcb266ca8c4db82aeb82761bd2ae`, based on `9aa6aa7200d4f7e6f7d7d3c3fccd8f98f45e186d`. Read [H2AM actual source/test receipt and ONE future approval packet](docs/OLDX_STEP05_H2AM_SELECTIVE_RUNTIME_SOURCE_RECEIPT_2026-11-28.md) before any execution. Separate default-OFF H2AM runner + support +19 mocked offline cases now implement bounded first-error diagnostics, explicit Node24 ESM probe, inspected OOM status, durable independent scan/runtime ledgers, exact own-container cleanup and no-repeat selective resume. No consumed H2AK edits; four image/SA pins and application/Dockerfiles unchanged.
+
+Historical Mediator Grype remains57 matches/18HIGH/0Critical; NEVER rescan. Existing private raw report SHA256 `e89c68fb7838173cbcca4ac3c365584e63a370480867961ac866065bbe6e3f92`; local schema inspection confirmed Grype0.122.1 nested descriptor.db.status and explicit frozen-child userInput. No raw private content uploaded. Old main1/exec137 cause and OOM remain UNKNOWN. Static frozen closures:84 files/role,229 relative references/role, no missing paths or COPY entries; not image-runtime proof.
+
+19 distinct NEW tests have passing evidence via16 initial +3 added cases and affected-only selections; exact commands and one corrected collection error are in receipt. No old suites, Docker/container/build/scan/registry/Cloud work executed. Owner dirty Handoff/.firebaserc preserved; isolated source tested.
+
+NEXT ONE owner decision: fresh H2AM local OFF-only attempt — Mediator runtime ONLY first; then each Gateway/Backend/Reader ONE scan+runtime. Optional exact missing pulls only with separately explicit option and existing private auth; existing DB/no auto-update, one-shot markers, STOP on unknown/failure/no automatic retry. No credential setup, builds/pushes/deployment/IAM/KMS/Firebase/Billing or risk acceptance. Source is ready for that bounded evidence attempt, not a claim images are healthy. G2/G4/G8 and hosted acceptance HOLD; Step05 ACTIVE; production OFF/NO-GO.
+
+
 ## 28 Nov 2026 — latest H2AH FOUR separate private role source/packaging implemented;23 NEW distinct cases PASS
 
 Start `2bc68c161fa9c9988883a5b9dee64bb2cf1b3424`; final source `b8ed873aff7c93a43dc13f163a0f7dda1fe9911d`. Read [H2AH four-role actual source/test receipt and ONE build-only packet](docs/OLDX_STEP05_H2AH_FOUR_ROLE_SOURCE_RECEIPT_2026-11-28.md) first. Four executable OFF entrypoints, pinned nonroot Dockerfiles/lock manifests/84-file closures, signed controller authority, Google-RS256 stage-bound private RPC, Backend-native remote ledger, separate Reader own-metadata/KMS GET path, explicit Compute-only Firebase clients and read-only approved Storage adapter are implemented. Mediator discards forwarded stripped IAM header WITHOUT treating it as user proof; real Firebase actor boundary stays mandatory. Real-pin substitute remains blocked.

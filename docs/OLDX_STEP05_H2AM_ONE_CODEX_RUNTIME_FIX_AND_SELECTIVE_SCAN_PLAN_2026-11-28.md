@@ -1,5 +1,7 @@
 # BAJUTO Step05 — H2AM ONE consolidated Codex source fix, NO scans until errors corrected
 
+> Implemented source-only checkpoint: 040bdec66abdfcb266ca8c4db82aeb82761bd2ae. See [actual H2AM receipt](OLDX_STEP05_H2AM_SELECTIVE_RUNTIME_SOURCE_RECEIPT_2026-11-28.md):19 distinct NEW offline cases have passing evidence; separate hard-OFF runner added. Existing plan below is retained as task history. No Docker/Grype/registry/Cloud execution; no Mediator rescan. Future execution needs the ONE consolidated approval packet in receipt. Historical final status below is superseded ONLY for H2AM source implementation.
+
 Date: 28 Nov 2026 ~23:00 IST. Branch ONLY `security-hardening-review`.
 **Latest real evidence**: `docs/OLDX_STEP05_H2AL_ACTUAL_READONLY_EVIDENCE_57_MATCHES_EXIT137_1_2026-11-28.md`.
 User explicit instruction: **"pehla sarkhi khamio shodho pachhi scan karo"** (find and correct errors properly BEFORE scanning).

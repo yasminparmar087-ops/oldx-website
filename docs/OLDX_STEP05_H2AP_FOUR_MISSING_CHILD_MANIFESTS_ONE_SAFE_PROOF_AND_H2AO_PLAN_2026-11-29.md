@@ -1,5 +1,7 @@
 # BAJUTO / OLDX Step05 — H2AP: four raw OCI child manifests absent from saved evidence; one source-only proof acquisition + H2AO continuation
 
+> H2AP SOURCE implementation completed at 1b643487824739290839124269195c32fa7c850d. See [actual H2AP receipt / one future command](OLDX_STEP05_H2AP_FOUR_PROOF_SOURCE_RECEIPT_2026-11-29.md):21 distinct NEW offline cases have passing evidence, no actual requests/SDK/Docker/scans. New four-role one-GET proof workflow and separate unchanged H2AO handoff added. Cached native SDK token only, no refresh/persistence; missing/expired token STOPs before marker. Original inventory/task below retained as history. No live approval implied.
+
 **Date:** 29 November 2026 ~00:52 IST. **Repo:** `yasminparmar087-ops/oldx-website`. **Branch:** `security-hardening-review`.
 
 ## New actual OWNER read-only proof inventory (NOT a scan)

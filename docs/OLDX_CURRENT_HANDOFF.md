@@ -1,5 +1,18 @@
 # OLDX — Current Chat Handoff / Start Here
 
+## 29 Nov 2026 — H2AP FOUR-proof source acquisition + unchanged H2AO handoff implemented;21 NEW distinct offline cases PASS
+
+Source `1b643487824739290839124269195c32fa7c850d`, baseline `a89f3589476d32fc573366307af60577eae38ca9`. Read [H2AP actual receipt, ONE combined approval packet and hash-verified WSL command](OLDX_STEP05_H2AP_FOUR_PROOF_SOURCE_RECEIPT_2026-11-29.md) first. NEW default-OFF wrapper/helper obtains at most one exact raw child-manifest GET per role, verifies raw SHA/OCI descriptor/media/headers, pins Mediator original report SHA/base64 config digest+32372 bytes, saves private durable per-role receipts, independently rehashes ALL4 proofs and frozen source before ONE separately approved UNCHANGED H2AO call. No H2AO optional GET/token FD. Old H2AM/H2AN/H2AJ/H2AK and all markers/code/image/SA/app pins untouched.
+
+Owner inventory NOT_FOUND among188 scoped files is not registry absence; no inventory repeated. Four proof requests and H2AO are NOT executed/approved now. Mediator57 matches/18HIGH/0Critical retained; NEVER rescan. Actual child bindings/runtime/three remaining scan results UNKNOWN; source-only does not close security gates.
+
+Credential is existing native SDK USER cached token only, memory IPC, read-only immutable SQLite/audit-denied network/writes, no refresh/login/Docker auth/config change. Missing/expired token or SDK read-only incompatibility STOPs before H2AP marker. This availability remains UNKNOWN; do not claim future command guaranteed to pass or silently refresh. Source downloads/auth/preflight require the NEW combined owner approval in receipt.
+
+21 NEW distinct test methods have passing evidence via20 initial (one SQLite mock parameter error corrected) + affected/new selections; exact commands/times/failures and syntax-only bash -n result in receipt. No old26/19 or completed CI/tests/scans repeated. No actual SDK auth, registry/Docker/Grype/Cloud action. Owner local dirty Handoff/.firebaserc preserved.
+
+NEXT ONE owner packet: source bootstrap/cached-token read + exactly4 pinned manifest GETs + only-after-proof H2AO Mediator runtime then conditional3 scans/runtime; no repeats/marker reset, pull/build/push, Cloud Run/IAM/KMS/Firebase/Billing, CVE acceptance or production. Fresh proof/API/token/runtime checks remain owner-gated. Step05 ACTIVE; G2/G4/G8/security/hosted HOLD; production OFF/NO-GO;15-step sequence preserved.
+
+
 ## 29 Nov 2026 — H2AO OCI identity source repair implemented;26 NEW distinct offline cases PASS
 
 Source `6493f7bc3544c7c8fbec60ee65ba960ea32a2c38`, start remote `4e717ef55d5afcfb9d5d13e9c9ba02125cef1f57`. Read [H2AO actual source/test receipt and ONE conditional execution approval packet](OLDX_STEP05_H2AO_OCI_IDENTITY_SOURCE_RECEIPT_2026-11-29.md) before continuing. NEW default-OFF H2AO verifier/runner binds pinned raw child SHA -> config digest/size -> exact Grype config bytes -> role/nonroot/platform/rootfs/local image. Docker manifest ID and config ID stay distinct; neither arbitrary ID nor old converted Grype manifest is accepted. Old H2AM/H2AN are consumed and MUST NEVER rerun/reset.

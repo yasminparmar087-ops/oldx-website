@@ -1,0 +1,32 @@
+# BAJUTO / OLDX — Step05 G2–G6 lifecycle signing/status contract: NEW source and focused local tests
+
+Date: 2026-11-28. Branch: `security-hardening-review`; no work on `main`.
+
+## Starting verified checkpoint
+
+- Owner reported Codex remote verified commit [03d7e5a2a99be87d1f0782297c60ce64714fdf2f](https://github.com/yasminparmar087-ops/oldx-website/commit/03d7e5a2a99be87d1f0782297c60ce64714fdf2f). GitHub independently confirmed it as the actual branch HEAD and one commit after `0a3fd927...`.
+- Codex's source receipt: six original assembly tests PASS and six new role-specific metadata tests PASS under Windows Node26.13.0; never replayed here. Identity/audience ports were actually added, but unsigned fixtures cannot verify Cloud Run or Firebase identity. Source-only; no hosted deployment or actual Seller→Buyer flow.
+- Existing `scripts/c2-h2-firestore-one-sign-budget.mjs`: a permanent, per-(Gateway UID, KeyVersion /1) global Firestore single-sign tombstone with NO TTL, which must **never be deleted or reset**. `scripts/c2-h2-gateway-kms-synthetic-transport.mjs` also allows only one per-instance KMS attempt; standalone status reader not yet verified. It is not safe to simply raise the one-sign budget to six or recreate providers; both are already bound by source and persistent evidence.
+- Historic H2AD9 private Gateway health attempt finished `NOT_FOUND`; H2AF cleanly deleted the synthetic Scheduler job/probe identity. No replay, new SA, IAM broadening or retry of any old H2AD/H2AF one-shot.
+
+## Actual NEW implementation, tested locally and pushed
+
+1. `scripts/c2-h2-lifecycle-signing-status-contract.mjs`: default-OFF, read-only, **SOURCE REVIEW contract** for a possible **one KMS signed server-held lifecycle grant**, used to authorize up to six fixed synthetic stages with independent Firebase actor proof and durable atomic replay checks *in a later implementation*. Hard pins exact `oldx-staging`, `(default)`, Gateway email/numeric UID, existing KeyVersion /1, pinned SPKI SHA256 `69a50043b9979b8b695ca4dc426bcb58d14666b0dc2da27ce823f57f53d46aba`, max KMS sign attempts 1, max 20 requests/20 minutes, 2 synthetic actors, 1 Product/1 photo, and stages seller-save, seller-publish, buyer-list, buyer-detail, seller-edit, seller-withdraw. Requires 6 distinct per-stage SHA256 nonce digests in a fixed order, distinct run nonce and approval digests, immutable legacy tombstone, server-held grant, durable stage ledger and correct actor scope. It exposes `reviewReady` for contract **shape only**, and always `activationAllowed:false`; no KMS or Firestore operations, no signing, no actual signature verifier or HTTP handler. Its `matchesDeclaredStage` is explicitly NOT authorization or replay control.
+   - Creation commit `4c1b6dcfc14ba28852386cefb32e3a2e09c624c2`
+   - Git blob `d2104ce0247dbd0cf7743495a0076a1d1ad72d57` (readback matches local tested bytes).
+2. `tests/integration/step05-c2-h2-lifecycle-signing-status-contract.test.mjs`: SEVEN new focused source-only cases covering default OFF/no Cloud APIs, shape-only with no activation, actor/phase/nonce/time/run mismatch, time window and signing budget drift, nonce uniqueness/order and synthetic actor rules, rejection of accessor-backed proposals, and rejection of accessor-backed stage candidates.
+   - Creation commit `9b093cab03d2b06180ec694f84048a4ad39239b5`
+   - Git blob `b1f9a18730e107af4cf28f0fabb039df47e31cf0` (readback matches exact tested local file).
+   - Actual NEW local run: `node --test /tmp/oldx-lifecycle/tests/integration/step05-c2-h2-lifecycle-signing-status-contract.test.mjs`, Node v22.16.0, **7 PASS, 0 FAIL, 0 skipped**. Different from previously owner-tested Node26: no claim of Node26 integration/full repo test. Exact tested file bytes verified by Git blob SHA.
+
+**Decision not yet made / no live authorization:** This policy explores ONE signed lifecycle grant to minimize extra KMS calls; its viability with current request-attestation verifier is **NOT PROVEN**. A single grant must never become transferable bearer authorization or bypass per-action Firebase Auth. All six actions need real proof verification, ownership checks, a cross-instance atomic phase+nonce ledger, durable run quota, buyer read constraints, media lifecycle cleanup and rollback. A permanent single-sign tombstone may already be consumed; source shape cannot establish unspent status. If consumed, **do not reset**; an alternative separately approved KeyVersion/signing-budget design or no-KMS scheme with equivalent verified security must be designed. No KMS KeyVersion2 was created or assumed to exist.
+
+## Next high-value work — one concentrated Codex source-only task
+
+Read this document, `AGENTS.md`, the NEW contract/test, existing `c2-h2-private-gateway-signing-composition.mjs`, `c2-h2-firestore-one-sign-budget.mjs`, `c2-enabled-release-control.mjs`, `c2-g2g6-enabled-host-source-assembly.mjs`, and current Product/Website mediation request-verification paths. **Do not rerun any existing tests** including the newly confirmed seven source contract cases unless editing their code. 
+
+Determine whether a single server-held, KMS-signed scoped *run capability* can be safely verified for all six actions by the actual existing mediator/Gateway/backend request protocol **without** treating the token as a bearer or bypassing Auth, nonce or ownership. If compatible, implement the minimum NEW default-OFF request-verifier bridge and durable per-phase Firestore atomic ledger adapter in source only, retaining the original global one-sign tombstone exactly as-is and failing closed if its consumed/unconsumed state is unknown. If not compatible, record the precise wire-contract incompatibility and choose a minimal, explicitly separately approvable per-phase signing design with NEW independent budget; do not silently relax caps. No mock durable ledger in deployable code. 
+
+Run only tests for genuinely new/changed code, commit/push branch and remote verify SHA. Do NOT create key versions, obtain live status, sign, grant IAM, deploy, write Firebase, run Scheduler, build/scan/retry old tests, change rules or activate production. Hosted G2–G6 seller/buyer acceptance remains the real milestone, not more metadata probes.
+
+**Current state:** `CODEX_G2G6_12_FOCUSED_TESTS=OWNER_REPORTED_AND_REMOTE_RECEIPT_CONFIRMED`, `LIFECYCLE_REVIEW_CONTRACT=NEW_LOCAL_7_PASS_PUSHED`, `ONE_SIGN_PERMANENT_TOMBSTONE=UNCHANGED`, `KMS_STATUS_READER=OPEN`, `ACTUAL_HOSTED_SELLER_BUYER=OPEN`, `STEP05=ACTIVE`, `PRODUCTION=NO_GO`.

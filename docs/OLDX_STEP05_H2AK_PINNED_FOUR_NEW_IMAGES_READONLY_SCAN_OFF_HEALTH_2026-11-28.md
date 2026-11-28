@@ -19,7 +19,7 @@ Immutable non-executable role/image/SA/UID freeze: `deployment/four-role/h2aj-fo
 
 ## New actual source-only work — prepared, NOT EXECUTED in Owner WSL
 
-Added `scripts/step05_h2ak_four_pinned_new_images_scan_offhealth_once_20261128.py`; exact verified Git blob `d970ec1463c252bebbec3fe019c092b6a1313f2c`, created in commit `051eb3fcf8cd8d70de0ce5f151fb2813f5f6eb61` (subsequent fix in commit `832f6ca69c49eedf559175355fc5cf756943040b`). Readback source guards inspected statically, **NOT real local tests or actual image scans**.
+Added `scripts/step05_h2ak_four_pinned_new_images_scan_offhealth_once_20261128.py`; exact verified Git blob `3ceca155403710dc6909af15c9a74e14fda97095`, created in commit `051eb3fcf8cd8d70de0ce5f151fb2813f5f6eb61` (subsequent fix in commit `30161bca6b8fc825d852a1609b8dfb3929115e91`). Readback source guards inspected statically, **NOT real local tests or actual image scans**.
 
 When the Owner executes in native WSL root, this script:
 
@@ -38,13 +38,13 @@ umask 077
 test -f /root/.oldx-step05-h2aj-four-off-builds-corrected-context-once-20261128 &&
 test ! -e /root/.oldx-step05-h2ak-four-pinned-image-acceptance-once-20261128 &&
 d=$(mktemp -d /root/oldx-h2ak-approved.XXXXXXXX) &&
-curl --fail --silent --show-error --retry 0 --max-redirs 0 --max-time 40 --proto '=https' --output "$d/h2ak.py" 'https://raw.githubusercontent.com/yasminparmar087-ops/oldx-website/832f6ca69c49eedf559175355fc5cf756943040b/scripts/step05_h2ak_four_pinned_new_images_scan_offhealth_once_20261128.py' &&
-test "$(git hash-object "$d/h2ak.py")" = 'd970ec1463c252bebbec3fe019c092b6a1313f2c' &&
+curl --fail --silent --show-error --retry 0 --max-redirs 0 --max-time 40 --proto '=https' --output "$d/h2ak.py" 'https://raw.githubusercontent.com/yasminparmar087-ops/oldx-website/30161bca6b8fc825d852a1609b8dfb3929115e91/scripts/step05_h2ak_four_pinned_new_images_scan_offhealth_once_20261128.py' &&
+test "$(git hash-object "$d/h2ak.py")" = '3ceca155403710dc6909af15c9a74e14fda97095' &&
 python3 -B -c 'import ast,sys; ast.parse(open(sys.argv[1],encoding="utf-8").read())' "$d/h2ak.py" &&
 python3 -B "$d/h2ak.py" --h2ak-four-h2aj-images-scan-offhealth-local-only-once
 ```
 
-This has not yet been run; do not claim scan/nonroot OFF-health PASS. Success would be `H2AK_RESULT=PASS_FOUR_NEW_IMAGE_SECURITY_AND_OFF_RUNTIME_RECEIPTS` with four `H2AK_PASS=` lines, but security severity counts require explicit risk assessment rather than being automatically ignored. Grype source documentation: https://oss.anchore.com/docs/reference/grype/cli/ ; Docker exec in-container: https://docs.docker.com/reference/cli/docker/container/exec .
+This has not yet been run; do not claim scan/nonroot OFF-health PASS. Success would be `H2AK_RESULT=PASS_FOUR_NEW_IMAGE_SCANS_AND_OFF_RUNTIME_RECEIPTS` with four `H2AK_PASS=` lines, but security severity counts require explicit risk assessment rather than being automatically ignored. Grype source documentation: https://oss.anchore.com/docs/reference/grype/cli/ ; Docker exec in-container: https://docs.docker.com/reference/cli/docker/container/exec .
 
 ## Next *real* launch milestone after these new-image checks
 

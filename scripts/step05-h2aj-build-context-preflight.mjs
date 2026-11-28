@@ -88,7 +88,9 @@ export async function validateH2AJFourRoleBundle({role,context,sourceRevision}={
  const provenance='deployment/four-role/source-provenance.json';
  if(!packageFiles.every(x=>srcs.includes(x))||!srcs.includes(provenance))fail('METADATA_COPY_MISSING');
  const closure=JSON.parse((await file(root,roleDir+'copy-closure.json')).toString('utf8'));
- if(closure?.v!==1||closure.role!==role||!Array.isArray(closure.files)||
+ if(closure?.v!==1||closure.role!==role||
+    closure.entrypoint!=='functions/staging-marketplace/four-role/'+role+'.mjs'||
+    !Array.isArray(closure.files)||
     closure.files.length!==84||new Set(closure.files).size!==84)fail('CLOSURE_MANIFEST');
  const realSources=new Set(srcs.filter(x=>!packageFiles.includes(x)&&x!==provenance));
  if(realSources.size!==84||closure.files.some(x=>!realSources.has(x)))fail('COPY_CLOSURE_DRIFT');
@@ -97,7 +99,9 @@ export async function validateH2AJFourRoleBundle({role,context,sourceRevision}={
  const evidence=JSON.parse((await file(root,provenance)).toString('utf8'));
  if(evidence.v!==1||evidence.role!==role||evidence.sourceRevision!==sourceRevision||
     typeof evidence.inputs!=='object'||typeof evidence.files!=='object')fail('SOURCE_PROVENANCE');
- for(const path of srcs.filter(x=>x!==provenance)){
+ for(const path of [...srcs.filter(x=>x!==provenance),
+       dockerRel,dockerRel+'.dockerignore',roleDir+'copy-closure.json',
+       'deployment/four-role/manifest.json','deployment/four-role/runtime-config.example.json']){
    const bytes=await file(root,path);
    if(evidence.inputs[path]!==sha(bytes))fail('SOURCE_HASH_DRIFT_'+path);
  }

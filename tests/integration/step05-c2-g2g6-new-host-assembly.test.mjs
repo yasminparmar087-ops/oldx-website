@@ -91,3 +91,67 @@ test('NEW G2-G6 rejects original OFF digest and principal UID drift without side
   assert.equal(createC2G2G6EnabledHostSourceAssembly(
     args({hostFacts:mutated})).sourceComposed,false);
 });
+
+test('NEW G2-G6 fully shaped host ports still fail closed without pinned KMS public key; no source providers fire',()=>{
+  let calls=0;
+  const forbidden=()=>{calls++;throw Error('NO_LIVE_HOST_CALL_IN_SOURCE_TEST');};
+  const release=createC2EnabledReleaseControl({
+    enabled:true,contract:contract(),now:()=>time,
+    verifyApproval:forbidden,consumeRunBudget:forbidden,
+  });
+  assert.equal(release.ready,true);
+  const a=args({releaseControl:release,fetchGatewayMetadata:forbidden});
+  a.websiteOptions={
+    ...a.websiteOptions,
+    getGatewayInvokerCredential:forbidden,
+    getWebsiteAttestation:forbidden,
+    consumeGuestAdmission:forbidden,fetchPrivateGateway:forbidden,
+  };
+  a.gatewayHostOptions={
+    ...a.gatewayHostOptions,
+    websiteIdentity:{identityType:'google-service-account',
+      issuer:'https://accounts.google.com',
+      expectedSubject:'100779414920484819274',
+      attestationAudience:'urn:oldx:website',
+      fetchRequest:forbidden},
+    gatewayOptions:{...a.gatewayHostOptions.gatewayOptions,
+      backendOrigin:'https://backend.example',
+      getInvokerCredential:forbidden,
+      getGatewayAttestation:forbidden,fetchBackend:forbidden},
+    fetchKms:forbidden,consumeDurableSignBudget:forbidden,
+    getTrustedKeyVersionStatus:forbidden,
+  };
+  a.backendOptions={
+    ...a.backendOptions,audience:'https://backend.example',
+    gatewayServiceAccount:GATE,
+    googleIdentity:{issuer:'https://accounts.google.com',
+      fetchRequest:forbidden},
+    requestVerification:{resolvePublicKey:forbidden},
+    runtimeOptions:{...a.backendOptions.runtimeOptions,
+      projectId:'oldx-staging',
+      adminAuth:{app:{options:{projectId:'oldx-staging'}},
+        verifyIdToken:forbidden},
+      adminFirestore:{runTransaction:forbidden}},
+  };
+  const result=createC2G2G6EnabledHostSourceAssembly(a);
+  assert.equal(result.sourceComposed,false);
+  assert.equal(calls,0);
+});
+
+test('NEW G2-G6 host rejects mismatched backend/Gateway identities and HTTP origin before any provider invocation',()=>{
+  let called=0;
+  const forbidden=()=>{called++;throw Error('MUST_NOT_CALL_PROVIDER');};
+  const a=args();
+  a.gatewayHostOptions.gatewayOptions={
+    ...a.gatewayHostOptions.gatewayOptions,backendOrigin:'https://backend.one'};
+  a.backendOptions={
+    ...a.backendOptions,
+    audience:'https://backend.two',
+    gatewayServiceAccount:GATE,
+  };
+  const result=createC2G2G6EnabledHostSourceAssembly({
+    ...a,fetchGatewayMetadata:forbidden,
+  });
+  assert.equal(result.sourceComposed,false);
+  assert.equal(called,0);
+});

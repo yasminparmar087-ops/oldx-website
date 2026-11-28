@@ -20,7 +20,6 @@ import time
 from collections import Counter
 from datetime import datetime, timezone
 from pathlib import Path
-from urllib.request import build_opener, ProxyHandler, Request
 
 ROOT=Path("/root")
 PROJECT="oldx-staging"
@@ -41,7 +40,6 @@ H2AJ_MARKER=ROOT/".oldx-step05-h2aj-four-off-builds-corrected-context-once-20261
 MARK=ROOT/".oldx-step05-h2ak-four-pinned-image-acceptance-once-20261128"
 FLAG="--h2ak-four-h2aj-images-scan-offhealth-local-only-once"
 EXPECTED_BLOB="H2AJ_RESULT=PASS_FOUR_NEW_PRIVATE_OFF_IMAGES"
-NO_PROXY=build_opener(ProxyHandler({}))
 class Stop(Exception):pass
 def need(ok,code):
  if not ok:raise Stop(code)
@@ -90,15 +88,6 @@ def preflight():
  need("Version" in version or "version" in version or "grype" in version.lower(),
       "GRYPE_VERSION_UNRECOGNIZED")
  return env,gcloud,version[:200]
-def read_local(url):
- try:
-  with NO_PROXY.open(Request(url,method="GET"),timeout=3) as res:
-   body=res.read(5000)
-   need(res.status==200,"HEALTH_HTTP_NOT_200")
-   return json.loads(body)
- except Exception as exc:
-  if isinstance(exc,Stop):raise
-  raise Stop("LOCAL_OFF_HEALTH_UNAVAILABLE") from None
 def inspect_off_image(ref,env):
  a=json.loads(run(["docker","image","inspect",ref],env=env,timeout=45))
  need(isinstance(a,list) and len(a)==1,"IMAGE_INSPECT_MISSING")
@@ -113,40 +102,40 @@ def inspect_off_image(ref,env):
       "IMAGE_ENABLED_UNEXPECTED")
  return x.get("Id")
 def smoke(ref,role,env):
+ # Network completely disabled: Docker exec runs node inside SAME container,
+ # checks container loopback without mapping or exposing any host TCP port.
  name="oldx-h2ak-"+role+"-"+secrets.token_hex(3)
  cid=None
+ js=("const role=process.argv[1];"
+     "const base='http://127.0.0.1:8080';"
+     "const ctrl=()=>({signal:AbortSignal.timeout(2000)});"
+     "const health=await fetch(base+'/healthz',ctrl());"
+     "const body=await health.json();"
+     "if(health.status!==200||body.ok!==true||body.role!==role||"
+     "body.state!=='OFF'||body.productReady!==false)process.exit(13);"
+     "const r=await fetch(base+'/api/staging/marketplace/save',"
+     "{method:'POST',body:'{}',...ctrl()});"
+     "if(r.status!==503)process.exit(14);"
+     "process.stdout.write('OFF_200_503');")
  try:
   cid=run(["docker","run","--detach","--rm","--name",name,
-   "--network","bridge","--publish","127.0.0.1::8080",
-   "--read-only","--cap-drop","ALL","--security-opt","no-new-privileges",
-   "--pids-limit","64","--memory","512m","--cpus","0.5",
-   "--user","65532:65532","-e","OLDX_H2AH_ENABLED=false",
-   ref],env=env,timeout=70)
+   "--network","none","--read-only","--cap-drop","ALL",
+   "--security-opt","no-new-privileges","--pids-limit","64",
+   "--memory","512m","--cpus","0.5","--user","65532:65532",
+   "-e","OLDX_H2AH_ENABLED=false",ref],env=env,timeout=70)
   need(re.fullmatch(r"[a-f0-9]{64}",cid) is not None,"CONTAINER_ID_INVALID")
-  port=run(["docker","port",cid,"8080/tcp"],env=env)
-  need(re.fullmatch(r"127\.0\.0\.1:[0-9]{2,5}",port) is not None,
-       "CONTAINER_LOCALHOST_PORT_DRIFT")
-  url="http://"+port+"/healthz"
   last="UNKNOWN"
-  for delay in (0.2,0.4,0.8,1.3,1.8,2.4):
+  for delay in (0.1,0.2,0.4,0.8,1.2,1.7):
    time.sleep(delay)
    try:
-    a=read_local(url)
-    need(a=={"ok":True,"role":role,"state":"OFF","productReady":False},
-      "IMAGE_OFF_HEALTH_BODY_DRIFT")
-    # All product/business routes remain 503 without trusted controller.
-    post=Request("http://"+port+"/api/staging/marketplace/save",
-         data=b"{}",method="POST")
-    try:
-     with NO_PROXY.open(post,timeout=3) as r:status=r.status
-    except Exception as e:
-     status=getattr(e,"code",None)
-    need(status==503,"IMAGE_PRODUCT_NOT_OFF_503")
-    return "PASS_OFF_HEALTH_AND_503"
-   except Stop as e:
-    last=str(e)
-    if last=="IMAGE_OFF_HEALTH_BODY_DRIFT" or last=="IMAGE_PRODUCT_NOT_OFF_503":raise
-  raise Stop("IMAGE_LOCAL_HEALTH_NOT_READY_"+last)
+    result=run(["docker","exec",cid,"/nodejs/bin/node","-e",js,role],
+      env=env,timeout=9)
+    need(result=="OFF_200_503","LOCAL_OFF_RESPONSE_DRIFT")
+    return "PASS_ISOLATED_OFF_HEALTH_200_AND_PRODUCT_503"
+   except Stop as ex:
+    last=str(ex)
+    if last=="LOCAL_OFF_RESPONSE_DRIFT":raise
+  raise Stop("ISOLATED_LOCAL_OFF_HEALTH_FAILED_"+last)
  finally:
   if cid:
    try:run(["docker","stop","--time","3",cid],env=env,timeout=16)

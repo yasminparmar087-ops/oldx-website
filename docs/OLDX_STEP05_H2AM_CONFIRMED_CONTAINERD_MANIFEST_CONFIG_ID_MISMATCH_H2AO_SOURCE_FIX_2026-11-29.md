@@ -1,5 +1,7 @@
 # BAJUTO / OLDX Step05 — H2AM actual Docker-containerd vs Grype image identity error; H2AO new source-only repair, do not repeat attempts
 
+> Source-only implementation completed at 6493f7bc3544c7c8fbec60ee65ba960ea32a2c38. See [actual H2AO receipt](OLDX_STEP05_H2AO_OCI_IDENTITY_SOURCE_RECEIPT_2026-11-29.md):26 distinct NEW offline cases have passing evidence. Actual historical config field is base64 bytes, decoded hash verified locally; pinned child descriptor remains UNKNOWN. New hard-OFF H2AO runner added; old H2AM/H2AN untouched. No actual Docker/scan/registry/Cloud execution. Original task/checkpoint below retained as history; only source implementation status is superseded.
+
 Date: 2026-11-29 ~00:14 IST. Repo `yasminparmar087-ops/oldx-website`, **ONLY** branch `security-hardening-review`. Owner WSL-root screenshot; no new scan/cloud/Docker mutation in the identity audit.
 
 ## EXACT OWNER READ-ONLY EVIDENCE, most current

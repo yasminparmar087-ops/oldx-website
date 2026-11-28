@@ -1,5 +1,16 @@
 # OLDX — Current Chat Handoff / Start Here
 
+## 29 Nov 2026 — H2AO OCI identity source repair implemented;26 NEW distinct offline cases PASS
+
+Source `6493f7bc3544c7c8fbec60ee65ba960ea32a2c38`, start remote `4e717ef55d5afcfb9d5d13e9c9ba02125cef1f57`. Read [H2AO actual source/test receipt and ONE conditional execution approval packet](OLDX_STEP05_H2AO_OCI_IDENTITY_SOURCE_RECEIPT_2026-11-29.md) before continuing. NEW default-OFF H2AO verifier/runner binds pinned raw child SHA -> config digest/size -> exact Grype config bytes -> role/nonroot/platform/rootfs/local image. Docker manifest ID and config ID stay distinct; neither arbitrary ID nor old converted Grype manifest is accepted. Old H2AM/H2AN are consumed and MUST NEVER rerun/reset.
+
+New bounded read of original pinned report confirmed config is BASE64 bytes; decoded32372-byte SHA equals recorded Grype44c8657a...;111 diff IDs and expected linux/amd64/nonroot/entrypoint/CMD. New strict parser handles actual format. Mediator scan remains57 matches/18HIGH/0Critical, NO rescan. Exact pinned child config descriptor is STILL UNVERIFIED; current runtime/OOM/three other scan results UNKNOWN. No Docker/scan/build/pull/registry/Cloud execution in this source task.
+
+26 DISTINCT NEW cases have passing evidence through initial19 plus affected/new selections; fixture cleanup/ELF mistakes corrected honestly; no old19 H2AM or completed groups repeated. New runner preserves first error, logs/OOM, scan receipts before runtime, exact own-container cleanup, and no-repeat per-stage markers. Private pending scan is retained on unknown identity rather than rescanned. Source/runtime semantics tested with doubles, not actual images.
+
+NEXT ONE owner packet in receipt: inspect EXISTING saved raw manifests; missing Gateway/Backend/Reader proof STOPs BEFORE spending scan/GET/runtime. Optional exactly ONE Mediator manifest GET only with explicit flag and existing short-lived token via anonymous pipe, no refresh/login; runtime marker only after all identity/history/local-image/DB/scope gates. Then Mediator runtime ONLY, followed on success by one scan/runtime each remaining role. Proof availability/current prerequisites unknown. No extra pulls/builds/pushes/Cloud/IAM/KMS/Firebase/Billing or CVE acceptance. Preserve all markers, history and15-step sequence. Step05 ACTIVE; G2/G4/G8/hosted gates HOLD; production OFF/NO-GO.
+
+
 ## 28 Nov 2026 — H2AM selective runtime source repair implemented;19 NEW distinct offline cases PASS
 
 Source commit `040bdec66abdfcb266ca8c4db82aeb82761bd2ae`, based on `9aa6aa7200d4f7e6f7d7d3c3fccd8f98f45e186d`. Read [H2AM actual source/test receipt and ONE future approval packet](OLDX_STEP05_H2AM_SELECTIVE_RUNTIME_SOURCE_RECEIPT_2026-11-28.md) before any execution. Separate default-OFF H2AM runner + support +19 mocked offline cases now implement bounded first-error diagnostics, explicit Node24 ESM probe, inspected OOM status, durable independent scan/runtime ledgers, exact own-container cleanup and no-repeat selective resume. No consumed H2AK edits; four image/SA pins and application/Dockerfiles unchanged.

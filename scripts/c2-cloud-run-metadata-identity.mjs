@@ -55,9 +55,10 @@ async function boundedToken(response, url, wait, signal) {
 // adapter only validates returned shape; cryptographic signature verification
 // belongs to Google Cloud Run IAM and the existing backend RS256 verifier.
 export function createC2CloudRunMetadataIdentity({enabled=false,serviceAccount,
-  invokerAudience,assertionAudience,fetchMetadata,now=Date.now}={}) {
+  invokerAudience,assertionAudience,expectedSubject,fetchMetadata,now=Date.now}={}) {
   const ready = enabled === true && principal(serviceAccount) && cloudRunAudience(invokerAudience)
     && distinctAudience(assertionAudience) && assertionAudience !== invokerAudience
+    && (expectedSubject === undefined || typeof expectedSubject === 'string' && /^\d{1,32}$/.test(expectedSubject))
     && typeof fetchMetadata === 'function' && typeof now === 'function';
   async function acquire(audience, {signal}={}) {
     if (!ready || signal?.aborted) deny();
@@ -88,6 +89,7 @@ export function createC2CloudRunMetadataIdentity({enabled=false,serviceAccount,
         !['https://accounts.google.com','accounts.google.com'].includes(claims.iss) ||
         claims.aud !== audience || claims.email !== serviceAccount || claims.email_verified !== true ||
         typeof claims.sub !== 'string' || !/^\d{1,32}$/.test(claims.sub) ||
+        expectedSubject !== undefined && claims.sub !== expectedSubject ||
         !int(claims.iat) || !int(claims.exp) || claims.exp <= claims.iat ||
         claims.exp - claims.iat > 3600 || claims.iat > seconds + 5 ||
         seconds - claims.iat > 60 || claims.exp * 1000 <= fresh + 5000 ||

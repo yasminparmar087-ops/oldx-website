@@ -1,3 +1,4 @@
+import {createC2CloudRunMetadataIdentity} from '../../scripts/c2-cloud-run-metadata-identity.mjs';
 import {requireC2EnabledReleaseControl} from '../../scripts/c2-enabled-release-control.mjs';
 import {createC2EnabledProductBackend} from './secure-product-pipeline.mjs';
 import {createC2WebsiteMediator} from './c2-website-mediation.mjs';
@@ -140,5 +141,55 @@ export function createC2G2G6EnabledHostSourceAssembly({
     sourceComposed:true,
     reason:'SOURCE_ONLY_AWAITING_INDEPENDENT_HOSTED_GATES',
     websiteHandler,gateway,backend,
+  });
+}
+// Trusted SERVER CONFIG only. Separate metadata transports belong to the two
+// actual workload processes, never browser input or an in-process IAM shortcut.
+// Metadata shape/UID checks are consistency checks, NOT signature verification.
+// The existing downstream Google RS256 verification and Cloud Run IAM remain
+// mandatory. This binds identity ports only; durable budgets, KMS status, real
+// Firebase/media SDKs, immutable provenance and release approval stay required.
+export function createC2G2G6MetadataBoundHostSourceAssembly(options={}) {
+  if(!data(options)||options.enabled!==true||
+     !data(options.websiteOptions)||!data(options.gatewayHostOptions)||
+     !data(options.gatewayHostOptions.gatewayOptions)||
+     !data(options.gatewayHostOptions.websiteIdentity)||
+     !data(options.backendOptions)||!data(options.backendOptions.googleIdentity)||
+     !data(options.metadataIdentityOptions))return off();
+  const {websiteOptions:web,gatewayHostOptions:host,backendOptions:back,
+    metadataIdentityOptions:metadata}=options;
+  const hop=host.gatewayOptions;
+  // Reject competing credential providers, including undefined-valued keys:
+  // one role must have exactly one explicit metadata source.
+  if(['getGatewayInvokerCredential','getWebsiteAttestation'].some(k=>Object.hasOwn(web,k))||
+     ['getInvokerCredential','getGatewayAttestation'].some(k=>Object.hasOwn(hop,k))||
+     typeof metadata.fetchMediatorMetadata!=='function'||
+     typeof metadata.fetchGatewayMetadata!=='function'||
+     Object.hasOwn(options,'fetchGatewayMetadata')||
+     web.mediationAudience!==host.websiteIdentity.attestationAudience||
+     host.websiteIdentity.expectedSubject!==MED_UID||
+     back.googleIdentity.expectedSubject!==GATE_UID||
+     back.googleIdentity.attestationAudience!==hop.attestationAudience)
+    return off();
+  const now=options.now??Date.now;
+  const mediator=createC2CloudRunMetadataIdentity({
+    enabled:true,serviceAccount:MED,expectedSubject:MED_UID,
+    invokerAudience:web.privateGatewayOrigin,assertionAudience:web.mediationAudience,
+    fetchMetadata:metadata.fetchMediatorMetadata,now,
+  });
+  const gateway=createC2CloudRunMetadataIdentity({
+    enabled:true,serviceAccount:GATE,expectedSubject:GATE_UID,
+    invokerAudience:hop.backendOrigin,assertionAudience:hop.attestationAudience,
+    fetchMetadata:metadata.fetchGatewayMetadata,now,
+  });
+  if(!mediator.ready||!gateway.ready)return off();
+  return createC2G2G6EnabledHostSourceAssembly({
+    ...options,fetchGatewayMetadata:metadata.fetchGatewayMetadata,
+    websiteOptions:{...web,
+      getGatewayInvokerCredential:mediator.getInvokerCredential,
+      getWebsiteAttestation:mediator.getWebsiteAttestation},
+    gatewayHostOptions:{...host,gatewayOptions:{...hop,
+      getInvokerCredential:gateway.getInvokerCredential,
+      getGatewayAttestation:gateway.getWebsiteAttestation}},
   });
 }

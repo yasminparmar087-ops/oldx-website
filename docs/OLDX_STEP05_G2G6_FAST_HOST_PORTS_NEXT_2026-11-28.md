@@ -1,5 +1,25 @@
 # BAJUTO / OLDX Step05 — fast G2–G6 host binding checkpoint, 28 November 2026
 
+## 28 Nov 2026 — G2–G6 requested six tests ACTUAL PASS; metadata host identity bindings SOURCE ONLY
+
+Starting remote HEAD `0a3fd92747e1caae7ba5f9cbf86abf27f68d4dee`, branch `security-hardening-review`. The six formerly unrun assembly cases were executed FIRST, once, on local Windows Node `v26.13.0`: `node --test --test-isolation=none tests/integration/step05-c2-g2g6-new-host-assembly.test.mjs` — exit 0, 6 tests / 6 pass / 0 fail / 0 skipped / 0 cancelled, 1407.315 ms. No initial failures; no old suites repeated. These six results precede the additive metadata wrapper change below.
+
+Source: reused `createC2CloudRunMetadataIdentity` with an optional numeric `expectedSubject` consistency pin, and added `createC2G2G6MetadataBoundHostSourceAssembly` to the existing assembly. The new default-OFF wrapper binds mediator→Gateway and Gateway→backend IAM and independent attestation ports, fixes their distinct service-account UID/audience relationships, rejects competing providers/accessors, and requires separately injected server-only metadata transports for the two actual workload processes. No ambient fetch, SDK initialization, credentials, listener or in-process IAM shortcut. Firebase user Authorization and existing real HTTP transports remain separate. Metadata parsing does NOT independently authenticate a workload; actual Cloud Run IAM plus downstream Google RS256 verification remain mandatory.
+
+NEW focused verification ONLY: `node --test --test-isolation=none tests/integration/step05-c2-g2g6-metadata-host-bindings.test.mjs` — exit 0, 6 tests / 6 pass / 0 fail / 0 skipped / 0 cancelled, 316.0548 ms. Covers OFF/invalid UID, exact distinct metadata audiences/short attestation lease, wrong UID/role/stripped token, arbitrary audience with zero calls, accessor rejection, provider conflicts and downstream UID/audience drift. Unsigned offline JWT fixtures test transport/shape only; no successful cryptographic authentication or complete hosted assembly is claimed. Total this batch: 12 executed cases, 12 pass; no repeat of either suite. Node24-specific execution was not repeated.
+
+Verified tested-byte Git blobs: metadata adapter `2e23127b3b2fec1875259be21c26a7a9fbfe9e6a`; assembly `c2a07643fb7396834ffe06a22e005502ab3fc21b`; new six-case suite `644221ba5346e5d160cde557a2e3b98a2b90c7ea`. Source was tested in an isolated current-remote snapshot; owner's old local checkout, dirty Handoff and untracked `.firebaserc` were untouched. Documentation derives from remote versions, preserving historical evidence.
+
+**Minimum remaining hosted blockers (not fixed by adding callback names):**
+1. Independently authenticated, least-privilege KMS KeyVersion/public-key status reader and fresh pinned PEM/status. Signer-only SA is not a reader; do not manufacture ENABLED or grant signerVerifier.
+2. Actual native Firebase Auth/Firestore/media providers, verified staging app/database, durable guest/run budgets and permanent no-TTL Firestore sign tombstone authority; synthetic actor grants/config remain unverified. Existing safe factories are retained, no mock durable ledger substituted.
+3. Real distinct host-process metadata/HTTP/JWKS transports, immutable enabled-image provenance, exact runtime UID/Invoker/audience and independently approved release evidence. Original H2U OFF image cannot become enabled through configuration.
+4. Existing H2S signing transport and status reader each consume only ONE attempt per instance; the Firestore sign tombstone is permanent/global. This is insufficient for a multi-request save→owner→list/detail→archive lifecycle. Do not reset/delete the tombstone, recreate providers to bypass it or silently raise limits. A separately scoped bounded lifecycle signing/status design and authorization are required before hosted acceptance.
+
+**Next single safe action:** prepare the narrow source-only lifecycle signing/status budget contract for owner review, with exact max operations, expiry, durable replay limits, identities and STOP/cleanup rules; reuse current one-sign evidence and leave it consumed. This does not authorize signing, IAM or deployment. Cloud authorization, if later requested, must name exact resources/roles/limits; broad consent is not used to perform unrequested Cloud actions.
+
+H2AF historical cleanup PASS preserved; H2AD9 hosted health NOT_FOUND/zero logs remains NOT a hosted health success. No Cloud calls/writes, KMS sign, Firebase operations, Scheduler probes, CI dispatch, build/pull/scan, deploy or paid resource activity in this batch. Push uses `[skip ci]`. Step05 ACTIVE; all existing security HOLDs and 15-step sequence preserved; production OFF / NO-GO.
+
 ## ACTUAL source progress, no hosted changes
 
 Owner priority is time, genuine Seller→Buyer feature progress, and NO repetition of completed scans, builds, tests or Cloud/Scheduler probes.

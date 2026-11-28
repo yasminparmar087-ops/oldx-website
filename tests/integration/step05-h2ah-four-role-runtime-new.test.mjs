@@ -44,6 +44,10 @@ test('NEW H2AH signed host authority rejects boolean trust, forged envelope, UID
  assert.equal(createFourRoleAuthority({enabled:true,...c.authorityOptions({roles}),now:()=>baseTime}),null);
  }
  assert.equal(createFourRoleAuthority({enabled:true,...c.authorityOptions(),now:()=>c.policy.expiresAtMs}),null);
+ for(const digest of [c.facts.gateway.image.slice(-64),'49559f4ee6632a11a13a7e198183efee1226de7a8f437df83c180b01bd8253ec']){
+ const roles=JSON.parse(JSON.stringify(c.facts));roles.backend.image=roles.backend.image.slice(0,-64)+digest;
+ assert.equal(createFourRoleAuthority({enabled:true,...c.authorityOptions({roles}),now:()=>baseTime}),null);
+ }
  assert.equal(c.authority.fresh(),true);
 });
 test('NEW H2AH full Google-signed context denies stripped-header-only, wrong UID, body or audience',async()=>{

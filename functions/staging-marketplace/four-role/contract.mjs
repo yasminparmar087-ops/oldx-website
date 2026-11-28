@@ -17,7 +17,9 @@ export function canonical(x){
 const freeze=x=>{if(x&&typeof x==='object'){Object.values(x).forEach(freeze);Object.freeze(x);}return x;};
 export const runOrigin=x=>{try{const u=new URL(x);return u.origin===x&&u.protocol==='https:'&&
  /^[-a-z0-9]+\.[-a-z0-9]+\.run\.app$/.test(u.hostname)&&!u.username&&!u.password;}catch{return false;}};
-const old=new Set(['576a1faa599459ed9b1cdeccc01a3adc2076dffff617bec42f38df7d3a75663e',
+const old=new Set(['49559f4ee6632a11a13a7e198183efee1226de7a8f437df83c180b01bd8253ec',
+ 'dc26ae92c9fb15cf6b1d63e20f0944b2efe0f115b20e00be48fb23fceb061c54',
+ '6abfcb367ebc291572c774c1592a986be2ab26a2486f73093401327495a5962a','576a1faa599459ed9b1cdeccc01a3adc2076dffff617bec42f38df7d3a75663e',
  '612f3c02806a93d991127f87e34391646edf9bad251bb22b8aace90a434bc30a',
  '4b1bd8a5cba33e96969f8f92ebd73b73f281b6ca5279fd2b14d3be8e9a5391f2']);
 const authorities=new WeakSet();
@@ -47,7 +49,7 @@ export function createFourRoleAuthority({enabled=false,configuration,envelope,
  old.has(r.image.slice(-64))||!/^[a-z0-9][a-z0-9-]{0,80}$/.test(r.revision)||
  !/^[a-f0-9]{64}$/.test(r.attachmentEvidenceSha256))return null;
  }
- if(new Set(Object.values(c.roles).map(r=>r.image)).size!==4||
+ if(new Set(Object.values(c.roles).map(r=>r.image.slice(-64))).size!==4||
  new Set(Object.values(c.roles).map(r=>r.origin)).size!==4)return null;
  const key=createPublicKey(controllerPublicKeyPem),bits=key.asymmetricKeyDetails?.modulusLength;
  if(key.asymmetricKeyType!=='rsa'||bits<2048||bits>4096||key.asymmetricKeyDetails?.publicExponent!==65537n||

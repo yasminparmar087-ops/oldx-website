@@ -1,3 +1,4 @@
+import {requireFourRoleProtocol} from '../functions/staging-marketplace/four-role/protocol.mjs';
 import {requireC2H2LifecycleApprovalVerifier} from './c2-h2-lifecycle-approval.mjs';
 import {c2LifecycleBoundary} from './c2-h2-lifecycle-boundary.mjs';
 import {createHash} from 'node:crypto';
@@ -141,4 +142,26 @@ export function createC2H2LifecycleStageLedger({enabled=false,binding,policy,
     },
   });
   ledgers.set(result,p);return result;
+}
+
+// Role-separated remote proxy. Only a branded, independently authorized private
+// Google-identity protocol may cross processes. This is NOT an in-memory ledger
+// or arbitrary callback facade; all operations commit on Backend's native ledger.
+export function createC2H2RemoteLifecycleStageLedger({enabled=false,policy,protocol}={}){
+ if(enabled!==true)return null;
+ const p=requireC2H2MultiSignLifecyclePolicy(policy),policyDigest=hash(p);
+ requireFourRoleProtocol(protocol,{policyDigest});
+ const call=operation=>async(input,{signal}={})=>{
+ const bytes=Buffer.from(JSON.stringify(input));
+ const response=await protocol.send('backend','/internal/ledger',bytes,{operation,
+ reservation:input?.reservation??hash(['reserve',policyDigest,input?.phase,input?.requestSha256]),signal});
+ if(response.status!==200)fail();
+ const result=await response.json();
+ if(result?.allowed!==true&&result?.allowed!==false)fail();
+ if(result.allowed&&operation==='reserve'&&!hex(result.reservation))fail();
+ return Object.freeze({allowed:result.allowed,...result.reservation?{reservation:result.reservation}:{}});
+ };
+ const result=Object.freeze({ready:true,policyDigest,reserve:call('reserve'),claimSign:call('claimSign'),
+ claimBackend:call('claimBackend'),consumeStatusRead:call('consumeStatusRead'),finish:call('finish')});
+ ledgers.set(result,p);return result;
 }

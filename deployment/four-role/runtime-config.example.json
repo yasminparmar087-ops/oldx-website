@@ -1,0 +1,83 @@
+{
+  "enabled": false,
+  "notice": "NONEXECUTABLE placeholders; signed controller evidence and real source/image/URI values required",
+  "configuration": {
+    "v": 1,
+    "purpose": "oldx.h2ah.four-private-hosts.v1",
+    "projectId": "oldx-staging",
+    "databaseId": "(default)",
+    "sourceRevision": "UNKNOWN_40_HEX_VERIFIED_SOURCE_COMMIT",
+    "policyDigest": "UNKNOWN_SHA256_OF_BRANDED_POLICY_JSON",
+    "releaseDigest": "UNKNOWN_SHA256_OF_EXISTING_RELEASE_CONTRACT",
+    "lifecycleApprovalKeySha256": "UNKNOWN_SEPARATE_APPROVAL_SPKI_PIN",
+    "startsAtMs": null,
+    "expiresAtMs": null,
+    "network": {
+      "ingress": "internal",
+      "vpcEgress": "all-traffic",
+      "privateGoogleAccess": true,
+      "vpc": "UNKNOWN_EXACT_VPC_RESOURCE",
+      "subnet": "UNKNOWN_EXACT_ASIA_SOUTH1_SUBNET_RESOURCE"
+    },
+    "roles": {
+      "mediator": {
+        "principal": "oldx-c2-web-mediator@oldx-staging.iam.gserviceaccount.com",
+        "uid": "100779414920484819274",
+        "image": "asia-south1-docker.pkg.dev/oldx-staging/oldx-staging-images/oldx-c2-mediator-h2ah@sha256:UNKNOWN_NEW_CHILD_IMAGE",
+        "origin": "UNKNOWN_REAL_RUN_APP_URI",
+        "revision": "UNKNOWN_NEW_REVISION",
+        "attachmentEvidenceSha256": "UNKNOWN_INDEPENDENT_CONTROL_PLANE_EVIDENCE_SHA256"
+      },
+      "gateway": {
+        "principal": "oldx-c2-private-gateway@oldx-staging.iam.gserviceaccount.com",
+        "uid": "107238619872767759560",
+        "image": "asia-south1-docker.pkg.dev/oldx-staging/oldx-staging-images/oldx-c2-gateway-h2ah@sha256:UNKNOWN_NEW_CHILD_IMAGE",
+        "origin": "UNKNOWN_REAL_RUN_APP_URI",
+        "revision": "UNKNOWN_NEW_REVISION",
+        "attachmentEvidenceSha256": "UNKNOWN_INDEPENDENT_CONTROL_PLANE_EVIDENCE_SHA256"
+      },
+      "backend": {
+        "principal": "oldx-c2-product-backend@oldx-staging.iam.gserviceaccount.com",
+        "uid": "106984791114720194680",
+        "image": "asia-south1-docker.pkg.dev/oldx-staging/oldx-staging-images/oldx-c2-backend-h2ah@sha256:UNKNOWN_NEW_CHILD_IMAGE",
+        "origin": "UNKNOWN_REAL_RUN_APP_URI",
+        "revision": "UNKNOWN_NEW_REVISION",
+        "attachmentEvidenceSha256": "UNKNOWN_INDEPENDENT_CONTROL_PLANE_EVIDENCE_SHA256"
+      },
+      "reader": {
+        "principal": "oldx-c2-kms-reader@oldx-staging.iam.gserviceaccount.com",
+        "uid": "107336955065718475994",
+        "image": "asia-south1-docker.pkg.dev/oldx-staging/oldx-staging-images/oldx-c2-kms-reader@sha256:UNKNOWN_NEW_CHILD_IMAGE",
+        "origin": "UNKNOWN_REAL_RUN_APP_URI",
+        "revision": "UNKNOWN_NEW_REVISION",
+        "attachmentEvidenceSha256": "UNKNOWN_INDEPENDENT_CONTROL_PLANE_EVIDENCE_SHA256"
+      }
+    },
+    "media": {
+      "provider": "UNKNOWN_EXISTING_APPROVED_PROVIDER_NO_MIGRATION",
+      "bucket": null,
+      "object": null,
+      "generation": null,
+      "derivativeId": null,
+      "version": null,
+      "contentType": null,
+      "sha256": null
+    }
+  },
+  "controllerPublicKeyPem": "UNKNOWN_INDEPENDENT_TRUSTED_CONTROLLER_PUBLIC_KEY",
+  "envelope": {
+    "payload": null,
+    "signature": null
+  },
+  "proposal": "EXACT_EXISTING_SIX_STAGE_REVIEW_PROPOSAL_WITH_FRESH_NONCES_NO_OLD_TOMBSTONE_RESET",
+  "lifecycleApproval": {
+    "publicKeyPem": null,
+    "publicKeySha256": null,
+    "envelope": {
+      "payload": null,
+      "signature": null
+    }
+  },
+  "releaseContract": "EXACT_EXISTING_RELEASE_CONTRACT_WITH_VERIFIED_3_ROLE_IMAGES_AND_6_EVIDENCE_HASHES",
+  "kmsPublicKeyPem": "EXACT_HISTORICAL_PUBLIC_PEM_MATCHING_69a50043b9979b8b695ca4dc426bcb58d14666b0dc2da27ce823f57f53d46aba"
+}

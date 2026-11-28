@@ -26,7 +26,12 @@ const contract=()=>({v:1,purpose:'oldx.c2.enabled-product.synthetic.v1',runId:'b
  images:Object.fromEntries(['mediator','gateway','backend'].map((k,i)=>[k,'asia-south1-docker.pkg.dev/oldx-staging/oldx-staging-images/synthetic-'+k+'@sha256:'+String(i+1).repeat(64)])),
  evidence:Object.fromEntries(['identity','iam','media','cleanup','security','rollback'].map(k=>[k,'a'.repeat(64)])),
  limits:{maxRequests:20,maxActors:2,maxProducts:1,maxPhotos:1},actors:{seller,buyer},managedPhotoId:'synthetic_photo_1234567890'});
-export function lifecycleHttpFixture({wire,onSign,lifecycle}={}){
+export function lifecycleHttpFixture({wire,onSign,onStatus,lifecycle,pins,googleProvider}={}){
+ const site=pins?.website?.origin??'https://website.invalid';
+ const wa=pins?.website?.audience??'urn:oldx:synthetic:website';
+ const ga=pins?.gateway?.audience??'urn:oldx:synthetic:gateway';
+ const account=n=>pins?.[n]?.principal??sa(n);
+ const runtimeContract=()=>{const c=contract();if(pins){c.principals={mediator:account('website'),gateway:account('gateway'),backend:account('backend')};c.images={mediator:pins.website.image,gateway:pins.gateway.image,backend:pins.backend.image};}return c;};
  const f=fakeFirestoreSdk();let clock=baseTime,revoked=false,expired=false,budgetAllowed=true,approvalAllowed=true,lose=false,sessionNo=0,tokenWait=null,tokenStarted=null;
  const now=()=>clock;
  const collection=name=>{
@@ -48,42 +53,43 @@ export function lifecycleHttpFixture({wire,onSign,lifecycle}={}){
  const runtimeOptions={projectId:'oldx-staging',deploymentEnvironment:'preview',adminFirestore:db,adminAuth,FieldValue:{serverTimestamp:f.sdk.serverTimestamp},
   ratePolicy:{windowMs:60000,actorLimit:80,globalLimit:100},createMediaBindings:b=>({photoPolicy:createStagingMandatoryPhotoPolicy({enabled:true,binding:b}),atomicPhotos:createStagingAtomicPhotoPublication({enabled:true,binding:b})})};
  const jwt=(email,sub,aud)=>{
+  if(googleProvider)return googleProvider.mint(email,sub,aud);
   const enc=v=>Buffer.from(JSON.stringify(v)).toString('base64url');
   const bytes=enc({alg:'RS256',kid:'synthetic-google'})+'.'+enc({iss:issuer,aud,email,sub,email_verified:true,iat:clock/1000,exp:clock/1000+3600});
   return bytes+'.'+sign('RSA-SHA256',Buffer.from(bytes),{key:google.privateKey,padding:constants.RSA_PKCS1_PADDING}).toString('base64url');
  };
- const keys=()=>Response.json({keys:[{...google.publicKey.export({format:'jwk'}),alg:'RS256',kid:'synthetic-google',use:'sig'}]},{headers:{'cache-control':'max-age=300'}});
+ const keys=()=>googleProvider?googleProvider.keys():Response.json({keys:[{...google.publicKey.export({format:'jwk'}),alg:'RS256',kid:'synthetic-google',use:'sig'}]},{headers:{'cache-control':'max-age=300'}});
  const identity=(email,sub,invokerAudience,assertionAudience)=>createC2CloudRunMetadataIdentity({enabled:true,serviceAccount:email,invokerAudience,assertionAudience,now,
   fetchMetadata:async path=>new Response(jwt(email,sub,new URL(path).searchParams.get('audience')),{headers:{'Metadata-Flavor':'Google'}})});
- const webId=identity(sa('website'),'111',gw,wa),gateId=identity(sa('gateway'),'222',url,ga);
+ const webId=identity(account('website'),(pins?.website?.uid??'111'),gw,wa),gateId=identity(account('gateway'),(pins?.gateway?.uid??'222'),url,ga);
  const name='projects/oldx-staging/locations/asia-south1/keyRings/synthetic/cryptoKeys/intent/cryptoKeyVersions/1';
  const algorithm='RSA_SIGN_PKCS1_2048_SHA256',pin=createHash('sha256').update(intent.publicKey.export({type:'spki',format:'der'})).digest('hex');
  const kms=createC2KmsRequestSigning({enabled:true,kid:'synthetic-intent',keyVersion:name,algorithm,
   publicKeyPem:intent.publicKey.export({type:'spki',format:'pem'}),publicKeySha256:pin,validFromMs:clock-10,validUntilMs:clock+600000,now,
-  getKeyVersionStatus:async()=>({name,state:'ENABLED',algorithm,publicKeySha256:pin}),
+  getKeyVersionStatus:async()=>{await onStatus?.();return {name,state:'ENABLED',algorithm,publicKeySha256:pin};},
   asymmetricSign:async req=>{
    const digest=Buffer.from(req.digest.sha256,'base64');assert.equal(req.digestCrc32c,c2Crc32c(digest));
    const sig=privateEncrypt({key:intent.privateKey,padding:constants.RSA_PKCS1_PADDING},Buffer.concat([Buffer.from('3031300d060960864801650304020105000420','hex'),digest]));
    return {name,verifiedDigestCrc32c:true,signature:sig.toString('base64'),signatureCrc32c:c2Crc32c(sig)};
   }});
  let admitted=0;
- const release=createC2EnabledReleaseControl({enabled:true,contract:contract(),now,
+ const release=createC2EnabledReleaseControl({enabled:true,contract:runtimeContract(),now,
   verifyApproval:async(_c,{contractDigest})=>({authorized:approvalAllowed,contractDigest,expiresAtMs:baseTime+600000}),
   consumeRunBudget:async()=>({allowed:budgetAllowed&&++admitted<=20})}); // IN-MEMORY TEST DOUBLE, not durable host proof.
- const options={audience:url,gatewayServiceAccount:sa('gateway'),googleIdentity:{identityType:'google-service-account',issuer,attestationAudience:ga,expectedSubject:'222',fetchRequest:keys},
+ const options={audience:url,gatewayServiceAccount:account('gateway'),googleIdentity:{identityType:'google-service-account',issuer,attestationAudience:ga,expectedSubject:(pins?.gateway?.uid??'222'),fetchRequest:keys},
   requestVerification:{resolvePublicKey:kms.resolvePublicKey,...lifecycle?{lifecyclePolicy:lifecycle.policy,lifecycleLedger:lifecycle.ledger}:{}},runtimeOptions,guestPolicy:{windowMs:60000,guestLimit:40,globalLimit:80},cursorKey:new Uint8Array(32).fill(33),now};
- const backend=createC2EnabledProductBackend({...options,enabled:true,releaseControl:release,runtimeServiceAccount:sa('backend'),runtimeImage:contract().images.backend});
+ const backend=createC2EnabledProductBackend({...options,enabled:true,releaseControl:release,runtimeServiceAccount:account('backend'),runtimeImage:runtimeContract().images.backend});
  let backendTarget=backend;
  const wires=[],trace=[];
- const gatewayOptions={backendOrigin:url,gatewayServiceAccount:sa('gateway'),attestationAudience:ga,
+ const gatewayOptions={backendOrigin:url,gatewayServiceAccount:account('gateway'),attestationAudience:ga,
   getInvokerCredential:gateId.getInvokerCredential,getGatewayAttestation:gateId.getWebsiteAttestation,
   requestSigning:{kid:'synthetic-intent',signMessage:async(bytes,ctx)=>{await onSign?.(bytes,ctx);return kms.signMessage(bytes,ctx);}},
   fetchBackend:async(path,init)=>{const headers=new Headers(init.headers);headers.set('x-serverless-authorization','Bearer synthetic.payload.');
    const request=new Request(path,{...init,headers});wires.push(request.clone());const result=await wire(url,backendTarget,request);trace.push({hop:'backend',status:result.status,body:await result.clone().text()});return result;}};
- const host=createC2PrivateGatewayHost({enabled:true,privateGatewayOrigin:gw,mediatorPrincipal:sa('website'),
-  websiteIdentity:{identityType:'google-service-account',issuer,attestationAudience:wa,expectedSubject:'111',fetchRequest:keys},allowedOrigins:[site],gatewayOptions,now});
+ const host=createC2PrivateGatewayHost({enabled:true,privateGatewayOrigin:gw,mediatorPrincipal:account('website'),
+  websiteIdentity:{identityType:'google-service-account',issuer,attestationAudience:wa,expectedSubject:(pins?.website?.uid??'111'),fetchRequest:keys},allowedOrigins:[site],gatewayOptions,now});
  const mediator=createC2WebsiteMediator({enabled:true,websiteOrigin:site,allowedOrigins:[site],privateGatewayOrigin:gw,
-  mediatorPrincipal:sa('website'),mediationAudience:wa,getGatewayInvokerCredential:webId.getInvokerCredential,getWebsiteAttestation:webId.getWebsiteAttestation,
+  mediatorPrincipal:account('website'),mediationAudience:wa,getGatewayInvokerCredential:webId.getInvokerCredential,getWebsiteAttestation:webId.getWebsiteAttestation,
   consumeGuestAdmission:()=>({allowed:true}),now,fetchPrivateGateway:(path,init)=>{const headers=new Headers(init.headers);headers.set('x-serverless-authorization','Bearer synthetic.payload.');return wire(gw,host,new Request(path,{...init,headers})).then(async result=>{trace.push({hop:'gateway',status:result.status,body:await result.clone().text()});return result;});}});
  let listener;
  const auth={app:{options:{projectId:'oldx-staging'}},currentUser:null,onIdTokenChanged(fn){listener=fn;return ()=>{};}};
@@ -108,7 +114,7 @@ export function lifecycleHttpFixture({wire,onSign,lifecycle}={}){
   f.seed(m.reviews,imageId,{imageId,ownerUid:seller,decision:'approved',assetRevision:1,processedDigest:'b'.repeat(64),revision:1,moderatorUid:'moderator'});
   return {...profile,photos:[{kind:'managed',imageId}]};
  };
- return {mediator,db,adminAuth,now,useLegacy(){backendTarget=createStep05Backend({...options,enabled:true,runtimeOptions:{...runtimeOptions,publicationEnabled:true}});},f,trace,options,release,backend,model:model2,integration,login,attach,gatewayOptions,wires,
+ return {mediator,gatewayHost:host,db,adminAuth,now,useLegacy(){backendTarget=createStep05Backend({...options,enabled:true,runtimeOptions:{...runtimeOptions,publicationEnabled:true}});},f,trace,options,release,backend,model:model2,integration,login,attach,gatewayOptions,wires,
   holdToken(){let start,release;const started=new Promise(r=>start=r);tokenWait=new Promise(r=>release=r);tokenStarted=start;return {started,release(){release(seller+'.synthetic.token');tokenWait=null;tokenStarted=null;}};},
   revoke:()=>revoked=true,expire:()=>expired=true,time:v=>clock=v,denyBudget:()=>budgetAllowed=false,denyApproval:()=>approvalAllowed=false,lose:()=>lose=true};
 }

@@ -1,0 +1,597 @@
+{
+  "schema": "oldx.h2ah.four-role-source-plan.v1",
+  "executionAllowed": false,
+  "project": "oldx-staging",
+  "region": "asia-south1",
+  "sourceRevision": "UNKNOWN_UNTIL_ISOLATED_BUNDLE",
+  "platform": "linux/amd64",
+  "runtimeBase": "gcr.io/distroless/nodejs24-debian13:nonroot@sha256:49559f4ee6632a11a13a7e198183efee1226de7a8f437df83c180b01bd8253ec",
+  "dependencyBuilder": "node:24-bookworm-slim@sha256:dc26ae92c9fb15cf6b1d63e20f0944b2efe0f115b20e00be48fb23fceb061c54",
+  "network": {
+    "topology": "same-project Direct VPC egress, all-traffic, subnet Private Google Access, default run.app HTTPS",
+    "vpc": "UNKNOWN_EXACT_EXISTING_OR_SEPARATELY_APPROVED",
+    "subnet": "UNKNOWN_EXACT_ASIA_SOUTH1",
+    "ingress": "internal",
+    "vpcEgress": "all-traffic",
+    "privateGoogleAccessRequired": true,
+    "publicAccess": false,
+    "note": "IAM alone is insufficient. Never fix H2AD9 by enabling public ingress. No connector/LB/NAT/PSC provisioning in source task."
+  },
+  "services": {
+    "mediator": {
+      "serviceName": "oldx-c2-mediator-h2ah",
+      "serviceAccount": "oldx-c2-web-mediator@oldx-staging.iam.gserviceaccount.com",
+      "uid": "100779414920484819274",
+      "image": "asia-south1-docker.pkg.dev/oldx-staging/oldx-staging-images/oldx-c2-mediator-h2ah@sha256:UNKNOWN_NEW_CHILD_IMAGE",
+      "uri": "UNKNOWN_REAL_RUN_APP_URI",
+      "revision": "UNKNOWN_NEW_REVISION",
+      "sourceDockerfile": "deployment/four-role/Dockerfile.mediator",
+      "runtime": {
+        "user": "65532:65532",
+        "port": 8080,
+        "entrypoint": "/nodejs/bin/node",
+        "command": "functions/staging-marketplace/four-role/mediator.mjs",
+        "defaultOff": true,
+        "startupHealth": "/healthz",
+        "minInstances": 0,
+        "maxInstances": 1,
+        "containerConcurrency": 1,
+        "timeoutSeconds": 15,
+        "cpu": "1",
+        "memory": "512Mi",
+        "production": false
+      },
+      "cloudRunServiceTemplate": {
+        "apiVersion": "serving.knative.dev/v1",
+        "kind": "Service",
+        "metadata": {
+          "name": "oldx-c2-mediator-h2ah",
+          "annotations": {
+            "run.googleapis.com/ingress": "internal"
+          }
+        },
+        "spec": {
+          "template": {
+            "metadata": {
+              "annotations": {
+                "autoscaling.knative.dev/minScale": "0",
+                "autoscaling.knative.dev/maxScale": "1",
+                "run.googleapis.com/vpc-access-egress": "all-traffic",
+                "run.googleapis.com/network-interfaces": "[{\"network\":\"UNKNOWN_VPC\",\"subnetwork\":\"UNKNOWN_SUBNET\"}]"
+              }
+            },
+            "spec": {
+              "serviceAccountName": "oldx-c2-web-mediator@oldx-staging.iam.gserviceaccount.com",
+              "containerConcurrency": 1,
+              "timeoutSeconds": 15,
+              "containers": [
+                {
+                  "image": "asia-south1-docker.pkg.dev/oldx-staging/oldx-staging-images/oldx-c2-mediator-h2ah@sha256:UNKNOWN_NEW_CHILD_IMAGE",
+                  "command": [
+                    "/nodejs/bin/node"
+                  ],
+                  "args": [
+                    "functions/staging-marketplace/four-role/mediator.mjs"
+                  ],
+                  "ports": [
+                    {
+                      "containerPort": 8080
+                    }
+                  ],
+                  "env": [
+                    {
+                      "name": "OLDX_H2AH_ENABLED",
+                      "value": "false"
+                    }
+                  ],
+                  "startupProbe": {
+                    "httpGet": {
+                      "path": "/healthz",
+                      "port": 8080
+                    }
+                  },
+                  "resources": {
+                    "limits": {
+                      "cpu": "1",
+                      "memory": "512Mi"
+                    }
+                  },
+                  "volumeMounts": [
+                    {
+                      "name": "runtime-config",
+                      "mountPath": "/run/oldx/config"
+                    },
+                    {
+                      "name": "controller-trust",
+                      "mountPath": "/run/oldx/trust"
+                    }
+                  ]
+                }
+              ],
+              "volumes": [
+                {
+                  "name": "runtime-config",
+                  "secret": {
+                    "secretName": "UNKNOWN_APPROVED_RUNTIME_CONFIG_SECRET",
+                    "items": [
+                      {
+                        "key": "UNKNOWN_APPROVED_CONFIG_VERSION_NUMBER",
+                        "path": "runtime.json"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "name": "controller-trust",
+                  "secret": {
+                    "secretName": "UNKNOWN_INDEPENDENT_CONTROLLER_TRUST_SECRET",
+                    "items": [
+                      {
+                        "key": "UNKNOWN_APPROVED_TRUST_VERSION_NUMBER",
+                        "path": "controller-spki.sha256"
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        }
+      }
+    },
+    "gateway": {
+      "serviceName": "oldx-c2-gateway-h2ah",
+      "serviceAccount": "oldx-c2-private-gateway@oldx-staging.iam.gserviceaccount.com",
+      "uid": "107238619872767759560",
+      "image": "asia-south1-docker.pkg.dev/oldx-staging/oldx-staging-images/oldx-c2-gateway-h2ah@sha256:UNKNOWN_NEW_CHILD_IMAGE",
+      "uri": "UNKNOWN_REAL_RUN_APP_URI",
+      "revision": "UNKNOWN_NEW_REVISION",
+      "sourceDockerfile": "deployment/four-role/Dockerfile.gateway",
+      "runtime": {
+        "user": "65532:65532",
+        "port": 8080,
+        "entrypoint": "/nodejs/bin/node",
+        "command": "functions/staging-marketplace/four-role/gateway.mjs",
+        "defaultOff": true,
+        "startupHealth": "/healthz",
+        "minInstances": 0,
+        "maxInstances": 1,
+        "containerConcurrency": 1,
+        "timeoutSeconds": 15,
+        "cpu": "1",
+        "memory": "512Mi",
+        "production": false
+      },
+      "cloudRunServiceTemplate": {
+        "apiVersion": "serving.knative.dev/v1",
+        "kind": "Service",
+        "metadata": {
+          "name": "oldx-c2-gateway-h2ah",
+          "annotations": {
+            "run.googleapis.com/ingress": "internal"
+          }
+        },
+        "spec": {
+          "template": {
+            "metadata": {
+              "annotations": {
+                "autoscaling.knative.dev/minScale": "0",
+                "autoscaling.knative.dev/maxScale": "1",
+                "run.googleapis.com/vpc-access-egress": "all-traffic",
+                "run.googleapis.com/network-interfaces": "[{\"network\":\"UNKNOWN_VPC\",\"subnetwork\":\"UNKNOWN_SUBNET\"}]"
+              }
+            },
+            "spec": {
+              "serviceAccountName": "oldx-c2-private-gateway@oldx-staging.iam.gserviceaccount.com",
+              "containerConcurrency": 1,
+              "timeoutSeconds": 15,
+              "containers": [
+                {
+                  "image": "asia-south1-docker.pkg.dev/oldx-staging/oldx-staging-images/oldx-c2-gateway-h2ah@sha256:UNKNOWN_NEW_CHILD_IMAGE",
+                  "command": [
+                    "/nodejs/bin/node"
+                  ],
+                  "args": [
+                    "functions/staging-marketplace/four-role/gateway.mjs"
+                  ],
+                  "ports": [
+                    {
+                      "containerPort": 8080
+                    }
+                  ],
+                  "env": [
+                    {
+                      "name": "OLDX_H2AH_ENABLED",
+                      "value": "false"
+                    }
+                  ],
+                  "startupProbe": {
+                    "httpGet": {
+                      "path": "/healthz",
+                      "port": 8080
+                    }
+                  },
+                  "resources": {
+                    "limits": {
+                      "cpu": "1",
+                      "memory": "512Mi"
+                    }
+                  },
+                  "volumeMounts": [
+                    {
+                      "name": "runtime-config",
+                      "mountPath": "/run/oldx/config"
+                    },
+                    {
+                      "name": "controller-trust",
+                      "mountPath": "/run/oldx/trust"
+                    }
+                  ]
+                }
+              ],
+              "volumes": [
+                {
+                  "name": "runtime-config",
+                  "secret": {
+                    "secretName": "UNKNOWN_APPROVED_RUNTIME_CONFIG_SECRET",
+                    "items": [
+                      {
+                        "key": "UNKNOWN_APPROVED_CONFIG_VERSION_NUMBER",
+                        "path": "runtime.json"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "name": "controller-trust",
+                  "secret": {
+                    "secretName": "UNKNOWN_INDEPENDENT_CONTROLLER_TRUST_SECRET",
+                    "items": [
+                      {
+                        "key": "UNKNOWN_APPROVED_TRUST_VERSION_NUMBER",
+                        "path": "controller-spki.sha256"
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        }
+      }
+    },
+    "backend": {
+      "serviceName": "oldx-c2-backend-h2ah",
+      "serviceAccount": "oldx-c2-product-backend@oldx-staging.iam.gserviceaccount.com",
+      "uid": "106984791114720194680",
+      "image": "asia-south1-docker.pkg.dev/oldx-staging/oldx-staging-images/oldx-c2-backend-h2ah@sha256:UNKNOWN_NEW_CHILD_IMAGE",
+      "uri": "UNKNOWN_REAL_RUN_APP_URI",
+      "revision": "UNKNOWN_NEW_REVISION",
+      "sourceDockerfile": "deployment/four-role/Dockerfile.backend",
+      "runtime": {
+        "user": "65532:65532",
+        "port": 8080,
+        "entrypoint": "/nodejs/bin/node",
+        "command": "functions/staging-marketplace/four-role/backend.mjs",
+        "defaultOff": true,
+        "startupHealth": "/healthz",
+        "minInstances": 0,
+        "maxInstances": 1,
+        "containerConcurrency": 1,
+        "timeoutSeconds": 15,
+        "cpu": "1",
+        "memory": "1Gi",
+        "production": false
+      },
+      "cloudRunServiceTemplate": {
+        "apiVersion": "serving.knative.dev/v1",
+        "kind": "Service",
+        "metadata": {
+          "name": "oldx-c2-backend-h2ah",
+          "annotations": {
+            "run.googleapis.com/ingress": "internal"
+          }
+        },
+        "spec": {
+          "template": {
+            "metadata": {
+              "annotations": {
+                "autoscaling.knative.dev/minScale": "0",
+                "autoscaling.knative.dev/maxScale": "1",
+                "run.googleapis.com/vpc-access-egress": "all-traffic",
+                "run.googleapis.com/network-interfaces": "[{\"network\":\"UNKNOWN_VPC\",\"subnetwork\":\"UNKNOWN_SUBNET\"}]"
+              }
+            },
+            "spec": {
+              "serviceAccountName": "oldx-c2-product-backend@oldx-staging.iam.gserviceaccount.com",
+              "containerConcurrency": 1,
+              "timeoutSeconds": 15,
+              "containers": [
+                {
+                  "image": "asia-south1-docker.pkg.dev/oldx-staging/oldx-staging-images/oldx-c2-backend-h2ah@sha256:UNKNOWN_NEW_CHILD_IMAGE",
+                  "command": [
+                    "/nodejs/bin/node"
+                  ],
+                  "args": [
+                    "functions/staging-marketplace/four-role/backend.mjs"
+                  ],
+                  "ports": [
+                    {
+                      "containerPort": 8080
+                    }
+                  ],
+                  "env": [
+                    {
+                      "name": "OLDX_H2AH_ENABLED",
+                      "value": "false"
+                    }
+                  ],
+                  "startupProbe": {
+                    "httpGet": {
+                      "path": "/healthz",
+                      "port": 8080
+                    }
+                  },
+                  "resources": {
+                    "limits": {
+                      "cpu": "1",
+                      "memory": "1Gi"
+                    }
+                  },
+                  "volumeMounts": [
+                    {
+                      "name": "runtime-config",
+                      "mountPath": "/run/oldx/config"
+                    },
+                    {
+                      "name": "controller-trust",
+                      "mountPath": "/run/oldx/trust"
+                    },
+                    {
+                      "name": "backend-cursor",
+                      "mountPath": "/run/oldx/cursor"
+                    }
+                  ]
+                }
+              ],
+              "volumes": [
+                {
+                  "name": "runtime-config",
+                  "secret": {
+                    "secretName": "UNKNOWN_APPROVED_RUNTIME_CONFIG_SECRET",
+                    "items": [
+                      {
+                        "key": "UNKNOWN_APPROVED_CONFIG_VERSION_NUMBER",
+                        "path": "runtime.json"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "name": "controller-trust",
+                  "secret": {
+                    "secretName": "UNKNOWN_INDEPENDENT_CONTROLLER_TRUST_SECRET",
+                    "items": [
+                      {
+                        "key": "UNKNOWN_APPROVED_TRUST_VERSION_NUMBER",
+                        "path": "controller-spki.sha256"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "name": "backend-cursor",
+                  "secret": {
+                    "secretName": "UNKNOWN_EXISTING_OR_SEPARATELY_APPROVED_CURSOR_SECRET",
+                    "items": [
+                      {
+                        "key": "UNKNOWN_APPROVED_CURSOR_VERSION_NUMBER",
+                        "path": "cursor-key"
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        }
+      }
+    },
+    "reader": {
+      "serviceName": "oldx-c2-kms-reader-h2ah",
+      "serviceAccount": "oldx-c2-kms-reader@oldx-staging.iam.gserviceaccount.com",
+      "uid": "107336955065718475994",
+      "image": "asia-south1-docker.pkg.dev/oldx-staging/oldx-staging-images/oldx-c2-kms-reader@sha256:UNKNOWN_NEW_CHILD_IMAGE",
+      "uri": "UNKNOWN_REAL_RUN_APP_URI",
+      "revision": "UNKNOWN_NEW_REVISION",
+      "sourceDockerfile": "deployment/four-role/Dockerfile.reader",
+      "runtime": {
+        "user": "65532:65532",
+        "port": 8080,
+        "entrypoint": "/nodejs/bin/node",
+        "command": "functions/staging-marketplace/four-role/reader.mjs",
+        "defaultOff": true,
+        "startupHealth": "/healthz",
+        "minInstances": 0,
+        "maxInstances": 1,
+        "containerConcurrency": 1,
+        "timeoutSeconds": 15,
+        "cpu": "1",
+        "memory": "512Mi",
+        "production": false
+      },
+      "cloudRunServiceTemplate": {
+        "apiVersion": "serving.knative.dev/v1",
+        "kind": "Service",
+        "metadata": {
+          "name": "oldx-c2-kms-reader-h2ah",
+          "annotations": {
+            "run.googleapis.com/ingress": "internal"
+          }
+        },
+        "spec": {
+          "template": {
+            "metadata": {
+              "annotations": {
+                "autoscaling.knative.dev/minScale": "0",
+                "autoscaling.knative.dev/maxScale": "1",
+                "run.googleapis.com/vpc-access-egress": "all-traffic",
+                "run.googleapis.com/network-interfaces": "[{\"network\":\"UNKNOWN_VPC\",\"subnetwork\":\"UNKNOWN_SUBNET\"}]"
+              }
+            },
+            "spec": {
+              "serviceAccountName": "oldx-c2-kms-reader@oldx-staging.iam.gserviceaccount.com",
+              "containerConcurrency": 1,
+              "timeoutSeconds": 15,
+              "containers": [
+                {
+                  "image": "asia-south1-docker.pkg.dev/oldx-staging/oldx-staging-images/oldx-c2-kms-reader@sha256:UNKNOWN_NEW_CHILD_IMAGE",
+                  "command": [
+                    "/nodejs/bin/node"
+                  ],
+                  "args": [
+                    "functions/staging-marketplace/four-role/reader.mjs"
+                  ],
+                  "ports": [
+                    {
+                      "containerPort": 8080
+                    }
+                  ],
+                  "env": [
+                    {
+                      "name": "OLDX_H2AH_ENABLED",
+                      "value": "false"
+                    }
+                  ],
+                  "startupProbe": {
+                    "httpGet": {
+                      "path": "/healthz",
+                      "port": 8080
+                    }
+                  },
+                  "resources": {
+                    "limits": {
+                      "cpu": "1",
+                      "memory": "512Mi"
+                    }
+                  },
+                  "volumeMounts": [
+                    {
+                      "name": "runtime-config",
+                      "mountPath": "/run/oldx/config"
+                    },
+                    {
+                      "name": "controller-trust",
+                      "mountPath": "/run/oldx/trust"
+                    }
+                  ]
+                }
+              ],
+              "volumes": [
+                {
+                  "name": "runtime-config",
+                  "secret": {
+                    "secretName": "UNKNOWN_APPROVED_RUNTIME_CONFIG_SECRET",
+                    "items": [
+                      {
+                        "key": "UNKNOWN_APPROVED_CONFIG_VERSION_NUMBER",
+                        "path": "runtime.json"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "name": "controller-trust",
+                  "secret": {
+                    "secretName": "UNKNOWN_INDEPENDENT_CONTROLLER_TRUST_SECRET",
+                    "items": [
+                      {
+                        "key": "UNKNOWN_APPROVED_TRUST_VERSION_NUMBER",
+                        "path": "controller-spki.sha256"
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        }
+      }
+    }
+  },
+  "invokerEdges": [
+    [
+      "mediator",
+      "gateway",
+      "product"
+    ],
+    [
+      "gateway",
+      "backend",
+      "product+claimSign"
+    ],
+    [
+      "gateway",
+      "reader",
+      "sign-version/sign-public"
+    ],
+    [
+      "backend",
+      "reader",
+      "verify-version/verify-public"
+    ],
+    [
+      "mediator",
+      "backend",
+      "reserve/finish/guest control ONLY"
+    ],
+    [
+      "reader",
+      "backend",
+      "consumeStatusRead ONLY"
+    ]
+  ],
+  "invokerRole": "roles/run.invoker, exact destination-service scope only; separate future approval; no project-wide grant",
+  "kms": {
+    "readerGrants": "H2AG ACTUAL PASS / DO NOT REAPPLY",
+    "gatewaySigner": "existing signer-only / no metadata read grants",
+    "keyVersion": "projects/oldx-staging/locations/asia-south1/keyRings/oldx-c2-h2-signing/cryptoKeys/oldx-c2-attestation-rs256/cryptoKeyVersions/1",
+    "maxSigns": 6,
+    "maxReadGets": 24,
+    "noNewKeyOrVersion": true
+  },
+  "acceptance": {
+    "maxRequests": 20,
+    "maxDurationMinutes": 20,
+    "actors": 2,
+    "products": 1,
+    "photos": 1,
+    "hosted": "NOT_VERIFIED"
+  },
+  "rollout": {
+    "noOldServiceMutation": true,
+    "oldH2UOffImageImmutable": true,
+    "noAutomaticTraffic": true,
+    "taggedZeroTrafficIsCallableAndCanCost": true,
+    "rollback": "route to unchanged OFF baseline; stop new candidate; preserve permanent ledgers and evidence"
+  },
+  "approvalStages": {
+    "next": "SOURCE+FOUR_NEW_BUILDS/PUSH_EVIDENCE ONLY, NOT AUTHORIZED HERE",
+    "later": "separate exact deployment/network/Invoker/runtime attachment consent, then bounded six-sign acceptance consent"
+  },
+  "officialReferences": [
+    "https://docs.cloud.google.com/run/docs/securing/private-networking",
+    "https://docs.cloud.google.com/run/docs/securing/service-identity",
+    "https://docs.cloud.google.com/run/docs/configuring/services/secrets"
+  ],
+  "configurationCustody": {
+    "mode": "Separate read-only, independently approved numeric-version mounts; no latest trust-anchor switching",
+    "publicFiles": [
+      "/run/oldx/config/runtime.json",
+      "/run/oldx/trust/controller-spki.sha256"
+    ],
+    "backendOnlySecret": "/run/oldx/cursor/cursor-key (32 bytes)",
+    "independentTrustWriteCustodyRequired": true,
+    "cloudSecretResources": "UNKNOWN / no creation, import, rotation or secretAccessor grants authorized by source work"
+  }
+}

@@ -43,7 +43,17 @@ def cmd(args,timeout=12):
     valid=(args[:2]==['docker','ps'] and '--all' in args
            and '--format' in args and '--filter' in args
           ) or (args[:3]==['docker','image','inspect'] and IMAGE in args
-           and '--format' in args)
+           and '--format' in args) or (
+            args[:2]==['docker','logs'] and len(args)==5
+            and args[2:4]==['--tail','25']
+            and re.fullmatch(r'[a-f0-9]{12,64}',args[4]) is not None
+           ) or (
+            args[:2]==['docker','events'] and
+            args[2:]==['--since','2026-11-28T16:06:00Z',
+                        '--until','2026-11-28T16:13:30Z',
+                        '--filter','type=container','--format',
+                        '{{.Action}}|{{.Actor.Attributes.name}}|{{.Actor.Attributes.exitCode}}']
+           )
     if not valid:
         return ['DENIED_NON_READ_ONLY_COMMAND']
     try:
@@ -51,7 +61,8 @@ def cmd(args,timeout=12):
              stdin=subprocess.DEVNULL,timeout=timeout,check=False)
         if r.returncode!=0:
             return ['READ_ONLY_DOCKER_ERROR_EXIT_'+str(r.returncode)]
-        return r.stdout.decode('utf-8','replace').splitlines()[:18]
+        bytes_out=r.stdout+(b'\n'+r.stderr if args[1]=='logs' else b'')
+        return bytes_out.decode('utf-8','replace').splitlines()[:65]
     except (OSError, subprocess.TimeoutExpired):
         return ['DOCKER_READ_ONLY_UNAVAILABLE']
 
@@ -90,11 +101,29 @@ def main():
         present=(EVID/(role+'-grype.json')).exists()
         print('H2AL_'+role.upper()+'_GRYPE_JSON='+('EXISTS' if present else 'ABSENT'))
     print('H2AL_DOCKER_PS_BEGIN')
+    retained=[]
     for line in cmd(['docker','ps','--all','--filter','name=oldx-h2ak-',
                      '--format','{{.Names}}|{{.Status}}|{{.ID}}']):
         if line.startswith('oldx-h2ak-'):
             print('H2AL_CONTAINER='+line[:240])
+            parts=line.split('|')
+            if len(parts)==3 and parts[0].startswith('oldx-h2ak-mediator-') and re.fullmatch(r'[a-f0-9]{12,64}',parts[2]):
+                retained.append(parts[2])
     print('H2AL_DOCKER_PS_END')
+    for cid in retained[:2]:
+        print('H2AL_RETAINED_CONTAINER_LOG_BEGIN')
+        for line in cmd(['docker','logs','--tail','25',cid]):
+            line=re.sub(r'(?i)(bearer\\s+)\\S+',r'\\1[REDACTED]',line)
+            line=re.sub(r'(?i)((?:token|password|secret|authorization)\\s*[:=]\\s*)\\S+',r'\\1[REDACTED]',line)
+            print('H2AL_LOG='+line[:350])
+        print('H2AL_RETAINED_CONTAINER_LOG_END')
+    print('H2AL_DOCKER_EVENTS_BEGIN')
+    for line in cmd(['docker','events','--since','2026-11-28T16:06:00Z',
+            '--until','2026-11-28T16:13:30Z','--filter','type=container',
+            '--format','{{.Action}}|{{.Actor.Attributes.name}}|{{.Actor.Attributes.exitCode}}'],timeout=15):
+        if 'oldx-h2ak-' in line:
+            print('H2AL_EVENT='+line[:350])
+    print('H2AL_DOCKER_EVENTS_END')
     print('H2AL_MEDIATOR_LOCAL_IMAGE_INSPECT_BEGIN')
     for line in cmd(['docker','image','inspect',IMAGE,'--format',
         'User={{.Config.User}}|Entrypoint={{json .Config.Entrypoint}}|Cmd={{json .Config.Cmd}}|WorkingDir={{.Config.WorkingDir}}|OS={{.Os}}|Arch={{.Architecture}}']):

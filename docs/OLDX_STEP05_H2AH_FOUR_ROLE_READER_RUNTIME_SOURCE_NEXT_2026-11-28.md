@@ -1,5 +1,13 @@
 # BAJUTO / OLDX Step05 — H2AH FOUR-ROLE private staging runtime bridge (28 November 2026)
 
+## 28 Nov 2026 — latest H2AH FOUR separate private role source/packaging implemented;23 NEW distinct cases PASS
+
+Start `2bc68c161fa9c9988883a5b9dee64bb2cf1b3424`; final source `b8ed873aff7c93a43dc13f163a0f7dda1fe9911d`. Read [H2AH four-role actual source/test receipt and ONE build-only packet](OLDX_STEP05_H2AH_FOUR_ROLE_SOURCE_RECEIPT_2026-11-28.md) first. Four executable OFF entrypoints, pinned nonroot Dockerfiles/lock manifests/84-file closures, signed controller authority, Google-RS256 stage-bound private RPC, Backend-native remote ledger, separate Reader own-metadata/KMS GET path, explicit Compute-only Firebase clients and read-only approved Storage adapter are implemented. Mediator discards forwarded stripped IAM header WITHOUT treating it as user proof; real Firebase actor boundary stays mandatory. Real-pin substitute remains blocked.
+
+FIRST direct H2AH tests6/6PASS, then17 distinct NEW focused cases have passing evidence via affected-case selections: total23 new. Four default-OFF child processes tested; positive six-stage flow crossed4 localhost HTTP roles with Reader separate process,6 LOCAL test signatures/24 KMS-GET doubles. Actual installed SDK clients initialized/closed with0 credential/network attempts. This is NOT hosted IAM/Firebase/KMS/nonroot/Linux-container proof. No old12+7+18 tests/builds/scans/Cloud probes/IAM/H2AG/H2AF repeated.
+
+H2AG Reader SA UID107336955065718475994 and key grants OWNER ACTUAL PASS; don't regrant. Reader service attachment/URI and4 new child digests UNKNOWN. Next ONE decision: bounded local source+4 OFF-image build/private-push packet in receipt; no deployment, network/Invoker/secret/IAM/KMS/Firebase/production authority implied. Actual private VPC routes, six precise Invoker edges (including Mediator/Reader→Backend control RPC), independent controller/mount/key custody, new OCI/security/runtime evidence and synthetic hosted acceptance remain open. Original H2U OFF image, permanent one-sign/status controls, consumed markers, dirty owner files, H2AF cleanup and15-step sequence preserved; H2AD9 NOT_FOUND unresolved. Step05 ACTIVE; all HOLDs; production OFF/NO-GO.
+
 ## Actual newest checkpoint — after Owner H2AG PASS
 
 - Last verified remote branch SHA before this receipt: `2e6bf20b2c3e985e682ec8ca15e108b931423609`, **only** `security-hardening-review`.

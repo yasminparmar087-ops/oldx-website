@@ -18,3 +18,36 @@ Original H2AP source puts the H2AP marker in `/root/.oldx-step05-h2ap-four-child
 **Next only:** ONE read-only, no-network WSL inspection of the exact private summary file: verify lstat/owner/type/mode/size, print computed actual SHA256 and compare expected, parse only allowlisted `outcome`, `failureCode`, `handoff.status`, `roles[*].status/httpStatus/failureCode`, and check presence of all five exact H2AP/H2AO attempt/preflight/global markers plus four proof files. No raw manifest bodies, tokens, SDK credential files or unfiltered logs printed. If file inaccessible/unsafe/malformed, STOP with UNKNOWN; don't reset/replay old action.
 
 **Hard NO-REPEAT:** no rerun of H2AP/H2AO/H2AM/H2AN/H2AJ/H2AK; no token refresh/login; no registry GET, Grype/Docker scan/runtime, builds/pulls, Cloud changes, IAM, KMS, Firebase, production. Preserve original receipts and all markers. H2AP/H2AO actual PASS UNKNOWN; Step05 ACTIVE, security/hosted HOLD, production OFF/NO-GO. Need owner-side result to determine the smallest next distinct action.
+
+
+## 29 Nov ~01:38 IST — actual second Owner read-only screenshot (new endpoint)
+
+Owner's second WSL root screenshot after the narrowed inspector printed:
+```text
+SUMMARY_SIZE=269
+SCOPE_VALID=True
+OUTCOME=STOP_NO_AUTOMATIC_RETRY
+FAILURE_CODE=PRIOR_H2AM_SUMMARY_SHA_DRIFT
+H2AO_HANDOFF=NOT_ATTEMPTED
+MEDIATOR_STATUS=NOT_ATTEMPTED
+GATEWAY_STATUS=NOT_ATTEMPTED
+BACKEND_STATUS=NOT_ATTEMPTED
+READER_STATUS=NOT_ATTEMPTED
+MEDIATOR_PROOF_FILE=ABSENT
+GATEWAY_PROOF_FILE=ABSENT
+BACKEND_PROOF_FILE=ABSENT
+READER_PROOF_FILE=ABSENT
+H2AP_MARKER=NOT_FOUND
+H2AO_MARKER=NOT_FOUND
+H2AO_PREFLIGHT_MARKER=NOT_FOUND
+H2AO_GET_MARKER=NOT_FOUND
+H2AO_LEDGER_MARKER=NOT_FOUND
+READ_ONLY=COMPLETE_NO_NETWORK_NO_SCANS_NO_WRITES
+```
+The second inspector also printed `EXPECTED_SHA256_MATCH=False`. Treat its earlier expected-vs-actual summary comparison as unreconciled, but the parsed first-failure code is decisive for the NEXT scoped check. No four-role request attempt or H2AO handoff is observed in the current private receipt; no markers found. **Do not misstate a no-marker observation as global absence of network activity.**
+
+**Specific GitHub source confirmation:** frozen H2AO `scripts/step05_h2ao_selective_continuation_once_20261129.py` `history()` reads the *old* H2AM `/root/oldx-h2am-selective-20261128T183527Z-2ae92ca2/summary.json`, compares raw bytes SHA256 with frozen `99a455c5bedd435c0f72b0c9aacadcb96d8949db9cb1d2bff518416ca1b18e958f`, and raises `PRIOR_H2AM_SUMMARY_SHA_DRIFT` before inspecting detailed old stages. That SHA was originally reported in the older H2AN owner success/partial-stop screenshot. The underlying cause of any drift/changed old receipt is UNKNOWN; it must NOT be "fixed" by editing old receipt or relaxing pin.
+
+**NEXT ONLY:** one local **read-only** exact old-H2AM-summary receipt inspection, safe allowlist fields and SHA/mtime/ownership; no rerun H2AP/H2AO, no sudo/docker/grype/gcloud/registry, no source changes or old evidence mutation. Evaluate if the old receipt's semantic status and snapshot confirm the prior consumed IMAGE_BINDING stop, and reconcile expected-vs-actual SHA **before preparing any new scoped continuation**. If malformed/untrusted/drift unresolved, HOLD; do not replace frozen hash automatically.
+
+Current status: H2AJ 4 built private pinned images historic PASS; H2AN 3 verified preloads; H2AM consumed at Mediator IMAGE_BINDING; H2AP prewrite STOP; H2AO NOT ATTEMPTED; Step05 ACTIVE; production OFF/NO-GO.

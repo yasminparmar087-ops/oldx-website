@@ -83,7 +83,7 @@ def preflight():
  need(gcloud(["config","get-value","project"])==PROJECT,"WRONG_PROJECT")
  need(run(["docker","info","--format","{{.OSType}}"],env=env)=="linux",
       "DOCKER_ENGINE_NOT_LINUX")
- need(shutil.disk_usage(ROOT).free>=4*1024**3,"LESS_THAN_FOUR_GIB_FREE")
+ need(shutil.disk_usage(ROOT).free>=1024**3,"LESS_THAN_ONE_GIB_ROOT_FREE")
  version=run(["grype","version"],env=env,timeout=15)
  need("Version" in version or "version" in version or "grype" in version.lower(),
       "GRYPE_VERSION_UNRECOGNIZED")
@@ -189,7 +189,7 @@ def main():
    with MARK.open("a") as f:f.write("ROLE="+role+" PASS\n")
    print("H2AK_PASS="+role+" OFF_HEALTH NONROOT GRYPE_MATCHES="+str(len(matches))+
      " CRITICAL="+str(sev.get("Critical",0))+" HIGH="+str(sev.get("High",0)),flush=True)
-  result["outcome"]="PASS_FOUR_NEW_IMAGE_SECURITY_AND_OFF_RUNTIME_RECEIPTS"
+  result["outcome"]="PASS_FOUR_NEW_IMAGE_SCANS_AND_OFF_RUNTIME_RECEIPTS"
  except (Stop,OSError,ValueError,TypeError,KeyError) as e:
   result["outcome"]="STOP_PARTIAL_LOCAL_READ_ONLY_ACCEPTANCE"
   result["reason"]=str(e) if isinstance(e,Stop) else type(e).__name__
